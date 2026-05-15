@@ -230,6 +230,33 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .sb-lock-btn{width:100%;padding:13px;border:none;border-radius:12px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:16px}
 .sb-locked-banner{background:#D1FAE5;border:1.5px solid #A7F3D0;border-radius:11px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:#065F46;font-weight:800;display:flex;align-items:center;gap:8px}
 
+/* ── TOPIC TABS ── */
+.tm-tabs{display:flex;background:#162d6e;flex-shrink:0}
+.tm-tab{flex:1;padding:8px 4px;font-size:11px;font-weight:800;color:rgba(255,255,255,.5);text-align:center;cursor:pointer;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent}
+.tm-tab.on{color:#fff;border-bottom-color:#FCD34D}
+.tl-row{display:flex;align-items:center;margin-top:9px}
+.tl-nd{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0}
+.tl-nd.dn{background:#10B981;color:#fff}
+.tl-nd.cr{background:#3B82F6;color:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.tl-nd.nx{background:#F3F2EE;border:2px solid #EDE9E0;color:#C4C0B8}
+.tl-nd.ts{background:#F59E0B;color:#fff}
+.tl-cn{flex:1;height:2px;margin:0 1px}
+.tl-cn.dn{background:#10B981}
+.tl-cn.nx{background:#EDE9E0}
+.jn-hero{border-radius:12px;padding:13px;margin-bottom:12px;color:#fff}
+.jn-step{display:flex;align-items:flex-start;gap:10px;padding:9px 0;position:relative}
+.jn-step:not(:last-child)::after{content:'';position:absolute;left:15px;top:34px;width:2px;height:calc(100% - 16px);z-index:0}
+.jn-step.s-dn::after{background:#10B981}
+.jn-step.s-nx::after{background:#EDE9E0}
+.jn-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;position:relative;z-index:1}
+.jn-dot.d{background:#10B981;color:#fff}
+.jn-dot.c{background:#3B82F6;color:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.jn-dot.n{background:#fff;border:2px solid #EDE9E0;color:#A8A29E;font-size:12px;font-weight:900}
+.jn-dot.t{background:#F59E0B;color:#fff}
+.jn-info{flex:1;padding-top:5px}
+.jn-name{font-size:13px;font-weight:900;color:#1C1917}
+.jn-meta{font-size:10px;color:#A8A29E;margin-top:2px;font-weight:700}
+.jn-score{font-size:12px;font-weight:900;padding-top:5px;flex-shrink:0}
 .icon-opt{aspect-ratio:1;border-radius:9px;background:#F4F1EC;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s}
 .icon-opt:active{transform:scale(.88)}
 .icon-opt.selected{border-color:#F59E0B;background:#FFFBEB}
@@ -312,22 +339,18 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="profiles">
     <div class="p-card blue" onclick="selectProfile('alexander')">
       <div class="p-av" id="p-av-alexander" style="font-size:38px;background:#DBEAFE">🏌️</div>
+      <div onclick="showIconPicker('alexander',event)" style="font-size:10px;font-weight:800;color:#3B82F6;cursor:pointer;margin:4px 0 6px;-webkit-tap-highlight-color:transparent">✏️ Change icon</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
     </div>
     <div class="p-card purple" onclick="selectProfile('estelle')">
       <div class="p-av" id="p-av-estelle" style="font-size:38px;background:#EDE9FE">🦄</div>
+      <div onclick="showIconPicker('estelle',event)" style="font-size:10px;font-weight:800;color:#8B5CF6;cursor:pointer;margin:4px 0 6px;-webkit-tap-highlight-color:transparent">✏️ Change icon</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
       <div class="p-tag" id="est-tag">Topic 1 · Level A</div>
     </div>
-  </div>
-
-  <!-- Icon change links -->
-  <div style="display:flex;gap:12px;margin-top:10px;width:100%">
-    <div style="flex:1;text-align:center;font-size:11px;font-weight:800;color:#3B82F6;cursor:pointer" onclick="showIconPicker('alexander',event)">✏️ Change</div>
-    <div style="flex:1;text-align:center;font-size:11px;font-weight:800;color:#8B5CF6;cursor:pointer" onclick="showIconPicker('estelle',event)">✏️ Change</div>
   </div>
 
   <!-- Icon picker panels -->
@@ -381,11 +404,16 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div class="hdr-title" id="topics-title">Topics</div>
     <div class="hdr-chip" id="streak-chip">🔥 0 days</div>
   </div>
-  <div class="tm-body">
+  <div class="tm-tabs">
+    <div class="tm-tab on" id="tm-tab-0" onclick="switchTopicsTab(0)">📚 Topics</div>
+    <div class="tm-tab" id="tm-tab-1" onclick="switchTopicsTab(1)">🗺 My Journey</div>
+  </div>
+  <div class="tm-body" id="tm-pane-topics">
     <div class="tm-prog-row"><span>Overall progress</span><span id="prog-pct">0%</span></div>
     <div class="tm-prog-bg"><div class="tm-prog-fill" id="prog-fill"></div></div>
     <div class="tgrid" id="topic-grid"></div>
   </div>
+  <div class="pd-body" id="tm-pane-journey" style="display:none"></div>
 </div>
 
 <!-- ── SESSION ── -->
@@ -1054,12 +1082,103 @@ function selectProfile(p){
 // ════════════════════════════════════════════
 // TOPIC MAP
 // ════════════════════════════════════════════
+function switchTopicsTab(n){
+  document.getElementById('tm-pane-topics').style.display=n===0?'block':'none';
+  document.getElementById('tm-pane-journey').style.display=n===1?'block':'none';
+  document.getElementById('tm-tab-0').className='tm-tab'+(n===0?' on':'');
+  document.getElementById('tm-tab-1').className='tm-tab'+(n===1?' on':'');
+}
+
+function buildMiniTimeline(lvlIdx,isDone,isTopicTest,color){
+  const steps=[...LEVELS,'⭐'];
+  let html='<div class="tl-row">';
+  steps.forEach((lv,i)=>{
+    const isTest=i===steps.length-1;
+    let cls='nx';
+    if(isDone)cls='dn';
+    else if(isTest&&isTopicTest)cls='ts cr';
+    else if(i<lvlIdx)cls='dn';
+    else if(i===lvlIdx&&!isTopicTest)cls='cr';
+    if(i>0)html+=`<div class="tl-cn ${i<=lvlIdx&&!isTopicTest||isDone?'dn':'nx'}"></div>`;
+    html+=`<div class="tl-nd ${cls}">${isTest?'⭐':lv}</div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function buildJourneyTab(profile){
+  const prog=initProgress(profile);
+  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const color=profile==='alexander'?'#3B82F6':'#8B5CF6';
+  const icon=getIcon(profile);
+  const name=profile==='alexander'?'Alexander':'Estelle';
+  // Find current topic
+  const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
+  const curTid=cur?parseInt(cur[0].replace('t','')):-1;
+  const curTopic=topics.find(t=>t.id===curTid);
+  const doneCt=topics.filter(t=>prog['t'+t.id].done).length;
+
+  let html=`<div class="jn-hero" style="background:${color}">
+    <div style="font-size:32px;margin-bottom:6px">${icon}</div>
+    <div style="font-size:17px;font-weight:900">${name}'s Journey</div>
+    <div style="font-size:11px;opacity:.75;margin:3px 0 8px">${curTopic?curTopic.name+' · Level '+(prog['t'+curTid].level||'A'):'All topics complete!'}</div>
+    <div style="background:rgba(255,255,255,.25);border-radius:99px;height:5px"><div style="width:${Math.max(doneCt/topics.length*100,2)}%;height:5px;border-radius:99px;background:#fff"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;margin-top:3px;opacity:.75;font-weight:800"><span>${doneCt} topics complete</span><span>${topics.length-doneCt} to go</span></div>
+  </div>`;
+
+  html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Topic progress</div>`;
+
+  topics.forEach((t,ti)=>{
+    const tp=prog['t'+t.id];
+    const isLocked=tp.locked;const isDone=tp.done;
+    const lvlIdx=LEVELS.indexOf(tp.level||'A');
+    const isTest=tp.topicTestNeeded;
+    const isCur=!isLocked&&!isDone&&t.id===curTid;
+    // Get last session for this topic
+    const lastSess=hist.find(h=>h.tid===t.id);
+    const stepCls=isDone?'s-dn':'s-nx';
+    const dotCls=isDone?'d':isCur?'c':'n';
+    const dotTxt=isDone?'✓':isLocked?'🔒':t.id;
+    const nameTxt=`<div class="jn-name">${t.name}</div>`;
+    let metaTxt='';
+    if(isLocked)metaTxt='<div class="jn-meta">Locked — keep going!</div>';
+    else if(isDone){const ds=lastSess?` · ${lastSess.score}/${lastSess.total}`:'';metaTxt=`<div class="jn-meta">Complete ✓${ds}</div>`;}
+    else if(isCur)metaTxt=`<div class="jn-meta" style="color:${color};font-weight:800">▶ In progress — Level ${tp.level||'A'}</div>`;
+    else metaTxt='<div class="jn-meta">Coming next</div>';
+    let scoreTxt='';
+    if(isDone&&lastSess)scoreTxt=`<div class="jn-score" style="color:#059669">${lastSess.score}/${lastSess.total}</div>`;
+    else if(isCur)scoreTxt=`<div class="jn-score" style="color:${color};font-size:10px">Now!</div>`;
+
+    html+=`<div class="jn-step ${stepCls}">
+      <div class="jn-dot ${dotTxt==='🔒'?'n':dotCls}">${dotTxt}</div>
+      <div class="jn-info">${nameTxt}${metaTxt}`;
+
+    if(!isLocked&&!isDone){
+      // Show mini level progress
+      html+=`<div style="display:flex;align-items:center;gap:3px;margin-top:5px">`;
+      LEVELS.forEach((lv,i)=>{
+        const done=i<lvlIdx;const active=i===lvlIdx&&!isTest;
+        html+=`<div style="width:18px;height:18px;border-radius:50%;background:${done?color:active?color:'#F3F2EE'};border:${active?'0':'1.5px solid #EDE9E0'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:${done||active?'#fff':'#C4C0B8'};${active?'box-shadow:0 0 0 3px '+color+'33':''}">${lv}</div>`;
+      });
+      html+=`<div style="width:18px;height:18px;border-radius:50%;background:${isTest?'#F59E0B':'#F3F2EE'};border:1.5px solid ${isTest?'#F59E0B':'#EDE9E0'};display:flex;align-items:center;justify-content:center;font-size:9px;color:${isTest?'#fff':'#C4C0B8'}">⭐</div>`;
+      html+=`</div>`;
+    }
+    html+=`</div>${scoreTxt}</div>`;
+  });
+
+  // Final test row
+  const allDone=topics.every(t=>prog['t'+t.id].done);
+  html+=`<div class="jn-step s-nx">
+    <div class="jn-dot ${allDone?'t':'n'}">🏆</div>
+    <div class="jn-info"><div class="jn-name">Final Test</div><div class="jn-meta">${allDone?'🎉 Unlocked — 20 questions, all topics':'Complete all topics to unlock'}</div></div>
+  </div>`;
+
+  html+=`<div style="height:24px"></div>`;
+  return html;
+}
 function buildTopicsScreen(){
   const p=S.profile;
-  const topics=p==='alexander'?TOPICS_A:TOPICS_E;
-  const d=initProgress(p);
-  const streak=getStreak(p);
-  const colorClass=p==='alexander'?'fill-blue':'fill-purple';
   const locked_sess=getLocked(p);
 
   document.getElementById('topics-title').textContent=(p==='alexander'?'Alexander':'Estelle')+"'s Topics";
@@ -1096,7 +1215,7 @@ function buildTopicsScreen(){
       :`<div class="tc-b b-cur">▶ Level ${tp.level||'A'} / F</div>`;
     const progressBar=!isLocked&&!isTopicTest?`<div style="margin-top:7px;background:#F3F2EE;border-radius:99px;height:4px"><div style="width:${lvlPct}%;height:4px;border-radius:99px;background:${isDone?'#10B981':barColor};transition:width .3s"></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:#A8A29E;font-weight:800;margin-top:2px"><span>${isDone?'All done':LEVELS.slice(0,lvlIdx).map(l=>`${l}✓`).join(' ')+' '+LEVELS[lvlIdx]+'▶'}</span><span>${lvlPct}%</span></div>`:'';
     card.innerHTML=`<div class="tc-n">Topic ${t.id}</div>
-<div class="tc-nm${isLocked?' g':''}">${t.name}</div>${badge}${progressBar}`;
+<div class="tc-nm${isLocked?' g':''}">${t.name}</div>${badge}${progressBar}${!isLocked?buildMiniTimeline(LEVELS.indexOf(tp.level||'A'),isDone,isTopicTest,barColor):''}`;
     if(!isLocked){
       if(isTopicTest){card.addEventListener('click',()=>startTopicTest(t.id));}
       else{card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
@@ -1104,6 +1223,9 @@ function buildTopicsScreen(){
     grid.appendChild(card);
   });
 
+  // Build journey tab
+  const journeyPane=document.getElementById('tm-pane-journey');
+  if(journeyPane)journeyPane.innerHTML=buildJourneyTab(p);
   // Final test card
   if(allTopicsDone){
     const fc=document.createElement('div');
@@ -1335,6 +1457,7 @@ function getAPos(e){
 }
 function apd(e){
   e.preventDefault();
+  try{aCanvas.setPointerCapture(e.pointerId);}catch(ex){}
   aDrawing=true;aHasInk=true;
   const p=getAPos(e);aLx=p.x;aLy=p.y;
   aCurrentStroke=[{x:aLx,y:aLy,w:3}];
@@ -1366,6 +1489,7 @@ function getPos(e){
 
 function pd(e){
   e.preventDefault();
+  try{canvas.setPointerCapture(e.pointerId);}catch(ex){}
   drawing=true; hasInk=true;
   const pos=getPos(e);
   lx=pos.x; ly=pos.y;
@@ -1963,7 +2087,12 @@ function renderReview(session,profile){
   const allMarked=session.questions.every(q=>q.parentMark!==null);
   const pass=correct/total>=0.8;
   const barColor=pass?'#10B981':'#EF4444';
-  let html=`<div class="pr-summary">
+  const btnLabel=allMarked?(pass?`✓ Approve — ${correct}/${total} correct · Level clears`:`↩ ${correct}/${total} correct · Level repeats`):'Mark all questions first';
+
+  // Approve button at TOP
+  let html=`<button class="pr-clear-btn ${allMarked?'ready':''}" onclick="clearSession('${profile}',${session.id})" ${!allMarked?'disabled':''}>${btnLabel}</button>`;
+
+  html+=`<div class="pr-summary">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
       <div style="flex:1;font-size:12px;font-weight:900">${profile==='alexander'?'Alexander':'Estelle'} · ${session.topicName}</div>
       <div style="font-size:24px;font-weight:900;color:${barColor}">${correct}/${total}</div>
@@ -2023,8 +2152,7 @@ function renderReview(session,profile){
     </div>`;
   });
 
-  const btnLabel=allMarked?(pass?`✓ Approve — ${correct}/${total} correct · Level clears`:`↩ ${correct}/${total} correct · Level repeats`):'Mark all questions first';
-  html+=`<button class="pr-clear-btn ${allMarked?'ready':''}" onclick="clearSession('${profile}',${session.id})" ${!allMarked?'disabled':''}>${btnLabel}</button>`;
+  html+=`<div style="height:40px"></div>`;
   body.innerHTML=html;
 }
 
@@ -2060,7 +2188,8 @@ async function aiCheckOne(profile,sessionId,qIdx){
 }
 
 async function aiCheckQuestion(q){
-  if(!S.apiKey){return{correct:false,comment:'❌ No API key — enter key in settings'};}
+  const _key=S.apiKey||localStorage.getItem('md_apikey')||'';
+  if(!_key){return{correct:false,comment:'❌ No API key — enter key in settings'};}
   const content=[{type:'text',text:`Maths question: "${q.display}". Correct answer: ${q.answer}. Check the student's handwritten work and answer. Reply with ONLY: CORRECT or WRONG, then one brief reason (max 8 words).`}];
   if(q.workURL&&q.workURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
   if(q.answerURL&&q.answerURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
@@ -2068,7 +2197,7 @@ async function aiCheckQuestion(q){
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'x-api-key':S.apiKey,
+      'x-api-key':_key,
       'anthropic-version':'2023-06-01',
       'anthropic-dangerous-direct-browser-access':'true'
     },
@@ -2302,11 +2431,21 @@ async function pullFromCloud(){
   showToast('Pulling from cloud...');
   const rows=await supaFetch('mathdrill_data?select=key,value');
   if(!rows||!Array.isArray(rows)){showToast('Pull failed — check connection');return;}
+  let kept=0;
   rows.forEach(row=>{
-    try{localStorage.setItem(row.key,typeof row.value==='string'?row.value:JSON.stringify(row.value));}catch(e){}
+    try{
+      const cloudVal=typeof row.value==='string'?row.value:JSON.stringify(row.value);
+      // Never overwrite pending sessions if local has more data
+      if(row.key.startsWith('md_pending_')){
+        const local=JSON.parse(localStorage.getItem(row.key)||'[]');
+        const cloud=JSON.parse(cloudVal||'[]');
+        if(local.length>cloud.length){kept++;return;}
+      }
+      localStorage.setItem(row.key,cloudVal);
+    }catch(e){}
   });
-  refreshProfileTags();
-  showToast('Pulled '+rows.length+' items from cloud ☁');
+  loadIcons();refreshProfileTags();
+  showToast('Pulled '+rows.length+' items ☁'+(kept?' · '+kept+' local sessions kept':''));
 }
 
 // Cloud settings screen
@@ -2700,11 +2839,12 @@ function setIcon(profile,icon){
   cloudSet('md_icon_'+profile,icon);
   const av=document.getElementById('p-av-'+profile);
   if(av)av.textContent=icon;
-  // Update selected state
-  const picker=document.getElementById('icon-picker-'+profile);
-  if(picker)picker.querySelectorAll('.icon-opt').forEach(b=>{
-    b.classList.toggle('selected',b.textContent===icon);
+  // Auto-close both pickers
+  ['alexander','estelle'].forEach(p=>{
+    const pk=document.getElementById('icon-picker-'+p);
+    if(pk)pk.style.display='none';
   });
+  showToast(icon+' saved!');
 }
 
 function getProfileIcon(profile){return getIcon(profile);}
@@ -2737,7 +2877,11 @@ window.addEventListener('load',()=>{
         updateSendBar();
       }
     },300);
-  } else { showScreen('screen-api'); }
+  } else {
+    showScreen('screen-api');
+    const saved=localStorage.getItem('md_apikey');
+    if(saved){const inp=document.getElementById('api-input');if(inp)inp.value=saved;}
+  }
 });
 </script>
 </body>
