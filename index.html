@@ -1010,23 +1010,31 @@ function estT10(lvl,d){
 }
 
 // ── ROUTING ──
+function r3(n){return typeof n==='number'?Math.round(n*1000)/1000:n;}
 function genProblem(profile,tid,lvl,d=5){
   try{
+    let prob;
     if(profile==='alexander'){
       switch(tid){
-        case 1:return alexT1(lvl,d);case 2:return alexT2(lvl,d);case 3:return alexT3(lvl,d);
-        case 4:return alexT4(lvl,d);case 5:return alexT5(lvl,d);case 6:return alexT6(lvl,d);
-        case 7:return alexT7(lvl,d);case 8:return alexT8(lvl,d);case 9:return alexT9(lvl,d);
-        case 10:return alexT10(lvl,d);default:return alexT1(lvl,d);
+        case 1:prob=alexT1(lvl,d);break;case 2:prob=alexT2(lvl,d);break;case 3:prob=alexT3(lvl,d);break;
+        case 4:prob=alexT4(lvl,d);break;case 5:prob=alexT5(lvl,d);break;case 6:prob=alexT6(lvl,d);break;
+        case 7:prob=alexT7(lvl,d);break;case 8:prob=alexT8(lvl,d);break;case 9:prob=alexT9(lvl,d);break;
+        case 10:prob=alexT10(lvl,d);break;default:prob=alexT1(lvl,d);
       }
     }else{
       switch(tid){
-        case 1:return estT1(lvl,d);case 2:return estT2(lvl,d);case 3:return estT3(lvl,d);
-        case 4:return estT4(lvl,d);case 5:return estT5(lvl,d);case 6:return estT6(lvl,d);
-        case 7:return estT7(lvl,d);case 8:return estT8(lvl,d);case 9:return estT9(lvl,d);
-        case 10:return estT10(lvl,d);default:return estT1(lvl,d);
+        case 1:prob=estT1(lvl,d);break;case 2:prob=estT2(lvl,d);break;case 3:prob=estT3(lvl,d);break;
+        case 4:prob=estT4(lvl,d);break;case 5:prob=estT5(lvl,d);break;case 6:prob=estT6(lvl,d);break;
+        case 7:prob=estT7(lvl,d);break;case 8:prob=estT8(lvl,d);break;case 9:prob=estT9(lvl,d);break;
+        case 10:prob=estT10(lvl,d);break;default:prob=estT1(lvl,d);
       }
     }
+    if(prob){
+      prob.answer=r3(prob.answer);
+      if(typeof prob.answer==='string'&&/\.\d{4,}/.test(prob.answer))
+        prob.answer=String(parseFloat(parseFloat(prob.answer).toFixed(3)));
+    }
+    return prob||{display:'Try again',answer:'0',hint:'0'};
   }catch(e){return{display:'Try again',answer:'0',hint:'0'};}
 }
 
@@ -2073,6 +2081,15 @@ function showParentReview(profile,sessionId){
   if(!session)return;
   document.getElementById('pr-title').textContent=session.topicName;
   document.getElementById('pr-chip').textContent=(profile==='alexander'?'Alexander':'Estelle')+' · L.'+session.level;
+  // Build session selector for same topic
+  const sameTopic=pending.filter(s=>s.tid===session.tid).sort((a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level));
+  const selHtml=sameTopic.length>1?`<div style="padding:10px 12px 4px;background:#F4F1EC;border-bottom:1px solid #EDE9E0"><div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Sessions for ${session.topicName}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${sameTopic.map(s=>`<button onclick="showParentReview('${profile}',${s.id})" style="padding:5px 12px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid ${s.id===sessionId?'#1E3A8A':'#EDE9E0'};background:${s.id===sessionId?'#1E3A8A':'#fff'};color:${s.id===sessionId?'#fff':'#78716C'}">Level ${s.level}</button>`).join('')}</div></div>`:''
+  ;
+  const body=document.getElementById('pr-body');
+  body.innerHTML='';
+  const sel=document.createElement('div');
+  sel.innerHTML=selHtml;
+  if(selHtml)body.appendChild(sel.firstChild);
   renderReview(session,profile);
   showScreen('screen-parent-review');
 }
@@ -2149,8 +2166,9 @@ function renderReview(session,profile){
     </div>`;
   });
 
-  html+=`<div style="height:40px"></div>`;
-  body.innerHTML=html;
+  const frag=document.createElement('div');
+  frag.innerHTML=html;
+  while(frag.firstChild)body.appendChild(frag.firstChild);
 }
 
 function markQ(profile,sessionId,qIdx,correct){
