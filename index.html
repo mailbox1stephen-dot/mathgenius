@@ -690,7 +690,7 @@ function saveHistory(p,tid,level,score,total){
 // ════════════════════════════════════════════
 // PROBLEM GENERATORS — all topics, gradual difficulty
 // ════════════════════════════════════════════
-const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const ri=(a,b)=>{a=Math.ceil(a);b=Math.floor(b);return Math.floor(Math.random()*(b-a+1))+a;};
 const scl=(mn,mx,d)=>mn+Math.floor(d/9*(mx-mn)); // scale value by difficulty 0-9
 function gcd(a,b){return b?gcd(b,a%b):a;}
 
@@ -1911,7 +1911,7 @@ function buildOverviewTab(){
   // Pending
   if(allPend.length){
     html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Pending (${allPend.length})</div>`;
-    allPend.slice(0,3).forEach(s=>{
+    allPend.forEach(s=>{
       const color=s.profile==='alexander'?'#3B82F6':'#8B5CF6';
       const init=getIcon(s.profile);
       const name=s.profile==='alexander'?'Alexander':'Estelle';
@@ -2081,15 +2081,22 @@ function showParentReview(profile,sessionId){
   if(!session)return;
   document.getElementById('pr-title').textContent=session.topicName;
   document.getElementById('pr-chip').textContent=(profile==='alexander'?'Alexander':'Estelle')+' · L.'+session.level;
-  // Build session selector for same topic
-  const sameTopic=pending.filter(s=>s.tid===session.tid).sort((a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level));
-  const selHtml=sameTopic.length>1?`<div style="padding:10px 12px 4px;background:#F4F1EC;border-bottom:1px solid #EDE9E0"><div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Sessions for ${session.topicName}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${sameTopic.map(s=>`<button onclick="showParentReview('${profile}',${s.id})" style="padding:5px 12px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;border:1.5px solid ${s.id===sessionId?'#1E3A8A':'#EDE9E0'};background:${s.id===sessionId?'#1E3A8A':'#fff'};color:${s.id===sessionId?'#fff':'#78716C'}">Level ${s.level}</button>`).join('')}</div></div>`:''
-  ;
   const body=document.getElementById('pr-body');
   body.innerHTML='';
-  const sel=document.createElement('div');
-  sel.innerHTML=selHtml;
-  if(selHtml)body.appendChild(sel.firstChild);
+  // Level selector — all pending sessions for same topic
+  const sameTopic=pending.filter(s=>s.tid===session.tid).sort((a,b)=>LEVELS.indexOf(a.level)-LEVELS.indexOf(b.level));
+  if(sameTopic.length>0){
+    const sel=document.createElement('div');
+    sel.style.cssText='padding:10px 12px 9px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:11px;margin-bottom:10px';
+    const isFn=s=>s.questions.every(q=>q.parentMark!==null);
+    const scFn=s=>s.questions.filter(q=>q.parentMark===true).length+'/'+s.questions.length;
+    sel.innerHTML='<div style="font-size:9px;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">'+session.topicName+' — tap level to review</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+sameTopic.map(s=>{
+        const done=isFn(s);const active=s.id===sessionId;
+        return `<button onclick="showParentReview('${profile}',${s.id})" style="padding:7px 16px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;border:1.5px solid ${active?'#1E3A8A':done?'#A7F3D0':'#BFDBFE'};background:${active?'#1E3A8A':done?'#D1FAE5':'#fff'};color:${active?'#fff':done?'#065F46':'#1D4ED8'}">Level ${s.level}${done?' '+scFn(s):''}</button>`;
+      }).join('')+'</div>';
+    body.appendChild(sel);
+  }
   renderReview(session,profile);
   showScreen('screen-parent-review');
 }
@@ -2177,8 +2184,9 @@ function markQ(profile,sessionId,qIdx,correct){
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   session.questions[qIdx].parentMark=correct;
-  localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
-  renderReview(session,profile);
+  localStorage.setItem(key,JSON.stringify(pending));
+  cloudSet(key,pending);
+  showParentReview(profile,sessionId);
 }
 
 async function aiCheckOne(profile,sessionId,qIdx){
@@ -2366,8 +2374,14 @@ async function _doSend(){
   };
   const key='md_pending_'+S.profile;
   const pending=JSON.parse(localStorage.getItem(key)||'[]');
-  pending.unshift(session);
-  if(pending.length>20)pending.pop();
+  // Replace if same topic+level already pending — never duplicate
+  const existIdx=pending.findIndex(p=>p.tid===session.tid&&p.level===session.level);
+  if(existIdx>=0){
+    pending.splice(existIdx,1,session);
+  }else{
+    pending.unshift(session);
+    if(pending.length>20)pending.pop();
+  }
   localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
   clearAutoSave();
   if(S.sess&&S.sess.usingLocked){
@@ -2541,16 +2555,22 @@ function getLocked(profile){
   return raw?JSON.parse(raw):null;
 }
 
-function showSessionBuilder(profile){
+function showSessionBuilder(profile,overrideTid){
   SB.profile=profile;SB.editingIdx=null;
   const prog=initProgress(profile);
-  const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
-  if(!cur){showToast('All topics complete!');return;}
-  SB.tid=parseInt(cur[0].replace('t',''));
-  SB.level=cur[1].level||'A';
   const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
-  const topic=topics.find(t=>t.id===SB.tid);
-  SB.topicName=topic?topic.name:'Topic '+SB.tid;
+  // Use override topic if provided, otherwise find current active
+  let tid=overrideTid;
+  if(!tid){
+    const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
+    tid=cur?parseInt(cur[0].replace('t','')):1;
+  }
+  const tp=prog['t'+tid];
+  const topic=topics.find(t=>t.id===tid);
+  if(!topic)return;
+  SB.tid=tid;
+  SB.level=tp.level||'A';
+  SB.topicName=topic.name;
   SB.questions=genSession(profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
   document.getElementById('sb-title').textContent='Session Builder';
   document.getElementById('sb-chip').textContent=profile==='alexander'?'Alexander':'Estelle';
@@ -2561,7 +2581,24 @@ function showSessionBuilder(profile){
 function renderSB(){
   const body=document.getElementById('sb-body');
   const locked=getLocked(SB.profile);
+  const prog=initProgress(SB.profile);
+  const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
   let html='';
+
+  // Topic selector dropdown
+  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:10px">`;
+  html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Select topic</div>`;
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:5px">`;
+  topics.forEach(t=>{
+    const tp=prog['t'+t.id];
+    const isLocked=tp.locked;
+    const active=t.id===SB.tid;
+    if(!isLocked){
+      html+=`<button onclick="showSessionBuilder('${SB.profile}',${t.id})" style="padding:5px 11px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;cursor:pointer;border:1.5px solid ${active?'#1E3A8A':'#EDE9E0'};background:${active?'#1E3A8A':'#F5F3EE'};color:${active?'#fff':'#78716C'};-webkit-tap-highlight-color:transparent">T${t.id}: ${t.name.split(' ').slice(0,2).join(' ')}</button>`;
+    }
+  });
+  html+=`</div></div>`;
+
   if(locked&&locked.tid===SB.tid&&locked.level===SB.level){
     html+=`<div class="sb-locked-banner">🔒 Session locked — waiting for ${SB.profile==='alexander'?'Alexander':'Estelle'}<button onclick="clearLocked('${SB.profile}')" style="margin-left:auto;background:transparent;border:1.5px solid #A7F3D0;border-radius:8px;padding:3px 10px;font-size:10px;font-weight:800;color:#065F46;cursor:pointer;font-family:'Nunito',sans-serif">Clear</button></div>`;
   }
