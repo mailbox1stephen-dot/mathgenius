@@ -1069,7 +1069,7 @@ function saveKey(){
   }
   err.textContent='';
   S.apiKey=k;
-  localStorage.setItem('md_apikey',k);
+  saveCred('md_apikey',k);
   cloudSet('md_apikey',k); // sync API key to cloud too
   showScreen('screen-profile');
   refreshProfileTags();
@@ -1082,8 +1082,8 @@ async function restoreFromCloud(){
   const err=document.getElementById('api-err');
   if(!url||!key){err.textContent='Enter both Supabase URL and key';return;}
   err.textContent='☁ Restoring…';
-  localStorage.setItem('md_supa_url',url);
-  localStorage.setItem('md_supa_key',key);
+  saveCred('md_supa_url',url);
+  saveCred('md_supa_key',key);
   if(apiKey){S.apiKey=apiKey;localStorage.setItem('md_apikey',apiKey);}
   try{
     await pullFromCloud();
@@ -2449,7 +2449,31 @@ async function _doSend(){
 // ════════════════════════════════════════════
 // CLOUD SYNC — Supabase
 // ════════════════════════════════════════════
-function getSupaCfg(){return{url:localStorage.getItem('md_supa_url')||'',key:localStorage.getItem('md_supa_key')||''};}
+// ════════════════════════════════════════════
+// PERSISTENT CREDENTIAL STORAGE (cookie + localStorage)
+// Cookies survive Safari ITP and app updates — localStorage does not
+// ════════════════════════════════════════════
+function saveCred(key,val){
+  try{
+    const d=new Date();d.setFullYear(d.getFullYear()+1);
+    document.cookie=key+'='+encodeURIComponent(val)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';
+    localStorage.setItem(key,val);
+  }catch(e){}
+}
+function readCred(key){
+  try{
+    const ls=localStorage.getItem(key);if(ls)return ls;
+    const match=document.cookie.match('(^|;)\\s*'+key+'\\s*=\\s*([^;]+)');
+    const val=match?decodeURIComponent(match[2]):null;
+    if(val)localStorage.setItem(key,val);// restore to localStorage
+    return val;
+  }catch(e){return localStorage.getItem(key);}
+}
+function clearCred(key){
+  localStorage.removeItem(key);
+  document.cookie=key+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+}
+function getSupaCfg(){return{url:readCred('md_supa_url')||'',key:readCred('md_supa_key')||''};}
 function isCloudEnabled(){const c=getSupaCfg();return !!(c.url&&c.key);}
 
 async function supaFetch(path,method='GET',body=null){
@@ -2610,24 +2634,21 @@ async function saveCloudConfig(){
   const url=document.getElementById('cs-url-input').value.trim().replace(/\/$/,'');
   const key=document.getElementById('cs-key-input').value.trim();
   const status=document.getElementById('cs-status');
-  status.style.display='block';
-  status.className='cs-status';
+  status.style.display='block';status.className='cs-status';
   status.textContent='Testing connection...';
   if(!url||!key){status.textContent='Please enter both URL and key';status.classList.add('cs-err');return;}
   if(!url.includes('supabase.co')){status.textContent='URL should contain supabase.co';status.classList.add('cs-err');return;}
-  // Save temporarily and test
-  localStorage.setItem('md_supa_url',url);
-  localStorage.setItem('md_supa_key',key);
-  // Test with a simple read
+  saveCred('md_supa_url',url);
+  saveCred('md_supa_key',key);
   const test=await supaFetch('mathdrill_data?limit=1');
   if(test===null){
     status.textContent='Connection failed — check URL and key';
-    status.classList.add('cs-err');
-    return;
+    status.classList.add('cs-err');return;
   }
-  status.textContent='Connected! Syncing data...';
-  status.classList.add('cs-ok');
-  // Update cloud button color
+  // Store credentials IN Supabase so they self-restore if localStorage is cleared
+  await supaFetch('mathdrill_data','POST',{key:'md_supa_url',value:url,updated_at:new Date().toISOString()});
+  await supaFetch('mathdrill_data','POST',{key:'md_supa_key',value:key,updated_at:new Date().toISOString()});
+  status.textContent='Connected! Syncing data...';status.classList.add('cs-ok');
   const btn=document.getElementById('cloud-btn');
   if(btn)btn.style.color='#10B981';
   document.getElementById('cs-chip').textContent='On';
@@ -2635,15 +2656,14 @@ async function saveCloudConfig(){
   document.getElementById('cs-chip').style.color='#065F46';
   document.getElementById('cs-connected-banner').style.display='flex';
   document.getElementById('cs-project-name').textContent=url.replace('https://','').replace('.supabase.co','');
-  // Auto-push all existing data
   await pushToCloud();
   status.textContent='Connected and synced ✓';
 }
 
 function removeCloudConfig(){
   if(!confirm('Disconnect cloud sync? Local data is kept.'))return;
-  localStorage.removeItem('md_supa_url');
-  localStorage.removeItem('md_supa_key');
+  clearCred('md_supa_url');
+  clearCred('md_supa_key');
   showToast('Cloud sync disconnected');
   const btn=document.getElementById('cloud-btn');
   if(btn)btn.style.color='';
@@ -3052,27 +3072,57 @@ window.addEventListener('load',async ()=>{
     if(document.getElementById('screen-session').classList.contains('active')) resizeCanvas();
   });
   loadIcons();
-  const k=localStorage.getItem('md_apikey');
+  const k=readCred('md_apikey');
   if(k){
     S.apiKey=k;
-    // Pull from cloud FIRST before showing anything — ensures latest data on all devices
     if(isCloudEnabled()){
-      try{await pullFromCloud();}catch(e){console.warn('Startup cloud pull failed:',e);}
+      try{
+        await pullFromCloud();
+        // Show clear auto-connect confirmation
+        const btn=document.getElementById('cloud-btn');
+        if(btn){btn.style.color='#10B981';btn.title='Cloud connected ✓';}
+        showToast('☁ Cloud connected — data up to date');
+      }catch(e){
+        console.warn('Startup cloud pull failed:',e);
+        showToast('⚠️ Cloud sync failed — working offline');
+      }
     }
     showScreen('screen-profile');
     refreshProfileTags();
-    const btn=document.getElementById('cloud-btn');
-    if(isCloudEnabled()&&btn)btn.style.color='#10B981';
-    // Offer to resume any interrupted session
     setTimeout(()=>{ checkAutoSave(); },300);
+    // Auto-pull every 60s
+    if(isCloudEnabled()){
+      setInterval(async()=>{
+        const inSession=document.getElementById('screen-session')?.classList.contains('active');
+        if(inSession)return;
+        try{await pullFromCloud();refreshProfileTags();}catch(e){}
+      },60000);
+    }
+    // Pull on tab focus
+    document.addEventListener('visibilitychange',async()=>{
+      if(document.visibilityState==='visible'&&isCloudEnabled()){
+        const inSession=document.getElementById('screen-session')?.classList.contains('active');
+        if(inSession)return;
+        try{
+          await pullFromCloud();refreshProfileTags();
+          const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
+          if(dashActive)showParentDash();
+        }catch(e){}
+      }
+    });
   } else {
+    // No API key — but check if we can recover cloud credentials first
+    // (Safari may have cleared localStorage but Supabase still has data)
     showScreen('screen-api');
     const saved=localStorage.getItem('md_apikey');
     if(saved){const inp=document.getElementById('api-input');if(inp)inp.value=saved;}
-    // Pre-fill cloud fields if already set
     const su=localStorage.getItem('md_supa_url');const sk=localStorage.getItem('md_supa_key');
     if(su){const i=document.getElementById('restore-url');if(i)i.value=su;}
     if(sk){const i=document.getElementById('restore-key');if(i)i.value=sk;}
+    // If cloud credentials exist in localStorage, show a hint
+    if(su&&sk){
+      setTimeout(()=>showToast('Tap "Restore from cloud" to recover all your data'),800);
+    }
   }
 });
 </script>
