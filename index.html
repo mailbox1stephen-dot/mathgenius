@@ -230,6 +230,35 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .sb-lock-btn{width:100%;padding:13px;border:none;border-radius:12px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer;margin-bottom:16px}
 .sb-locked-banner{background:#D1FAE5;border:1.5px solid #A7F3D0;border-radius:11px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:#065F46;font-weight:800;display:flex;align-items:center;gap:8px}
 
+.icon-opt{aspect-ratio:1;border-radius:9px;background:#F4F1EC;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s}
+.icon-opt:active{transform:scale(.88)}
+.icon-opt.selected{border-color:#F59E0B;background:#FFFBEB}
+
+/* ── PAUSE OVERLAY ── */
+#pause-overlay{position:fixed;inset:0;background:rgba(28,25,23,.92);z-index:8888;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#pause-overlay.active{display:flex}
+.pause-icon{font-size:56px;line-height:1}
+.pause-title{font-size:22px;font-weight:900;color:#fff;font-family:'Nunito',sans-serif}
+.pause-sub{font-size:13px;font-weight:700;color:rgba(255,255,255,.6);font-family:'Nunito',sans-serif}
+.pause-resume-btn{margin-top:8px;padding:14px 40px;border:none;border-radius:12px;background:#FCD34D;color:#1C1917;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;cursor:pointer}
+
+/* ── CONFIRM MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal-box{background:#fff;border-radius:16px;padding:24px;max-width:300px;width:100%;text-align:center}
+.modal-msg{font-size:14px;font-weight:700;color:#1C1917;margin-bottom:20px;line-height:1.6}
+.modal-btns{display:flex;gap:10px}
+.modal-cancel{flex:1;padding:12px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;color:#78716C}
+.modal-ok{flex:1;padding:12px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;cursor:pointer;color:#fff;background:#1E3A8A}
+.modal-ok.danger{background:#DC2626}
+/* ── RESET TYPED CONFIRM ── */
+.modal-typed-input{width:100%;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:10px 12px;border:1.5px solid #EDE9E0;border-radius:9px;margin:10px 0;outline:none;text-align:center;letter-spacing:.1em}
+/* ── SESSION TIMER ── */
+#session-timer{font-size:11px;font-weight:800;color:rgba(255,255,255,.65);flex-shrink:0}
+/* ── CORRECTION BANNER ── */
+.correction-banner{background:#FEF3C7;border-bottom:1.5px solid #FDE68A;padding:6px 14px;font-size:11px;font-weight:800;color:#92400E;flex-shrink:0;display:flex;align-items:center;gap:6px}
+/* ── CHILD NOTIFICATION ── */
+.notif-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:flex;align-items:center;justify-content:center;padding:24px}
+.notif-box{background:#fff;border-radius:16px;padding:24px;max-width:300px;width:100%;text-align:center}
 /* ── SYNC INDICATOR ── */
 #sync-indicator{position:fixed;bottom:58px;right:12px;background:#1E3A8A;color:#fff;font-size:10px;font-weight:800;padding:5px 10px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;font-family:'Nunito',sans-serif}
 #sync-indicator.show{opacity:1}
@@ -282,19 +311,67 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="ps-sub">Who's practicing today?</div>
   <div class="profiles">
     <div class="p-card blue" onclick="selectProfile('alexander')">
-      <div class="p-av">A</div>
+      <div class="p-av" id="p-av-alexander" style="font-size:38px;background:#DBEAFE">🏌️</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
     </div>
     <div class="p-card purple" onclick="selectProfile('estelle')">
-      <div class="p-av">E</div>
+      <div class="p-av" id="p-av-estelle" style="font-size:38px;background:#EDE9FE">🦄</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
       <div class="p-tag" id="est-tag">Topic 1 · Level A</div>
     </div>
   </div>
-  <button onclick="showParentPin()" style="margin-top:24px;background:transparent;border:1.5px solid #DDD9CE;border-radius:10px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#A8A29E;cursor:pointer">🔒 Parent Login</button>
+
+  <!-- Icon change links -->
+  <div style="display:flex;gap:12px;margin-top:10px;width:100%">
+    <div style="flex:1;text-align:center;font-size:11px;font-weight:800;color:#3B82F6;cursor:pointer" onclick="showIconPicker('alexander',event)">✏️ Change</div>
+    <div style="flex:1;text-align:center;font-size:11px;font-weight:800;color:#8B5CF6;cursor:pointer" onclick="showIconPicker('estelle',event)">✏️ Change</div>
+  </div>
+
+  <!-- Icon picker panels -->
+  <div id="icon-picker-alexander" style="display:none;background:#fff;border-radius:14px;border:1.5px solid #EDE9E0;padding:12px;margin-top:10px;width:100%">
+    <div style="font-size:10px;font-weight:800;color:#3B82F6;margin-bottom:8px">Alexander's icons</div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Warriors & Heroes</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('alexander','🥷')">🥷</div><div class="icon-opt" onclick="setIcon('alexander','🦸')">🦸</div><div class="icon-opt" onclick="setIcon('alexander','🧙')">🧙</div><div class="icon-opt" onclick="setIcon('alexander','⚔️')">⚔️</div><div class="icon-opt" onclick="setIcon('alexander','🛡️')">🛡️</div><div class="icon-opt" onclick="setIcon('alexander','🏹')">🏹</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Cool Animals</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('alexander','🦁')">🦁</div><div class="icon-opt" onclick="setIcon('alexander','🐺')">🐺</div><div class="icon-opt" onclick="setIcon('alexander','🦊')">🦊</div><div class="icon-opt" onclick="setIcon('alexander','🐯')">🐯</div><div class="icon-opt" onclick="setIcon('alexander','🦅')">🦅</div><div class="icon-opt" onclick="setIcon('alexander','🦈')">🦈</div><div class="icon-opt" onclick="setIcon('alexander','🐉')">🐉</div><div class="icon-opt" onclick="setIcon('alexander','🦖')">🦖</div><div class="icon-opt" onclick="setIcon('alexander','🦕')">🦕</div><div class="icon-opt" onclick="setIcon('alexander','🐊')">🐊</div><div class="icon-opt" onclick="setIcon('alexander','🦏')">🦏</div><div class="icon-opt" onclick="setIcon('alexander','🐻')">🐻</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Sports & Games</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('alexander','⚽')">⚽</div><div class="icon-opt" onclick="setIcon('alexander','🏀')">🏀</div><div class="icon-opt" onclick="setIcon('alexander','🏈')">🏈</div><div class="icon-opt" onclick="setIcon('alexander','🎮')">🎮</div><div class="icon-opt" onclick="setIcon('alexander','🎯')">🎯</div><div class="icon-opt" onclick="setIcon('alexander','🥊')">🥊</div><div class="icon-opt" onclick="setIcon('alexander','🏌️')">🏌️</div><div class="icon-opt" onclick="setIcon('alexander','🏋️')">🏋️</div><div class="icon-opt" onclick="setIcon('alexander','🤸')">🤸</div><div class="icon-opt" onclick="setIcon('alexander','🏄')">🏄</div><div class="icon-opt" onclick="setIcon('alexander','🚴')">🚴</div><div class="icon-opt" onclick="setIcon('alexander','⛷️')">⛷️</div><div class="icon-opt" onclick="setIcon('alexander','🎱')">🎱</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Adventure & Science</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
+      <div class="icon-opt" onclick="setIcon('alexander','🚀')">🚀</div><div class="icon-opt" onclick="setIcon('alexander','🛸')">🛸</div><div class="icon-opt" onclick="setIcon('alexander','🤖')">🤖</div><div class="icon-opt" onclick="setIcon('alexander','👾')">👾</div><div class="icon-opt" onclick="setIcon('alexander','⚡')">⚡</div><div class="icon-opt" onclick="setIcon('alexander','🔬')">🔬</div><div class="icon-opt" onclick="setIcon('alexander','🧲')">🧲</div><div class="icon-opt" onclick="setIcon('alexander','💥')">💥</div><div class="icon-opt" onclick="setIcon('alexander','🌋')">🌋</div><div class="icon-opt" onclick="setIcon('alexander','🏔️')">🏔️</div><div class="icon-opt" onclick="setIcon('alexander','🎸')">🎸</div><div class="icon-opt" onclick="setIcon('alexander','🏆')">🏆</div>
+    </div>
+  </div>
+
+  <div id="icon-picker-estelle" style="display:none;background:#fff;border-radius:14px;border:1.5px solid #EDE9E0;padding:12px;margin-top:10px;width:100%">
+    <div style="font-size:10px;font-weight:800;color:#8B5CF6;margin-bottom:8px">Estelle's icons</div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Magical & Fantasy</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('estelle','🦄')">🦄</div><div class="icon-opt" onclick="setIcon('estelle','🧚')">🧚</div><div class="icon-opt" onclick="setIcon('estelle','🧜')">🧜</div><div class="icon-opt" onclick="setIcon('estelle','👸')">👸</div><div class="icon-opt" onclick="setIcon('estelle','🌙')">🌙</div><div class="icon-opt" onclick="setIcon('estelle','⭐')">⭐</div><div class="icon-opt" onclick="setIcon('estelle','🌟')">🌟</div><div class="icon-opt" onclick="setIcon('estelle','✨')">✨</div><div class="icon-opt" onclick="setIcon('estelle','💫')">💫</div><div class="icon-opt" onclick="setIcon('estelle','🔮')">🔮</div><div class="icon-opt" onclick="setIcon('estelle','🪄')">🪄</div><div class="icon-opt" onclick="setIcon('estelle','💎')">💎</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Cute Animals</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('estelle','🐱')">🐱</div><div class="icon-opt" onclick="setIcon('estelle','🐼')">🐼</div><div class="icon-opt" onclick="setIcon('estelle','🦋')">🦋</div><div class="icon-opt" onclick="setIcon('estelle','🐰')">🐰</div><div class="icon-opt" onclick="setIcon('estelle','🐨')">🐨</div><div class="icon-opt" onclick="setIcon('estelle','🦒')">🦒</div><div class="icon-opt" onclick="setIcon('estelle','🦩')">🦩</div><div class="icon-opt" onclick="setIcon('estelle','🦚')">🦚</div><div class="icon-opt" onclick="setIcon('estelle','🦜')">🦜</div><div class="icon-opt" onclick="setIcon('estelle','🐬')">🐬</div><div class="icon-opt" onclick="setIcon('estelle','🦭')">🦭</div><div class="icon-opt" onclick="setIcon('estelle','🦊')">🦊</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Nature & Flowers</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px">
+      <div class="icon-opt" onclick="setIcon('estelle','🌸')">🌸</div><div class="icon-opt" onclick="setIcon('estelle','🌺')">🌺</div><div class="icon-opt" onclick="setIcon('estelle','🌻')">🌻</div><div class="icon-opt" onclick="setIcon('estelle','🌷')">🌷</div><div class="icon-opt" onclick="setIcon('estelle','🌈')">🌈</div><div class="icon-opt" onclick="setIcon('estelle','🍀')">🍀</div><div class="icon-opt" onclick="setIcon('estelle','🍓')">🍓</div><div class="icon-opt" onclick="setIcon('estelle','🍭')">🍭</div><div class="icon-opt" onclick="setIcon('estelle','🎀')">🎀</div><div class="icon-opt" onclick="setIcon('estelle','💐')">💐</div><div class="icon-opt" onclick="setIcon('estelle','🌊')">🌊</div><div class="icon-opt" onclick="setIcon('estelle','🏖️')">🏖️</div>
+    </div>
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">Sports & Talents</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
+      <div class="icon-opt" onclick="setIcon('estelle','🤸')">🤸</div><div class="icon-opt" onclick="setIcon('estelle','🩰')">🩰</div><div class="icon-opt" onclick="setIcon('estelle','🎨')">🎨</div><div class="icon-opt" onclick="setIcon('estelle','🎭')">🎭</div><div class="icon-opt" onclick="setIcon('estelle','🎵')">🎵</div><div class="icon-opt" onclick="setIcon('estelle','🎹')">🎹</div><div class="icon-opt" onclick="setIcon('estelle','🏊')">🏊</div><div class="icon-opt" onclick="setIcon('estelle','🚴')">🚴</div><div class="icon-opt" onclick="setIcon('estelle','⛷️')">⛷️</div><div class="icon-opt" onclick="setIcon('estelle','🏆')">🏆</div><div class="icon-opt" onclick="setIcon('estelle','🌍')">🌍</div><div class="icon-opt" onclick="setIcon('estelle','📚')">📚</div>
+    </div>
+  </div>
+
+  <button onclick="showParentPin()" style="margin-top:16px;background:transparent;border:1.5px solid #DDD9CE;border-radius:10px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#A8A29E;cursor:pointer">🔒 Parent Login</button>
 </div>
 
 <!-- ── TOPIC MAP ── -->
@@ -318,6 +395,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div class="hdr-title" id="sess-hdr-title">Column Addition</div>
     <div class="hdr-chip" id="sess-level-chip">Level A</div>
   </div>
+
+  <div class="correction-banner" id="correction-banner" style="display:none">🔧 Fix your mistakes from last session first!</div>
 
   <div class="overview-strip" id="overview-strip"></div>
 
@@ -354,6 +433,8 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
   <div class="send-bar">
     <div class="send-status" id="send-status">Answer all 10 to send</div>
+    <button id="timer-pause-btn" onclick="togglePause()" style="background:transparent;border:none;font-size:14px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0" title="Pause timer">⏸</button>
+    <span id="session-timer">00:00</span>
     <button class="send-btn" id="send-btn" disabled onclick="sendSession()">Send ✉️</button>
   </div>
 
@@ -455,6 +536,17 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   </div>
 </div>
 
+<!-- ── SESSION FEEDBACK (legacy) ── -->
+<div class="screen" id="screen-feedback">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:32px 24px;background:#F4F1EC;gap:16px">
+    <div id="fb-ring" style="width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;background:#D1FAE5;color:#059669"></div>
+    <div id="fb-title" style="font-size:22px;font-weight:900;color:#1C1917"></div>
+    <div id="fb-eq" style="font-size:18px;font-weight:900;font-family:'Courier New',monospace;color:#78716C"></div>
+    <div id="fb-msg" style="font-size:13px;font-weight:700;color:#78716C;text-align:center;line-height:1.5"></div>
+    <button id="fb-btn" onclick="nextProblem()" style="margin-top:8px;padding:14px 32px;border-radius:12px;border:none;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer"></button>
+  </div>
+</div>
+
 <!-- ── SESSION BUILDER ── -->
 <div class="screen" id="screen-session-builder">
   <div class="hdr">
@@ -463,6 +555,13 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
     <div class="hdr-chip" id="sb-chip">Alexander</div>
   </div>
   <div class="sb-body" id="sb-body"></div>
+</div>
+
+<div id="pause-overlay">
+  <div class="pause-icon">⏸</div>
+  <div class="pause-title">Session Paused</div>
+  <div class="pause-sub">Taking a break — come back soon!</div>
+  <button class="pause-resume-btn" onclick="togglePause()">▶ Resume</button>
 </div>
 
 <div id="sync-indicator">Synced ☁</div>
@@ -551,10 +650,10 @@ function bumpStreak(p){
   cloudSet('md_lastday_'+p,today);
   return s;
 }
-function saveHistory(p,tid,level,score){
+function saveHistory(p,tid,level,score,total){
   const key='md_hist_'+p;
   const h=JSON.parse(localStorage.getItem(key)||'[]');
-  h.unshift({date:new Date().toISOString(),tid,level,score,total:N_PROBLEMS});
+  h.unshift({date:new Date().toISOString(),tid,level,score,total:total||N_PROBLEMS});
   if(h.length>60)h.pop();
   localStorage.setItem(key,JSON.stringify(h));
   cloudSet(key,h);
@@ -949,6 +1048,7 @@ function selectProfile(p){
   S.profile=p;
   buildTopicsScreen();
   showScreen('screen-topics');
+  setTimeout(()=>checkChildNotification(p),400);
 }
 
 // ════════════════════════════════════════════
@@ -960,6 +1060,7 @@ function buildTopicsScreen(){
   const d=initProgress(p);
   const streak=getStreak(p);
   const colorClass=p==='alexander'?'fill-blue':'fill-purple';
+  const locked_sess=getLocked(p);
 
   document.getElementById('topics-title').textContent=(p==='alexander'?'Alexander':'Estelle')+"'s Topics";
   document.getElementById('streak-chip').textContent=`🔥 ${streak} day${streak!==1?'s':''}`;
@@ -972,6 +1073,9 @@ function buildTopicsScreen(){
   fill.style.width=Math.max(pct,2)+'%';
   fill.className='tm-prog-fill '+colorClass;
 
+  // Check if final test available
+  const allTopicsDone=topics.every(t=>d['t'+t.id].done);
+
   const grid=document.getElementById('topic-grid');
   grid.innerHTML='';
   topics.forEach(t=>{
@@ -979,25 +1083,40 @@ function buildTopicsScreen(){
     const card=document.createElement('div');
     const isLocked=tp.locked;
     const isDone=tp.done;
-    const isCur=!isLocked&&!isDone;
-    card.className='tc '+(isLocked?'locked':isDone?'done-t avail':'cur avail');
+    const isTopicTest=!isDone&&tp.topicTestNeeded;
+    const hasLockedSess=locked_sess&&locked_sess.tid===t.id;
+    card.className='tc '+(isLocked?'locked':isDone?'done-t avail':isTopicTest?'cur avail':'cur avail');
     const lvlIdx=LEVELS.indexOf(tp.level||'A');
     const lvlPct=isDone?100:Math.round(lvlIdx/LEVELS.length*100);
     const barColor=p==='alexander'?'#3B82F6':'#8B5CF6';
     let badge=isLocked?`<div class="tc-b b-lock">🔒 Locked</div>`
       :isDone?`<div class="tc-b b-done">✓ Complete</div>`
+      :isTopicTest?`<div class="tc-b" style="background:#FEF3C7;color:#92400E">⭐ Topic Test!</div>`
+      :hasLockedSess?`<div class="tc-b" style="background:#D1FAE5;color:#047857">📋 Ready</div>`
       :`<div class="tc-b b-cur">▶ Level ${tp.level||'A'} / F</div>`;
-    const progressBar=!isLocked?`<div style="margin-top:7px;background:#F3F2EE;border-radius:99px;height:4px"><div style="width:${lvlPct}%;height:4px;border-radius:99px;background:${isDone?'#10B981':barColor};transition:width .3s"></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:#A8A29E;font-weight:800;margin-top:2px"><span>${isDone?'All done':LEVELS.slice(0,lvlIdx).map(l=>`${l}✓`).join(' ')+' '+LEVELS[lvlIdx]+'▶'}</span><span>${lvlPct}%</span></div>`:'';
+    const progressBar=!isLocked&&!isTopicTest?`<div style="margin-top:7px;background:#F3F2EE;border-radius:99px;height:4px"><div style="width:${lvlPct}%;height:4px;border-radius:99px;background:${isDone?'#10B981':barColor};transition:width .3s"></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:#A8A29E;font-weight:800;margin-top:2px"><span>${isDone?'All done':LEVELS.slice(0,lvlIdx).map(l=>`${l}✓`).join(' ')+' '+LEVELS[lvlIdx]+'▶'}</span><span>${lvlPct}%</span></div>`:'';
     card.innerHTML=`<div class="tc-n">Topic ${t.id}</div>
 <div class="tc-nm${isLocked?' g':''}">${t.name}</div>${badge}${progressBar}`;
     if(!isLocked){
-      card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));
+      if(isTopicTest){card.addEventListener('click',()=>startTopicTest(t.id));}
+      else{card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
     }
     grid.appendChild(card);
   });
+
+  // Final test card
+  if(allTopicsDone){
+    const fc=document.createElement('div');
+    fc.className='tc cur avail';
+    fc.style.gridColumn='1/-1';
+    fc.innerHTML=`<div class="tc-n">Final</div><div class="tc-nm">🏆 Final Test</div><div class="tc-b" style="background:#FEF3C7;color:#92400E">20 Questions — All Topics</div>`;
+    fc.addEventListener('click',()=>startFinalTest());
+    grid.appendChild(fc);
+  }
 }
 
 function goToTopics(){
+  stopTimer();
   buildTopicsScreen();
   refreshProfileTags();
   showScreen('screen-topics');
@@ -1011,29 +1130,41 @@ function startSession(tid,level,method){
   const topic=topics.find(t=>t.id===tid);
   // Check for parent-locked session
   const locked=getLocked(S.profile);
-  const problems=(locked&&locked.tid===tid&&locked.level===level)?locked.problems:genSession(S.profile,tid,level);
   const usingLocked=!!(locked&&locked.tid===tid&&locked.level===level);
-  S.sess={tid,level,method,topicName:topic.name,problems,cur:0,snapshots:{},startTime:Date.now(),usingLocked};
-  canvasCache={};
-  eraserMode=false;aEraserMode=false;
+  let problems=usingLocked?locked.problems:genSession(S.profile,tid,level);
+  // Apply corrections (prepend wrong questions from previous session)
+  const corrections=getCorrections(S.profile,tid);
+  let hasCorrections=false;
+  if(corrections.length>0&&!usingLocked){
+    const corrProbs=corrections.slice(0,Math.min(5,corrections.length)).map(c=>({...c,correction:true}));
+    const newProbs=genSession(S.profile,tid,level).slice(0,Math.max(0,N_PROBLEMS-corrProbs.length));
+    problems=[...corrProbs,...newProbs];
+    hasCorrections=true;
+    clearCorrections(S.profile);
+  }
+  S.sess={tid,level,method,topicName:topic.name,type:'normal',problems,cur:0,answered:{},snapshots:{},startTime:Date.now(),usingLocked};
+  canvasCache={};eraserMode=false;aEraserMode=false;
   const wrapEl=document.getElementById('canvas-wrap');
   if(wrapEl){wrapEl.style.borderColor='';wrapEl.style.borderWidth='';}
   const eraseBtn=document.getElementById('erase-btn');
   if(eraseBtn){eraseBtn.style.background='';eraseBtn.style.color='';eraseBtn.style.borderColor='';}
   S.sess.answered={};
+  const nq=problems.length;
   const sendBtn=document.getElementById('send-btn');
   if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='Send ✉️';}
   const sendStatus=document.getElementById('send-status');
-  if(sendStatus)sendStatus.textContent='Answer all 10 to send';
+  if(sendStatus)sendStatus.textContent=`Answer all ${nq} to send`;
   document.getElementById('sess-hdr-title').textContent=topic.name;
   document.getElementById('sess-level-chip').textContent='Level '+level;
   const instr=document.getElementById('instr-strip');instr.style.display='none';
   if(!method){document.getElementById('canvas-hint').innerHTML='Write your answer here ✏️';}
   else{document.getElementById('canvas-hint').innerHTML='Write your column method here ✏️<br><span style="font-size:11px;color:#D4D0C8">Stack the numbers and show carrying</span>';}
+  const corrBanner=document.getElementById('correction-banner');
+  if(corrBanner)corrBanner.style.display=hasCorrections?'flex':'none';
   buildOverview();
   loadProblem(0);
   showScreen('screen-session');
-  setTimeout(()=>{resizeCanvas();clearCanvas();},80);
+  setTimeout(()=>{resizeCanvas();clearCanvas();startTimer();},80);
   if(usingLocked)setTimeout(()=>showToast('📋 Using parent-approved session'),500);
 }
 
@@ -1043,9 +1174,10 @@ function loadProblem(i){
   document.getElementById('btn-prev').disabled=(i===0);
   const nextBtn=document.getElementById('btn-next');
   nextBtn.textContent='›';
-  nextBtn.style.opacity=(i===N_PROBLEMS-1)?'0.25':'';
-  nextBtn.title=(i===N_PROBLEMS-1)?'Last question — use Send below':'';
-  if(i===N_PROBLEMS-1){
+  const NQ2=S.sess?S.sess.problems.length:N_PROBLEMS;
+  nextBtn.style.opacity=(i===NQ2-1)?'0.25':'';
+  nextBtn.title=(i===NQ2-1)?'Last question — use Send below':'';
+  if(i===NQ2-1){
     const st=document.getElementById('send-status');
     if(st&&!Object.keys(S.sess.answered||{}).length)st.textContent='Last question! Write your answer then Send ✉️';
   }
@@ -1054,9 +1186,8 @@ function loadProblem(i){
 function exitSession(){
   const answered=Object.keys(S.sess&&S.sess.answered||{}).length;
   if(answered>0){
-    if(!confirm('Exit session? Your work will not be sent.')) return;
-  }
-  showScreen('screen-topics');
+    showConfirm('Exit session? Your work will not be sent.',()=>{stopTimer();showScreen('screen-topics');});
+  }else{stopTimer();showScreen('screen-topics');}
 }
 
 // ════════════════════════════════════════════
@@ -1326,7 +1457,8 @@ function navigate(dir){
   sess.snapshots[sess.cur]={problem:prob.display,answer:prob.answer};
   const next=sess.cur+dir;
   if(next<0)return;
-  if(next>=N_PROBLEMS)return;
+  const NQ3=S.sess?S.sess.problems.length:N_PROBLEMS;
+  if(next>=NQ3)return;
   sess.cur=next;
   restoreCanvasState(next);
   loadProblem(next);
@@ -1339,7 +1471,8 @@ function buildOverview(){
   strip.innerHTML='';
   const boxes=document.createElement('div');
   boxes.className='ov-boxes';
-  for(let i=0;i<N_PROBLEMS;i++){
+  const NQ=S.sess?S.sess.problems.length:N_PROBLEMS;
+  for(let i=0;i<NQ;i++){
     const box=document.createElement('div');
     box.className='ov-box'+(i===0?' ov-cur':'');
     box.id='ov'+i;
@@ -1387,6 +1520,11 @@ function nextQuestion(){navigate(1);}
 // ════════════════════════════════════════════
 // FEEDBACK
 // ════════════════════════════════════════════
+function markDot(i,correct){
+  const box=document.getElementById('ov'+i);
+  if(box){box.classList.remove('ov-cur','ov-done','ov-ans');box.classList.add(correct?'ov-ans':'ov-done');}
+}
+
 function showFeedback(correct,prob,message){
   const i=S.sess.cur;
   markDot(i,correct);
@@ -1402,7 +1540,8 @@ function showFeedback(correct,prob,message){
   title.textContent=correct?`Well done, ${name}! 🎉`:'Not quite…';
   eq.textContent=`${prob.display} = ${prob.answer}`;
   msg.textContent=message||(correct?'Great work!':'The correct answer is shown above. Keep going!');
-  const isLast=i>=N_PROBLEMS-1;
+  const NQ4=S.sess?S.sess.problems.length:N_PROBLEMS;
+  const isLast=i>=NQ4-1;
   btn.textContent=isLast?'See Results →':'Next Problem →';
   btn.className='fb-btn '+(correct?'ok':'no');
   showScreen('screen-feedback');
@@ -1410,7 +1549,8 @@ function showFeedback(correct,prob,message){
 
 function nextProblem(){
   S.sess.cur++;
-  if(S.sess.cur>=N_PROBLEMS){ showComplete(); return; }
+  const NQ5=S.sess?S.sess.problems.length:N_PROBLEMS;
+  if(S.sess.cur>=NQ5){ showComplete(); return; }
   loadProblem(S.sess.cur);
   showScreen('screen-session');
 }
@@ -1427,7 +1567,8 @@ function showComplete(){
   hist.unshift({
     date:new Date().toISOString(),
     tid:sess.tid, level:sess.level,
-    total:N_PROBLEMS,
+    score:Object.keys(sess.answered||{}).length,
+    total:S.sess?S.sess.problems.length:N_PROBLEMS,
     snapshots:sess.snapshots||[]
   });
   if(hist.length>30)hist.pop();
@@ -1435,7 +1576,8 @@ function showComplete(){
 
   document.getElementById('sc-stars').textContent='🎉';
   document.getElementById('sc-title').textContent='Session Done!';
-  document.getElementById('sc-score').textContent=N_PROBLEMS+' problems';
+  const nqFin=S.sess?S.sess.problems.length:N_PROBLEMS;
+  document.getElementById('sc-score').textContent=nqFin+' problems';
   document.getElementById('sc-sub').textContent=`Great work! 🔥 ${streak} day streak`;
 
   // Check if level should unlock (parent can review and confirm)
@@ -1642,7 +1784,7 @@ function buildOverviewTab(){
     html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Pending (${allPend.length})</div>`;
     allPend.slice(0,3).forEach(s=>{
       const color=s.profile==='alexander'?'#3B82F6':'#8B5CF6';
-      const init=s.profile==='alexander'?'A':'E';
+      const init=getIcon(s.profile);
       const name=s.profile==='alexander'?'Alexander':'Estelle';
       const reviewed=s.questions.filter(q=>q.parentMark!==null).length;
       const squares=s.questions.map(q=>`<span style="width:10px;height:10px;border-radius:2px;background:${q.parentMark===true?'#D1FAE5':q.parentMark===false?'#FEE2E2':'#F3F2EE'};border:0.5px solid ${q.parentMark===true?'#A7F3D0':q.parentMark===false?'#FECACA':'#DDD9CE'};display:inline-block"></span>`).join('');
@@ -1777,7 +1919,7 @@ function unlockNextTopic(profile){
   const prog=initProgress(profile);
   const locked=Object.entries(prog).find(([k,t])=>t.locked);
   if(!locked){showToast('All topics already unlocked');return;}
-  if(!confirm('Unlock '+locked[0].replace('t','Topic ')+' for '+(profile==='alexander'?'Alexander':'Estelle')+'?'))return;
+  showConfirm('Unlock '+locked[0].replace('t','Topic ')+' for '+(profile==='alexander'?'Alexander':'Estelle')+'?',()=>{const prog2=initProgress(profile);prog2[locked[0]].locked=false;prog2[locked[0]].level='A';setProgress(profile,prog2);showToast('Topic unlocked ✓');showParentDash();});return;
   prog[locked[0]].locked=false;prog[locked[0]].level='A';
   setProgress(profile,prog);
   showToast('Topic unlocked ✓');
@@ -1788,7 +1930,7 @@ function resetCurrentLevel(profile){
   const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
   if(!cur){showToast('No active topic found');return;}
   const nm=(profile==='alexander'?TOPICS_A:TOPICS_E).find(t=>t.id===parseInt(cur[0].replace('t',''))).name;
-  if(!confirm('Reset Level '+cur[1].level+' of "'+nm+'"?'))return;
+  showConfirm('Reset Level '+cur[1].level+' of "'+nm+'"?',()=>{const prog2=initProgress(profile);prog2[cur[0]].level='A';setProgress(profile,prog2);showToast('Level reset to A ↩');showParentDash();});return;
   prog[cur[0]].level='A';
   setProgress(profile,prog);
   showToast('Level reset to A ↩');
@@ -1946,26 +2088,29 @@ function clearSession(profile,sessionId){
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   const correct=session.questions.filter(q=>q.parentMark===true).length;
-  const pass=correct/session.questions.length>=0.8;
-  // Update progress
+  const total=session.questions.length;
+  const pass=correct/total>=0.8;
+  saveCorrections(profile,session);
+  saveHistory(profile,session.tid,session.level,correct,session.questions.length);
+  saveChildNotification(profile,correct,total,session.topicName);
   const prog=initProgress(profile);
   const tk='t'+session.tid;
   const li=LEVELS.indexOf(session.level);
-  if(pass){
+  if(session.level==='TEST'){
+    if(pass){prog[tk].done=true;prog[tk].topicTestNeeded=false;const nk='t'+(session.tid+1);if(prog[nk]){prog[nk].locked=false;prog[nk].level='A';}}
+    else{prog[tk].topicTestNeeded=false;prog[tk].level='F';}
+  }else if(session.level==='FINAL'){
+    prog.finalTestDone=pass;
+  }else if(pass){
     if(li<LEVELS.length-1){prog[tk].level=LEVELS[li+1];}
-    else{
-      prog[tk].done=true;
-      const nk='t'+(session.tid+1);
-      if(prog[nk]){prog[nk].locked=false;prog[nk].level='A';}
-    }
+    else{prog[tk].topicTestNeeded=true;}
   }
   setProgress(profile,prog);
-  // Remove session from pending
   const idx=pending.findIndex(s=>s.id===sessionId);
   if(idx>=0)pending.splice(idx,1);
   localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
-  showToast(pass?'✓ Level cleared! Next level unlocked.':'↩ Same level — needs more practice.');
-  showParentDash();
+  const msg=session.level==='TEST'?(pass?'⭐ Topic test passed! Topic complete!':'↩ Topic test failed — more practice needed'):pass?(li===LEVELS.length-1?'⭐ Level F done! Topic test unlocked':'✓ Level cleared!'):'↩ Same level — needs more practice.';
+  showToast(msg);showParentDash();
 }
 
 // ════════════════════════════════════════════
@@ -2017,16 +2162,21 @@ function trackAnswer(qIdx){
 
 function updateSendBar(){
   if(!S.sess)return;
+  const nq=S.sess.problems.length;
   const count=Object.keys(S.sess.answered||{}).length;
-  const allDone=count>=N_PROBLEMS;
+  const allDone=count>=nq;
   const btn=document.getElementById('send-btn');
   const status=document.getElementById('send-status');
   if(btn)btn.disabled=!allDone;
-  if(status)status.textContent=allDone?'All done — ready to send! ✓':`${count} / ${N_PROBLEMS} answered`;
+  if(status)status.textContent=allDone?'All done — ready to send! ✓':`${count} / ${nq} answered`;
 }
 
 async function sendSession(){
-  if(!confirm('Send all 10 questions to Dad for review?')) return;
+  const nq=S.sess?S.sess.problems.length:N_PROBLEMS;
+  showConfirm(`Send all ${nq} questions to Dad for review?`,_doSend);
+}
+async function _doSend(){
+  stopTimer();
   saveCanvasState(S.sess.cur);
   const btn=document.getElementById('send-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳';}
@@ -2055,7 +2205,8 @@ async function sendSession(){
   if(S.apiKey){
     for(let i=0;i<questions.length;i++){
       try{
-        document.getElementById('send-status').textContent=`AI checking ${i+1}/${N_PROBLEMS}...`;
+        const nqAI=S.sess?S.sess.problems.length:N_PROBLEMS;
+        document.getElementById('send-status').textContent=`AI checking ${i+1}/${nqAI}...`;
         const result=await aiCheckQuestion(questions[i]);
         questions[i].aiMark=result.correct;
         questions[i].aiResult=result.comment;
@@ -2078,9 +2229,12 @@ async function sendSession(){
     localStorage.removeItem('md_next_'+S.profile);
     cloudDelete('md_next_'+S.profile);
   }
+  bumpStreak(S.profile);
+  const streak=getStreak(S.profile);
   document.getElementById('sc-stars').textContent='✉️';
   document.getElementById('sc-title').textContent='Sent!';
-  document.getElementById('sc-score').textContent=N_PROBLEMS+' questions sent';
+  const nqSent=S.sess?S.sess.problems.length:N_PROBLEMS;
+  document.getElementById('sc-score').textContent=nqSent+' questions sent';
   document.getElementById('sc-sub').textContent=`🔥 ${streak} day streak · Dad will review your work`;
   document.getElementById('sc-unlock').style.display='none';
   showScreen('screen-complete');
@@ -2316,11 +2470,244 @@ function lockSession(){
   showParentDash();
 }
 function clearLocked(profile){
-  if(!confirm('Clear locked session?'))return;
+  showConfirm('Clear locked session?',()=>{localStorage.removeItem('md_next_'+profile);cloudDelete('md_next_'+profile);showToast('Session cleared');renderSB();});
+  return;
   localStorage.removeItem('md_next_'+profile);
   cloudDelete('md_next_'+profile);
   showToast('Session cleared');renderSB();
 }
+
+// ════════════════════════════════════════════
+// STYLED CONFIRM MODAL (replaces browser confirm)
+// ════════════════════════════════════════════
+function showConfirm(msg,onYes,danger=false){
+  const el=document.createElement('div');
+  el.className='modal-overlay';
+  el.innerHTML=`<div class="modal-box"><div class="modal-msg">${msg}</div><div class="modal-btns"><button class="modal-cancel">Cancel</button><button class="modal-ok${danger?' danger':''}">Confirm</button></div></div>`;
+  el.querySelector('.modal-cancel').onclick=()=>el.remove();
+  el.querySelector('.modal-ok').onclick=()=>{el.remove();onYes();};
+  document.body.appendChild(el);
+}
+
+function showTypedConfirm(msg,word,onYes){
+  const el=document.createElement('div');
+  el.className='modal-overlay';
+  el.innerHTML=`<div class="modal-box"><div class="modal-msg">${msg}</div><div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:6px">Type <b>${word}</b> to confirm</div><input class="modal-typed-input" placeholder="${word}" id="typed-input"><div class="modal-btns" style="margin-top:4px"><button class="modal-cancel">Cancel</button><button class="modal-ok danger" id="typed-ok" disabled>Confirm</button></div></div>`;
+  el.querySelector('.modal-cancel').onclick=()=>el.remove();
+  el.querySelector('#typed-input').oninput=e=>{el.querySelector('#typed-ok').disabled=e.target.value!==word;};
+  el.querySelector('#typed-ok').onclick=()=>{el.remove();onYes();};
+  document.body.appendChild(el);
+}
+
+// ════════════════════════════════════════════
+// CORRECTIONS FLOW
+// ════════════════════════════════════════════
+function saveCorrections(profile,session){
+  const wrong=session.questions.filter(q=>q.parentMark===false);
+  if(!wrong.length)return;
+  const corr=wrong.map(q=>({display:q.display,answer:q.answer,tid:session.tid,level:session.level,topicName:session.topicName}));
+  localStorage.setItem('md_corrections_'+profile,JSON.stringify(corr));
+  cloudSet('md_corrections_'+profile,corr);
+}
+function getCorrections(profile,tid){
+  const raw=localStorage.getItem('md_corrections_'+profile);
+  if(!raw)return[];
+  return JSON.parse(raw).filter(c=>c.tid===tid);
+}
+function clearCorrections(profile){
+  localStorage.removeItem('md_corrections_'+profile);
+  cloudDelete('md_corrections_'+profile);
+}
+
+// ════════════════════════════════════════════
+// TOPIC TEST & FINAL TEST
+// ════════════════════════════════════════════
+function genTopicTest(profile,tid){
+  const qs=[];
+  LEVELS.forEach((lvl,i)=>{
+    const count=i<2?4:3;
+    for(let j=0;j<count&&qs.length<20;j++){
+      try{qs.push(genProblem(profile,tid,lvl,ri(0,9)));}catch(e){}
+    }
+  });
+  while(qs.length<20){try{qs.push(genProblem(profile,tid,'C',ri(0,9)));}catch(e){break;}}
+  return qs.slice(0,20);
+}
+
+function genFinalTest(profile){
+  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const qs=[];
+  topics.forEach(t=>{
+    for(let j=0;j<2;j++){
+      try{qs.push(genProblem(profile,t.id,'D',ri(3,7)));}catch(e){}
+    }
+  });
+  return qs.slice(0,20);
+}
+
+function startTopicTest(tid){
+  const topics=S.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topic=topics.find(t=>t.id===tid);
+  if(!topic)return;
+  S.sess={tid,level:'TEST',method:topic.method,topicName:topic.name,type:'topicTest',
+    problems:genTopicTest(S.profile,tid),cur:0,answered:{},snapshots:{},startTime:Date.now()};
+  _setupSession(topic);
+}
+
+function startFinalTest(){
+  const profile=S.profile;
+  S.sess={tid:0,level:'FINAL',method:false,topicName:'Final Test',type:'finalTest',
+    problems:genFinalTest(profile),cur:0,answered:{},snapshots:{},startTime:Date.now()};
+  _setupSession({name:'Final Test',method:false});
+}
+
+function _setupSession(topic){
+  canvasCache={};eraserMode=false;aEraserMode=false;
+  const wrapEl=document.getElementById('canvas-wrap');
+  if(wrapEl){wrapEl.style.borderColor='';wrapEl.style.borderWidth='';}
+  const eraseBtn=document.getElementById('erase-btn');
+  if(eraseBtn){eraseBtn.style.background='';eraseBtn.style.color='';eraseBtn.style.borderColor='';}
+  S.sess.answered={};
+  const nq=S.sess.problems.length;
+  const sendBtn=document.getElementById('send-btn');
+  if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='Send ✉️';}
+  const sendStatus=document.getElementById('send-status');
+  if(sendStatus)sendStatus.textContent=`Answer all ${nq} to send`;
+  document.getElementById('sess-hdr-title').textContent=topic.name;
+  document.getElementById('sess-level-chip').textContent=S.sess.type==='topicTest'?'Topic Test':S.sess.type==='finalTest'?'Final Test':'Level '+S.sess.level;
+  const instr=document.getElementById('instr-strip');instr.style.display='none';
+  if(!topic.method){document.getElementById('canvas-hint').innerHTML='Write your answer here ✏️';}
+  else{document.getElementById('canvas-hint').innerHTML='Write your column method here ✏️<br><span style="font-size:11px;color:#D4D0C8">Stack the numbers and show carrying</span>';}
+  document.getElementById('correction-banner').style.display='none';
+  buildOverview();
+  loadProblem(0);
+  showScreen('screen-session');
+  setTimeout(()=>{resizeCanvas();clearCanvas();startTimer();},80);
+}
+
+// ════════════════════════════════════════════
+// SESSION TIMER
+// ════════════════════════════════════════════
+let timerInterval=null;
+let timerPaused=false;
+let timerPausedAt=0;
+let timerPausedTotal=0;
+
+function startTimer(){
+  stopTimer();
+  timerPaused=false;timerPausedTotal=0;
+  const pauseBtn=document.getElementById('timer-pause-btn');
+  if(pauseBtn)pauseBtn.textContent='⏸';
+  timerInterval=setInterval(()=>{
+    if(timerPaused)return;
+    const el=document.getElementById('session-timer');
+    if(!el||!S.sess)return;
+    const secs=Math.floor((Date.now()-S.sess.startTime-timerPausedTotal)/1000);
+    const m=String(Math.floor(secs/60)).padStart(2,'0');
+    const s=String(secs%60).padStart(2,'0');
+    el.textContent=m+':'+s;
+  },1000);
+}
+
+function stopTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  timerPaused=false;
+  const overlay=document.getElementById('pause-overlay');
+  if(overlay)overlay.classList.remove('active');
+}
+
+function togglePause(){
+  if(!timerInterval)return;
+  timerPaused=!timerPaused;
+  const btn=document.getElementById('timer-pause-btn');
+  const el=document.getElementById('session-timer');
+  const overlay=document.getElementById('pause-overlay');
+  if(timerPaused){
+    timerPausedAt=Date.now();
+    if(btn)btn.textContent='▶';
+    if(el)el.style.color='#FCD34D';
+    if(overlay)overlay.classList.add('active');
+  }else{
+    timerPausedTotal+=Date.now()-timerPausedAt;
+    if(btn)btn.textContent='⏸';
+    if(el)el.style.color='';
+    if(overlay)overlay.classList.remove('active');
+  }
+}
+
+// ════════════════════════════════════════════
+// CHILD NOTIFICATION
+// ════════════════════════════════════════════
+function saveChildNotification(profile,score,total,topicName){
+  const data={score,total,topicName,date:new Date().toISOString()};
+  localStorage.setItem('md_notify_'+profile,JSON.stringify(data));
+  cloudSet('md_notify_'+profile,data);
+}
+function checkChildNotification(profile){
+  const raw=localStorage.getItem('md_notify_'+profile);
+  if(!raw)return;
+  const d=JSON.parse(raw);
+  localStorage.removeItem('md_notify_'+profile);
+  cloudDelete('md_notify_'+profile);
+  const pass=d.score/d.total>=0.8;
+  const el=document.createElement('div');
+  el.className='notif-overlay';
+  el.innerHTML=`<div class="notif-box">
+    <div style="font-size:40px;margin-bottom:10px">${pass?'🌟':'💪'}</div>
+    <div style="font-size:16px;font-weight:900;margin-bottom:6px">${pass?'Dad approved your work!':'Keep practising!'}</div>
+    <div style="font-size:13px;font-weight:700;color:#78716C;margin-bottom:6px">${d.topicName}</div>
+    <div style="font-size:28px;font-weight:900;color:${pass?'#059669':'#D97706'};margin-bottom:16px">${d.score}/${d.total}</div>
+    <div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:16px">${pass?'Great job! Next level unlocked 🔓':'Try again — you can do it!'}</div>
+    <button onclick="this.closest('.notif-overlay').remove()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer">OK, let's go!</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+// ════════════════════════════════════════════
+// PROFILE ICONS
+// ════════════════════════════════════════════
+const DEFAULT_ICONS={alexander:'🏌️',estelle:'🦄'};
+
+function getIcon(profile){return localStorage.getItem('md_icon_'+profile)||DEFAULT_ICONS[profile];}
+
+function loadIcons(){
+  const a=document.getElementById('p-av-alexander');
+  const e=document.getElementById('p-av-estelle');
+  if(a)a.textContent=getIcon('alexander');
+  if(e)e.textContent=getIcon('estelle');
+}
+
+function showIconPicker(profile,evt){
+  if(evt)evt.stopPropagation();
+  const pickerId='icon-picker-'+profile;
+  const other=profile==='alexander'?'icon-picker-estelle':'icon-picker-alexander';
+  document.getElementById(other).style.display='none';
+  const el=document.getElementById(pickerId);
+  const isOpen=el.style.display==='block';
+  el.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    // Highlight current icon
+    const cur=getIcon(profile);
+    el.querySelectorAll('.icon-opt').forEach(b=>{
+      b.classList.toggle('selected',b.textContent===cur);
+    });
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+
+function setIcon(profile,icon){
+  localStorage.setItem('md_icon_'+profile,icon);
+  cloudSet('md_icon_'+profile,icon);
+  const av=document.getElementById('p-av-'+profile);
+  if(av)av.textContent=icon;
+  // Update selected state
+  const picker=document.getElementById('icon-picker-'+profile);
+  if(picker)picker.querySelectorAll('.icon-opt').forEach(b=>{
+    b.classList.toggle('selected',b.textContent===icon);
+  });
+}
+
+function getProfileIcon(profile){return getIcon(profile);}
 
 window.addEventListener('load',()=>{
   initCanvas();
@@ -2328,6 +2715,7 @@ window.addEventListener('load',()=>{
     if(document.getElementById('screen-session').classList.contains('active')) resizeCanvas();
   });
   const k=localStorage.getItem('md_apikey');
+  loadIcons();
   if(k){
     S.apiKey=k;
     showScreen('screen-profile');
