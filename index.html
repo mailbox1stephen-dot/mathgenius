@@ -111,15 +111,15 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 /* Canvas inner — padded away from arrows */
 .canvas-inner{flex-shrink:0;padding:6px 52px 2px;display:flex;flex-direction:column;}
 .canvas-label{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;flex-shrink:0}
-.canvas-wrap{flex:1;border-radius:12px;border:1.5px solid #DDD9CE;overflow:hidden;position:relative;min-height:0;height:calc(100dvh - 470px);max-height:calc(100dvh - 470px)}
-#drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.canvas-wrap{flex:1;border-radius:12px;border:1.5px solid #DDD9CE;overflow:hidden;position:relative;min-height:0;height:calc(100dvh - 470px);max-height:calc(100dvh - 470px);touch-action:none;overscroll-behavior:none}
+#drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#C4C0B8;pointer-events:none;text-align:center;line-height:1.7;white-space:nowrap}
 
 /* Answer cell — bottom of section */
 .answer-inner{flex-shrink:0;padding:5px 52px 12px}
 .answer-label{font-size:9px;font-weight:900;color:#B45309;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
 .answer-wrap{height:72px;border-radius:12px;border:2px solid #FCD34D;overflow:hidden;position:relative;background:#FFFBEB}
-#answer-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#answer-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .answer-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#E5C06A;pointer-events:none;white-space:nowrap}
 
 /* Checking overlay */
@@ -1438,6 +1438,20 @@ function initCanvas(){
   aCanvas.addEventListener('pointerup',apu,{passive:false});
   aCanvas.addEventListener('pointercancel',apu,{passive:false});
   aCanvas.addEventListener('pointerleave',apu,{passive:false});
+
+  // Block Safari's swipe-back navigation gesture on horizontal strokes
+  // Without this, Safari steals the first horizontal draw attempt
+  const blockSwipe=e=>{e.preventDefault();e.stopPropagation();};
+  [canvas,aCanvas].forEach(c=>{
+    c.addEventListener('touchstart',blockSwipe,{passive:false});
+    c.addEventListener('touchmove',blockSwipe,{passive:false});
+    c.addEventListener('touchend',blockSwipe,{passive:false});
+    c.addEventListener('touchcancel',blockSwipe,{passive:false});
+    // Also block gesture events (pinch-zoom on canvas)
+    c.addEventListener('gesturestart',blockSwipe,{passive:false});
+    c.addEventListener('gesturechange',blockSwipe,{passive:false});
+    c.addEventListener('gestureend',blockSwipe,{passive:false});
+  });
 }
 
 function fillAnswer(w,h,c){
