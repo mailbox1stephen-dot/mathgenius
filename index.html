@@ -325,11 +325,19 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 <div class="screen active" id="screen-api">
   <div class="api-logo">Math<span>Genius</span></div>
   <div class="api-sub">For Alexander &amp; Estelle</div>
-  <div class="api-desc">Enter your Anthropic API key once to enable AI handwriting recognition. Stored on this device only.</div>
+  <div class="api-desc">Enter your Anthropic API key to enable AI handwriting recognition.</div>
   <div class="api-err" id="api-err"></div>
   <input class="api-input" id="api-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off">
   <button class="api-btn" onclick="saveKey()">Save &amp; Start →</button>
-  <div class="api-note">Free to get at console.anthropic.com — costs a few öre per session.</div>
+
+  <!-- Cloud restore for new devices -->
+  <div style="width:100%;max-width:320px;margin-top:22px;border-top:1px solid rgba(255,255,255,.15);padding-top:18px">
+    <div style="font-size:11px;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:10px">Already using MathGenius? Restore all data from cloud:</div>
+    <input class="api-input" id="restore-url" type="text" placeholder="Supabase URL (https://…)" autocomplete="off" style="margin-bottom:8px">
+    <input class="api-input" id="restore-key" type="password" placeholder="Supabase key (sb_pub…)" autocomplete="off">
+    <button onclick="restoreFromCloud()" style="width:100%;max-width:320px;padding:13px;border:1.5px solid rgba(255,255,255,.3);border-radius:12px;background:transparent;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px">☁ Restore from cloud</button>
+  </div>
+  <div class="api-note" style="margin-top:12px">API key: console.anthropic.com · Cloud: supabase.com</div>
 </div>
 
 <!-- ── PROFILE SELECT ── -->
@@ -1062,8 +1070,34 @@ function saveKey(){
   err.textContent='';
   S.apiKey=k;
   localStorage.setItem('md_apikey',k);
+  cloudSet('md_apikey',k); // sync API key to cloud too
   showScreen('screen-profile');
   refreshProfileTags();
+}
+
+async function restoreFromCloud(){
+  const url=document.getElementById('restore-url').value.trim();
+  const key=document.getElementById('restore-key').value.trim();
+  const apiKey=document.getElementById('api-input').value.trim();
+  const err=document.getElementById('api-err');
+  if(!url||!key){err.textContent='Enter both Supabase URL and key';return;}
+  err.textContent='☁ Restoring…';
+  localStorage.setItem('md_supa_url',url);
+  localStorage.setItem('md_supa_key',key);
+  if(apiKey){S.apiKey=apiKey;localStorage.setItem('md_apikey',apiKey);}
+  try{
+    await pullFromCloud();
+    // Check if API key came from cloud
+    const pulledKey=localStorage.getItem('md_apikey');
+    if(pulledKey){S.apiKey=pulledKey;}
+    if(S.apiKey){
+      err.textContent='';
+      loadIcons();refreshProfileTags();
+      showScreen('screen-profile');
+    }else{
+      err.textContent='Restored! Now enter your API key above.';
+    }
+  }catch(e){err.textContent='Restore failed — check URL and key';}
 }
 
 // ════════════════════════════════════════════
@@ -2902,29 +2936,33 @@ function setIcon(profile,icon){
 
 function getProfileIcon(profile){return getIcon(profile);}
 
-window.addEventListener('load',()=>{
+window.addEventListener('load',async ()=>{
   initCanvas();
   window.addEventListener('resize',()=>{
     if(document.getElementById('screen-session').classList.contains('active')) resizeCanvas();
   });
-  const k=localStorage.getItem('md_apikey');
   loadIcons();
+  const k=localStorage.getItem('md_apikey');
   if(k){
     S.apiKey=k;
+    // Pull from cloud FIRST before showing anything — ensures latest data on all devices
+    if(isCloudEnabled()){
+      try{await pullFromCloud();}catch(e){console.warn('Startup cloud pull failed:',e);}
+    }
     showScreen('screen-profile');
     refreshProfileTags();
-    // Pull latest data from cloud silently
-    if(isCloudEnabled()){
-      pullFromCloud().then(()=>{refreshProfileTags();});
-      const btn=document.getElementById('cloud-btn');
-      if(btn)btn.style.color='#10B981';
-    }
+    const btn=document.getElementById('cloud-btn');
+    if(isCloudEnabled()&&btn)btn.style.color='#10B981';
     // Offer to resume any interrupted session
     setTimeout(()=>{ checkAutoSave(); },300);
   } else {
     showScreen('screen-api');
     const saved=localStorage.getItem('md_apikey');
     if(saved){const inp=document.getElementById('api-input');if(inp)inp.value=saved;}
+    // Pre-fill cloud fields if already set
+    const su=localStorage.getItem('md_supa_url');const sk=localStorage.getItem('md_supa_key');
+    if(su){const i=document.getElementById('restore-url');if(i)i.value=su;}
+    if(sk){const i=document.getElementById('restore-key');if(i)i.value=sk;}
   }
 });
 </script>
