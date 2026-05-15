@@ -2063,6 +2063,18 @@ function buildChildTab(profile){
   html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Recurring mistakes</div>`;
   html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:8px">${mistakesHTML(profile)}</div>`;
 
+  // Progress vs history mismatch check
+  const topicLevels=Object.values(prog).filter(t=>!t.locked&&!t.done).map(t=>LEVELS.indexOf(t.level||'A'));
+  const histLevels=hist.filter(h=>h.score/h.total>=0.8).map(h=>h.level);
+  const hasMismatch=hist.length>0&&topicLevels.every(li=>li===0)&&histLevels.length>0;
+  if(hasMismatch){
+    html+=`<div style="background:#FEF3C7;border:1.5px solid #FDE68A;border-radius:11px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <div style="font-size:16px">⚠️</div>
+      <div style="flex:1"><div style="font-size:11px;font-weight:900;color:#92400E">Progress not matching history</div><div style="font-size:10px;color:#92400E;margin-top:1px">${hist.length} session(s) in history but level shows A — tap to fix</div></div>
+      <button onclick="fixProgressFromHistory('${profile}')" style="padding:7px 12px;border-radius:8px;background:#F59E0B;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0">Fix now</button>
+    </div>`;
+  }
+
   // Parent actions
   html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Actions</div>`;
   const locked=getLocked(profile);
@@ -2073,6 +2085,7 @@ function buildChildTab(profile){
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #1E3A8A;background:#EFF6FF;text-align:center;cursor:pointer" onclick="showSessionBuilder('${profile}')"><div style="font-size:16px;margin-bottom:3px">📋</div><div style="font-size:10px;font-weight:800;color:#1D4ED8">Build session</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;text-align:center;cursor:pointer" onclick="unlockNextTopic('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔓</div><div style="font-size:10px;font-weight:800;color:#1D4ED8">Unlock topic</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #FDE68A;background:#FFFBEB;text-align:center;cursor:pointer" onclick="resetCurrentLevel('${profile}')"><div style="font-size:16px;margin-bottom:3px">↩</div><div style="font-size:10px;font-weight:800;color:#92400E">Reset level</div></div>`;
+  html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#F0FDF9;text-align:center;cursor:pointer" onclick="fixProgressFromHistory('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔧</div><div style="font-size:10px;font-weight:800;color:#065F46">Fix progress</div></div>`;
   html+=`</div>`;
   return html;
 }
@@ -2462,6 +2475,55 @@ function showSyncBadge(){
   syncTimer=setTimeout(()=>el.classList.remove('show'),1800);
 }
 
+// Keep the most advanced progress between two progress objects
+function mergeProgress(local,cloud){
+  const merged={...local};
+  Object.keys(cloud).forEach(tk=>{
+    if(tk==='finalTestDone'){merged[tk]=merged[tk]||cloud[tk];return;}
+    if(!merged[tk]){merged[tk]=cloud[tk];return;}
+    const li=LEVELS.indexOf(local[tk]?.level||'A');
+    const ci=LEVELS.indexOf(cloud[tk]?.level||'A');
+    // Keep whichever has higher level, or done status
+    if(cloud[tk]?.done&&!merged[tk]?.done){merged[tk]={...cloud[tk]};return;}
+    if(ci>li){merged[tk]={...merged[tk],level:cloud[tk].level};}
+    if(cloud[tk]?.topicTestNeeded)merged[tk].topicTestNeeded=true;
+    if(!cloud[tk]?.locked)merged[tk].locked=false;
+  });
+  return merged;
+}
+
+// Recalculate progress from session history (admin recovery tool)
+function fixProgressFromHistory(profile){
+  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  if(!hist.length){showToast('No history found for '+profile);return;}
+  const prog=initProgress(profile);
+  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  let changes=0;
+  topics.forEach(t=>{
+    const tk='t'+t.id;
+    LEVELS.forEach((lvl,li)=>{
+      const passed=hist.filter(h=>h.tid===t.id&&h.level===lvl&&h.total>0&&h.score/h.total>=0.8);
+      if(passed.length>0){
+        prog[tk].locked=false;
+        if(li<LEVELS.length-1&&LEVELS.indexOf(prog[tk].level||'A')<=li){
+          prog[tk].level=LEVELS[li+1];changes++;
+        }
+      }
+    });
+  });
+  // Unlock next topic after first topic shows progress
+  topics.forEach((t,i)=>{
+    if(i===0)return;
+    const prevTk='t'+topics[i-1].id;
+    if(!prog[prevTk].locked&&prog['t'+t.id].locked){
+      if(LEVELS.indexOf(prog[prevTk].level||'A')>0){prog['t'+t.id].locked=false;prog['t'+t.id].level='A';changes++;}
+    }
+  });
+  setProgress(profile,prog);
+  showToast('✓ Progress fixed — '+changes+' level(s) updated from history');
+  showParentDash();
+}
+
 async function cloudSet(key,value){
   if(!isCloudEnabled())return;
   const result=await supaFetch('mathdrill_data','POST',{key,value,updated_at:new Date().toISOString()});
@@ -2499,11 +2561,21 @@ async function pullFromCloud(){
   rows.forEach(row=>{
     try{
       const cloudVal=typeof row.value==='string'?row.value:JSON.stringify(row.value);
-      // Never overwrite pending sessions if local has more data
+      // Never overwrite pending sessions if local has more
       if(row.key.startsWith('md_pending_')){
         const local=JSON.parse(localStorage.getItem(row.key)||'[]');
         const cloud=JSON.parse(cloudVal||'[]');
         if(local.length>cloud.length){kept++;return;}
+      }
+      // Never downgrade topic progress — keep whichever has higher levels
+      if(row.key.startsWith('md_prog_')){
+        const local=JSON.parse(localStorage.getItem(row.key)||'null');
+        const cloud=JSON.parse(cloudVal||'null');
+        if(local&&cloud){
+          const merged=mergeProgress(local,cloud);
+          localStorage.setItem(row.key,JSON.stringify(merged));
+          return;
+        }
       }
       localStorage.setItem(row.key,cloudVal);
     }catch(e){}
@@ -2589,22 +2661,15 @@ function getLocked(profile){
   return raw?JSON.parse(raw):null;
 }
 
-function showSessionBuilder(profile,overrideTid){
+function showSessionBuilder(profile,overrideTid,overrideLvl){
   SB.profile=profile;SB.editingIdx=null;
   const prog=initProgress(profile);
   const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
-  // Use override topic if provided, otherwise find current active
-  let tid=overrideTid;
-  if(!tid){
-    const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
-    tid=cur?parseInt(cur[0].replace('t','')):1;
-  }
-  const tp=prog['t'+tid];
-  const topic=topics.find(t=>t.id===tid);
-  if(!topic)return;
-  SB.tid=tid;
-  SB.level=tp.level||'A';
-  SB.topicName=topic.name;
+  const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
+  SB.tid=overrideTid||(cur?parseInt(cur[0].replace('t','')):1);
+  SB.level=overrideLvl||(prog['t'+SB.tid]?.level||'A');
+  const topic=topics.find(t=>t.id===SB.tid);
+  SB.topicName=topic?topic.name:'Topic '+SB.tid;
   SB.questions=genSession(profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
   document.getElementById('sb-title').textContent='Session Builder';
   document.getElementById('sb-chip').textContent=profile==='alexander'?'Alexander':'Estelle';
@@ -2612,32 +2677,78 @@ function showSessionBuilder(profile,overrideTid){
   showScreen('screen-session-builder');
 }
 
+function sbChangeTopic(){
+  const sel=document.getElementById('sb-topic-select');
+  if(!sel)return;
+  const tid=parseInt(sel.value);
+  const prog=initProgress(SB.profile);
+  SB.tid=tid;
+  const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topic=topics.find(t=>t.id===tid);
+  SB.topicName=topic?topic.name:'Topic '+tid;
+  SB.level=prog['t'+tid]?.level||'A';
+  SB.editingIdx=null;
+  SB.questions=genSession(SB.profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
+  renderSB();
+}
+
+function sbChangeLevel(lvl){
+  SB.level=lvl;
+  SB.editingIdx=null;
+  SB.questions=genSession(SB.profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
+  renderSB();
+}
+
 function renderSB(){
   const body=document.getElementById('sb-body');
-  const locked=getLocked(SB.profile);
   const prog=initProgress(SB.profile);
   const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const locked=getLocked(SB.profile);
   let html='';
 
-  // Topic selector dropdown
-  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:10px">`;
-  html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Select topic</div>`;
-  html+=`<div style="display:flex;flex-wrap:wrap;gap:5px">`;
+  // Locked session banner
+  if(locked&&locked.tid===SB.tid&&locked.level===SB.level){
+    html+=`<div class="sb-locked-banner">🔒 Session already locked for ${SB.profile==='alexander'?'Alexander':'Estelle'}<button onclick="clearLocked('${SB.profile}')" style="margin-left:auto;background:transparent;border:1.5px solid #A7F3D0;border-radius:8px;padding:3px 10px;font-size:10px;font-weight:800;color:#065F46;cursor:pointer;font-family:'Nunito',sans-serif">Clear</button></div>`;
+  }
+
+  // Step 1: Topic dropdown
+  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 13px;margin-bottom:10px">`;
+  html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">1. Choose topic</div>`;
+  html+=`<select id="sb-topic-select" onchange="sbChangeTopic()" style="width:100%;padding:11px 14px;border:1.5px solid #1E3A8A;border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;background:#fff;color:#1C1917;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231E3A8A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 14px center">`;
   topics.forEach(t=>{
     const tp=prog['t'+t.id];
-    const isLocked=tp.locked;
-    const active=t.id===SB.tid;
-    if(!isLocked){
-      html+=`<button onclick="showSessionBuilder('${SB.profile}',${t.id})" style="padding:5px 11px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:800;cursor:pointer;border:1.5px solid ${active?'#1E3A8A':'#EDE9E0'};background:${active?'#1E3A8A':'#F5F3EE'};color:${active?'#fff':'#78716C'};-webkit-tap-highlight-color:transparent">T${t.id}: ${t.name.split(' ').slice(0,2).join(' ')}</button>`;
-    }
+    const locked_t=tp.locked;
+    html+=`<option value="${t.id}" ${t.id===SB.tid?'selected':''} ${locked_t?'disabled':''}>T${t.id}: ${t.name}${locked_t?' 🔒':''}</option>`;
   });
-  html+=`</div></div>`;
+  html+=`</select></div>`;
 
-  if(locked&&locked.tid===SB.tid&&locked.level===SB.level){
-    html+=`<div class="sb-locked-banner">🔒 Session locked — waiting for ${SB.profile==='alexander'?'Alexander':'Estelle'}<button onclick="clearLocked('${SB.profile}')" style="margin-left:auto;background:transparent;border:1.5px solid #A7F3D0;border-radius:8px;padding:3px 10px;font-size:10px;font-weight:800;color:#065F46;cursor:pointer;font-family:'Nunito',sans-serif">Clear</button></div>`;
-  }
+  // Step 2: Level A-F tabs
+  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 13px;margin-bottom:10px">`;
+  html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">2. Choose level to preview</div>`;
+  html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">`;
+  const curLvlIdx=LEVELS.indexOf(prog['t'+SB.tid]?.level||'A');
+  LEVELS.forEach((lvl,i)=>{
+    const isActive=lvl===SB.level;
+    const isCurrent=i===curLvlIdx;
+    const isPast=i<curLvlIdx;
+    const bg=isActive?'#1E3A8A':isPast?'#D1FAE5':'#F5F3EE';
+    const tc=isActive?'#fff':isPast?'#065F46':'#78716C';
+    const bc=isActive?'#1E3A8A':isPast?'#A7F3D0':'#EDE9E0';
+    const tag=isPast?' ✓':isCurrent?' ▶':'';
+    html+=`<button onclick="sbChangeLevel('${lvl}')" style="padding:7px 16px;border-radius:20px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;cursor:pointer;border:1.5px solid ${bc};background:${bg};color:${tc};-webkit-tap-highlight-color:transparent">Level ${lvl}${tag}</button>`;
+  });
+  html+=`</div>`;
+  // Level description
+  const lvlDescs={A:'Easiest — basic introduction',B:'Easy-Medium — building confidence',C:'Medium — core skill',D:'Medium-Hard — consolidating',E:'Hard — approaching mastery',F:'Challenge — ready for topic test'};
+  html+=`<div style="font-size:10px;color:#78716C;font-weight:700">${SB.topicName} · Level ${SB.level} — ${lvlDescs[SB.level]||''}</div>`;
+  html+=`</div>`;
+
+  // Questions
   const modified=SB.questions.filter(q=>q.edited||q.custom).length;
-  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:10px"><div style="font-size:12px;font-weight:900">${SB.topicName} · Level ${SB.level}</div><div style="font-size:10px;color:#78716C;font-weight:700;margin-top:2px">${modified?modified+' question(s) modified · ':''}Review and lock when ready</div></div>`;
+  html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">`;
+  html+=`<div style="font-size:11px;font-weight:800;color:#78716C">${SB.topicName} · Level ${SB.level} · ${SB.questions.length} questions${modified?' · '+modified+' modified':''}</div>`;
+  html+=`<div style="font-size:10px;color:#3B82F6;font-weight:800;cursor:pointer" onclick="sbChangeLevel('${SB.level}')">🔄 Regenerate all</div>`;
+  html+=`</div>`;
 
   SB.questions.forEach((q,i)=>{
     const cls='sb-q'+(q.custom?' custom-q':q.edited?' edited':'');
@@ -2646,8 +2757,7 @@ function renderSB(){
     html+=`<div class="${cls}" id="sbq-${i}">
       <div class="sb-q-top">
         <div class="sb-num" style="background:${numBg}">${i+1}</div>
-        <div class="sb-eq">${q.display}</div>
-        ${badge}
+        <div class="sb-eq">${q.display}</div>${badge}
       </div>`;
     if(SB.editingIdx===i){
       html+=`<div class="sb-edit-row">
@@ -2662,7 +2772,7 @@ function renderSB(){
       <div class="sb-btn edit-q" onclick="editQ(${i})">✏️ Edit</div>
     </div></div>`;
   });
-  html+=`<button class="sb-lock-btn" onclick="lockSession()">🔒 Lock & Send to ${SB.profile==='alexander'?'Alexander':'Estelle'}</button>`;
+  html+=`<button class="sb-lock-btn" onclick="lockSession()">🔒 Lock Level ${SB.level} — Send to ${SB.profile==='alexander'?'Alexander':'Estelle'}</button>`;
   body.innerHTML=html;
   if(SB.editingIdx!==null){setTimeout(()=>{const el=document.getElementById('sbe-q-'+SB.editingIdx);if(el)el.focus();},60);}
 }
