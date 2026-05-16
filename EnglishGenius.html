@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>EnglishGenius</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#F4F1EC}
+:root{
+  --navy:#1E3A8A;--navydark:#152a68;--gold:#FCD34D;--goldark:#f0c030;
+  --bg:#F4F1EC;--white:#fff;--text:#1a1a2e;--muted:#6b7280;
+  --border:#e5e7eb;--green:#22C55E;--amber:#F59E0B;--red:#EF4444;
+  --blue:#3B82F6;--purple:#8B5CF6;--teal:#14B8A6;--coral:#F97316;
+}
+.screen{display:none;height:100vh;overflow-y:auto;background:var(--bg);flex-direction:column}
+.screen.active{display:flex}
+
+/* ===== NAV HEADER ===== */
+.nav-hdr{background:var(--navy);color:#fff;padding:0 16px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:sticky;top:0;z-index:10}
+.nav-back{background:none;border:none;color:rgba(255,255,255,.7);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;font-family:'Nunito',sans-serif}
+.nav-title{flex:1;font-size:16px;font-weight:800;color:#fff}
+.nav-sub{font-size:11px;color:rgba(255,255,255,.6)}
+.nav-right{display:flex;align-items:center;gap:8px}
+
+/* ===== SETUP ===== */
+#screen-api{align-items:center;justify-content:center;padding:24px;gap:0}
+.logo-block{text-align:center;margin-bottom:28px}
+.logo-text{font-size:38px;font-weight:900;color:var(--navy);line-height:1}
+.logo-text span{color:var(--gold)}
+.logo-tag{font-size:13px;color:var(--muted);margin-top:6px}
+.setup-card{background:var(--white);border-radius:18px;padding:24px;width:100%;max-width:380px;border:1.5px solid var(--border)}
+.setup-card h3{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+.inp{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;background:var(--white);color:var(--text);margin-bottom:8px}
+.inp:focus{border-color:var(--navy)}
+.btn{width:100%;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:opacity .15s}
+.btn:active{opacity:.85}
+.btn-primary{background:var(--navy);color:var(--gold)}
+.btn-secondary{background:var(--white);color:var(--navy);border:2px solid var(--navy)}
+.divider{text-align:center;color:var(--muted);font-size:12px;margin:16px 0;position:relative}
+.divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border)}
+.divider span{background:var(--white);padding:0 10px;position:relative}
+
+/* ===== PROFILE ===== */
+#screen-profile{padding:24px;align-items:center}
+.profile-logo{text-align:center;margin-bottom:24px}
+.profile-logo h1{font-size:32px;font-weight:900;color:var(--navy)}
+.profile-logo h1 span{color:var(--gold)}
+.profile-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.profile-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:420px;margin-bottom:14px}
+.profile-card{background:var(--white);border-radius:18px;padding:22px 16px;text-align:center;border:2.5px solid transparent;cursor:pointer;transition:all .15s}
+.profile-card.alex{border-color:var(--blue)}
+.profile-card.est{border-color:var(--purple)}
+.profile-card:active{transform:scale(.97)}
+.p-avatar{font-size:44px;cursor:pointer;margin-bottom:6px}
+.p-name{font-size:17px;font-weight:800;color:var(--text)}
+.p-grade{font-size:12px;color:var(--muted);margin-top:2px}
+.p-streak{font-size:11px;color:var(--amber);font-weight:700;margin-top:6px}
+.change-icon-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:4px;text-decoration:underline}
+.icon-picker{background:var(--white);border-radius:12px;padding:14px;margin-top:10px;border:1.5px solid var(--border);display:none;width:100%;max-width:420px}
+.icon-picker.show{display:block}
+.icon-picker h4{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.icon-row{margin-bottom:10px}
+.icon-row-label{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.icon-grid{display:flex;gap:6px;flex-wrap:wrap}
+.icon-opt{font-size:24px;padding:6px;text-align:center;cursor:pointer;border-radius:8px;border:1.5px solid transparent;transition:all .1s}
+.icon-opt:hover,.icon-opt.selected{border-color:var(--navy);background:#f0f4ff}
+.parent-btn{width:100%;max-width:420px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif}
+
+/* ===== TOPICS ===== */
+#screen-topics{overflow:hidden;display:flex;flex-direction:column}
+.topics-tabs{display:flex;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.ttab{flex:1;padding:13px 8px;text-align:center;font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s}
+.ttab.active{color:var(--navy);border-color:var(--navy)}
+.topics-scroll{flex:1;overflow-y:auto;padding:16px}
+.overall-prog{background:var(--white);border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid var(--border)}
+.overall-prog h3{font-size:13px;font-weight:800;color:var(--text);margin-bottom:8px}
+.prog-bg{background:#f0f0f0;border-radius:20px;height:10px;overflow:hidden}
+.prog-fill{background:var(--navy);height:10px;border-radius:20px;transition:width .5s}
+.prog-lbl{font-size:11px;color:var(--muted);margin-top:4px;text-align:right;font-weight:600}
+.topics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.topic-card{background:var(--white);border-radius:14px;padding:13px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s}
+.topic-card:active{transform:scale(.97)}
+.topic-card.locked{opacity:.5;cursor:default}
+.topic-card.current{border-color:var(--navy)}
+.topic-card.done{border-color:var(--green)}
+.topic-card.test-ready{border-color:var(--amber)}
+.tc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.tc-icon{font-size:24px}
+.tc-badge{font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.badge-locked{background:#f0f0f0;color:#999}
+.badge-active{background:#EFF6FF;color:#1D4ED8}
+.badge-test{background:#FEF9C3;color:#854D0E}
+.badge-done{background:#F0FDF4;color:#166534}
+.badge-ready{background:#FEF3C7;color:#92400E}
+.tc-month{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.tc-title{font-size:13px;font-weight:800;color:var(--text);line-height:1.3}
+.session-dots{display:flex;gap:3px;margin-top:10px}
+.sdot{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:800;flex-shrink:0}
+.sdot.done{background:var(--green);border-color:var(--green);color:#fff}
+.sdot.next{background:var(--navy);border-color:var(--navy);color:#fff}
+.sdot.empty{background:#f0f0f0;color:#ccc}
+.sdot.test{background:var(--amber);border-color:var(--amber);color:#fff}
+.sdot-labels{display:flex;gap:3px;margin-top:2px}
+.sdot-lbl{width:15px;text-align:center;font-size:6px;color:var(--muted);font-weight:700}
+
+/* Journey tab */
+.journey-hero{background:var(--navy);border-radius:14px;padding:20px;color:var(--white);margin-bottom:20px;text-align:center}
+.journey-hero h2{font-size:24px;font-weight:900;color:var(--white)}
+.journey-hero p{font-size:13px;color:rgba(255,255,255,.7);margin-top:6px}
+.journey-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.j-stat{text-align:center}
+.j-stat-num{font-size:22px;font-weight:900;color:var(--gold)}
+.j-stat-lbl{font-size:10px;color:rgba(255,255,255,.6);font-weight:600}
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-dot{position:absolute;left:-24px;top:4px;width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:var(--white)}
+.tl-dot.done{background:var(--green);border-color:var(--green)}
+.tl-dot.active{background:var(--navy);border-color:var(--navy)}
+.tl-title{font-size:13px;font-weight:800;color:var(--text)}
+.tl-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.tl-sessions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.tl-sess{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:700;border:1px solid}
+
+/* ===== SESSION ===== */
+#screen-session{overflow:hidden;display:flex;flex-direction:column;height:100vh}
+.sess-hdr{background:var(--navy);padding:0 14px;height:48px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sess-hdr-title{flex:1;color:var(--white);font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sess-type-badge{font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.stb-factual{background:#BFDBFE;color:#1e40af}
+.stb-fiction{background:#DDD6FE;color:#4C1D95}
+.stb-deeper{background:#FDE68A;color:#78350F}
+.stb-nordic{background:#A7F3D0;color:#064E3B}
+.stb-write{background:#FECACA;color:#7F1D1D}
+.stb-test{background:#E5E7EB;color:#374151}
+.pause-btn{background:none;border:none;color:rgba(255,255,255,.8);font-size:22px;cursor:pointer;padding:2px;line-height:1;flex-shrink:0}
+
+.phase-bar{background:var(--white);border-bottom:1px solid var(--border);padding:7px 14px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ph-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700}
+.ph-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800}
+.ph-active .ph-num{background:var(--navy);color:var(--white)}
+.ph-done .ph-num{background:var(--green);color:var(--white)}
+.ph-idle .ph-num{background:#f0f0f0;color:#aaa}
+.ph-active .ph-lbl{color:var(--navy)}
+.ph-done .ph-lbl{color:var(--green)}
+.ph-idle .ph-lbl{color:#aaa}
+.ph-sep{color:var(--border);font-size:14px}
+
+.prog-strip{padding:7px 14px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:3px}
+.pq{flex:1;height:18px;border-radius:4px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#ccc;transition:background .2s}
+.pq.answered{background:var(--green);color:var(--white)}
+.pq.current{background:var(--amber);color:var(--white)}
+
+.correction-banner{background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:8px 14px;font-size:11px;font-weight:700;color:#78350F;flex-shrink:0;display:flex;align-items:center;gap:6px}
+
+.sess-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* Phase 1 */
+.reading-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.passage-wrap{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;position:relative}
+.passage-txt{padding:14px;font-size:14px;line-height:1.85;color:var(--text);position:relative;z-index:1;pointer-events:none;user-select:none;-webkit-user-select:none}
+#annotation-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;cursor:crosshair;touch-action:none;overscroll-behavior:none}
+.anno-tools{display:flex;gap:6px;padding:10px 14px;background:var(--white);border-radius:0 0 14px 14px;border-top:1px solid var(--border);align-items:center}
+.anno-tool{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .1s}
+.anno-tool.active{border-color:var(--navy);box-shadow:0 0 0 2px rgba(30,58,138,.2)}
+.anno-clear{margin-left:auto;font-size:10px;font-weight:700;background:none;border:1.5px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif}
+.done-reading-btn{background:var(--navy);color:var(--gold);border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+
+/* Phase 2 */
+.peek-bar{background:var(--white);border-radius:10px;border:1.5px solid var(--border);padding:10px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;flex-shrink:0}
+.peek-bar-lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:700}
+.peek-body{background:#fffef8;border-radius:0 0 10px 10px;border:1.5px solid var(--border);border-top:none;padding:10px 13px;font-size:12px;color:var(--text);line-height:1.75;display:none}
+.q-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.q-text{font-size:16px;font-weight:800;color:var(--text);line-height:1.4;margin-top:4px}
+.answer-wrap{border:2.5px solid var(--gold);border-radius:14px;background:var(--white);overflow:hidden;position:relative}
+#answer-canvas{display:block;width:100%;touch-action:none;overscroll-behavior:none;cursor:crosshair}
+.clear-ans-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.07);border:none;border-radius:6px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;color:var(--text)}
+
+/* Phase 3 write */
+.write-prompt-card{background:var(--white);border-radius:14px;padding:14px;border:1px solid var(--border)}
+.write-prompt-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.write-prompt-text{font-size:15px;font-weight:800;color:var(--text);line-height:1.5}
+.write-wrap{border:2.5px solid var(--gold);border-radius:14px;background:var(--white);overflow:hidden;position:relative}
+#write-canvas{display:block;width:100%;touch-action:none;overscroll-behavior:none;cursor:crosshair}
+.clear-write-btn{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.07);border:none;border-radius:6px;padding:4px 9px;font-size:10px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;color:var(--text)}
+
+/* Send bar */
+.send-bar{background:var(--white);border-top:1.5px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.send-meta{font-size:11px;color:var(--muted);font-weight:700}
+.send-btn{background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:6px}
+
+/* Pause overlay */
+.pause-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,30,.93);z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.pause-overlay.show{display:flex}
+.pause-icon{font-size:52px}
+.pause-title{font-size:24px;font-weight:900;color:var(--white)}
+.resume-btn{background:var(--gold);color:var(--navy);border:none;border-radius:14px;padding:15px 36px;font-size:17px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* Generating box */
+.gen-box{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:32px;text-align:center}
+.gen-spinner{width:32px;height:32px;border:3px solid #e0e0e0;border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-text{font-size:14px;color:var(--muted);font-weight:700}
+
+/* ===== COMPLETE ===== */
+#screen-complete{align-items:center;justify-content:center;padding:24px;text-align:center}
+.complete-icon{font-size:72px;margin-bottom:16px}
+.complete-title{font-size:28px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.complete-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.streak-badge{background:var(--gold);color:var(--navy);border-radius:24px;padding:12px 24px;font-size:17px;font-weight:900;display:inline-block;margin-bottom:24px}
+.home-btn{background:var(--navy);color:var(--gold);border:none;border-radius:14px;padding:15px 36px;font-size:16px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* ===== PARENT PIN ===== */
+#screen-parent-pin{align-items:center;justify-content:center;padding:24px}
+.pin-card{background:var(--white);border-radius:18px;padding:30px;width:100%;max-width:320px;text-align:center;border:1.5px solid var(--border)}
+.pin-title{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:6px}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:24px}
+.pin-dot{width:18px;height:18px;border-radius:50%;background:#f0f0f0;border:2px solid var(--border);transition:background .1s}
+.pin-dot.filled{background:var(--navy);border-color:var(--navy)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pin-key{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:15px;font-size:20px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--text)}
+.pin-key:active{background:#f5f5f5}
+.pin-error{font-size:13px;color:var(--red);margin-top:10px;font-weight:700;min-height:20px}
+
+/* ===== PARENT DASH ===== */
+#screen-parent-dash{overflow:hidden;display:flex;flex-direction:column}
+.dash-tabs{display:flex;background:var(--white);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.dtab{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s}
+.dtab.active{color:var(--navy);border-color:var(--navy)}
+.dash-scroll{flex:1;overflow-y:auto;padding:16px}
+.dash-sec h3{font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px}
+.dash-sec{margin-bottom:22px}
+.pending-card{background:var(--white);border-radius:14px;border:2px solid var(--amber);padding:14px;margin-bottom:8px;cursor:pointer;transition:opacity .15s}
+.pending-card:active{opacity:.85}
+.pc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.pc-name{font-size:14px;font-weight:800;color:var(--text)}
+.pc-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;background:#FEF3C7;color:#78350F}
+.pc-meta{font-size:11px;color:var(--muted);font-weight:600}
+.no-pending{background:var(--white);border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border)}
+.no-pending p{font-size:13px;color:var(--muted);font-weight:600}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.stat-card{background:var(--white);border-radius:14px;padding:14px;border:1px solid var(--border);text-align:center}
+.stat-num{font-size:28px;font-weight:900;color:var(--navy)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.action-btn-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;text-align:center;cursor:pointer;font-family:'Nunito',sans-serif;transition:border-color .15s}
+.action-btn-card:hover{border-color:var(--navy)}
+.action-icon{font-size:24px;margin-bottom:5px}
+.action-lbl{font-size:12px;font-weight:800;color:var(--text)}
+.topic-list{display:flex;flex-direction:column;gap:6px}
+.tp-row{background:var(--white);border-radius:12px;padding:11px 13px;border:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.tp-icon{font-size:20px}
+.tp-info{flex:1}
+.tp-name{font-size:12px;font-weight:800;color:var(--text)}
+.tp-meta{font-size:10px;color:var(--muted);margin-top:1px;font-weight:600}
+.tp-badge{font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em}
+
+/* ===== PARENT REVIEW ===== */
+#screen-parent-review{overflow:hidden;display:flex;flex-direction:column}
+.review-scroll{flex:1;overflow-y:auto}
+.review-info-bar{background:var(--white);padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.ri-left{flex:1}
+.ri-name{font-size:14px;font-weight:800;color:var(--text)}
+.ri-meta{font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ri-badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px}
+.apr-btn{background:#22C55E;color:var(--white);border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:background .2s}
+.apr-btn.approved{background:#166534}
+
+.sess-pills{padding:8px 14px;background:var(--white);border-bottom:1px solid var(--border);display:flex;gap:5px;overflow-x:auto;flex-shrink:0}
+.sp-pill{font-size:10px;font-weight:800;padding:4px 11px;border-radius:20px;border:1.5px solid var(--border);cursor:pointer;white-space:nowrap;color:var(--muted);background:var(--white)}
+.sp-pill.active-pill{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.sp-pill.pend-pill{border-color:var(--amber);color:#854D0E;background:#FEF9C3}
+
+.passage-toggle{background:var(--white);border-bottom:1px solid var(--border)}
+.pt-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.pt-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pt-body{padding:0 14px 12px;display:none}
+.pt-text{background:#F9F8F4;border-radius:10px;padding:12px;font-size:12px;color:var(--text);line-height:1.75;border:1px solid var(--border)}
+.pt-ann-key{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.pt-ann-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);font-weight:600}
+
+.review-q-hdr{padding:8px 14px 3px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--bg)}
+.review-q-row{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--white);display:flex;gap:9px;align-items:flex-start}
+.rq-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
+.rqn-ok{background:#F0FDF4;color:#166534;border:1.5px solid #86EFAC}
+.rqn-wr{background:#FEF2F2;color:#991B1B;border:1.5px solid #FCA5A5}
+.rqn-pd{background:#EFF6FF;color:#1D4ED8;border:1.5px solid #93C5FD}
+.rq-main{flex:1;min-width:0}
+.rq-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.rq-text{font-size:12px;font-weight:800;color:var(--text);line-height:1.4;margin-bottom:7px}
+.answers-2col{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:5px}
+.ans-child-box{border-left:3px solid var(--gold);border-radius:0 6px 6px 0;background:var(--white);padding:6px 9px;border-top:.5px solid #f0e8c0;border-bottom:.5px solid #f0e8c0;border-right:.5px solid #f0e8c0}
+.ans-box-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;color:#B45309}
+.ans-child-text{font-size:11.5px;color:#1a1a1a;font-family:Georgia,serif;line-height:1.4;word-break:break-word}
+.ans-ai-box{border-left:3px solid var(--blue);border-radius:0 6px 6px 0;background:#EFF6FF;padding:6px 9px;border-top:.5px solid #BFDBFE;border-bottom:.5px solid #BFDBFE;border-right:.5px solid #BFDBFE}
+.ans-ai-box .ans-box-lbl{color:#1D4ED8}
+.ans-ai-text{font-size:11px;color:#1e3a5f;line-height:1.4;word-break:break-word}
+.rq-ai-note{font-size:10px;color:var(--muted);font-style:italic;margin-top:3px}
+.rq-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.rq-chip{font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;white-space:nowrap}
+.rqc-ok{background:#F0FDF4;color:#166534;border:1px solid #86EFAC}
+.rqc-wr{background:#FEF2F2;color:#991B1B;border:1px solid #FCA5A5}
+.rqc-pd{background:#EFF6FF;color:#1D4ED8;border:1px solid #93C5FD}
+.ov-row{display:flex;gap:3px}
+.ov-b{width:27px;height:21px;border-radius:5px;border:1.5px solid var(--border);background:var(--white);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:700}
+.ov-b.marked-ok{background:#F0FDF4;border-color:#86EFAC;color:#166534}
+.ov-b.marked-wr{background:#FEF2F2;border-color:#FCA5A5;color:#991B1B}
+
+.q10-review-wrap{background:var(--white);border-top:2.5px solid var(--gold);padding:14px}
+.q10-review-badge{display:inline-block;background:#FEF2E8;color:#9A3412;font-size:9px;font-weight:800;padding:3px 9px;border-radius:20px;border:1px solid #FDBA74;text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px}
+.q10-review-prompt{font-size:12px;font-weight:800;color:var(--text);line-height:1.45;margin-bottom:10px}
+.q10-child-box{border-left:3px solid var(--gold);border-radius:0 9px 9px 0;background:var(--white);padding:10px 13px;border:.5px solid #f0e8c0;margin-bottom:8px}
+.q10-child-box .ans-box-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#B45309;margin-bottom:5px}
+.q10-child-writing{font-size:12px;color:#1a1a1a;font-family:Georgia,serif;line-height:1.9;word-break:break-word}
+.q10-expected-box{border-left:3px solid var(--blue);border-radius:0 9px 9px 0;background:#EFF6FF;padding:10px 13px;border:.5px solid #BFDBFE;margin-bottom:8px}
+.q10-expected-box .ans-box-lbl{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#1D4ED8;margin-bottom:5px}
+.q10-exp-text{font-size:11px;color:#1e3a5f;line-height:1.55}
+.ai-feedback-box{background:var(--bg);border-radius:10px;padding:10px 12px;border:1px solid var(--border);margin-bottom:10px}
+.ai-fb-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.ai-fb-text{font-size:11px;color:var(--text);line-height:1.6}
+.q10-btns{display:flex;justify-content:flex-end;gap:6px}
+.q10-ovb{font-size:11px;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700}
+
+/* ===== SESSION BUILDER ===== */
+#screen-session-builder{overflow:hidden;display:flex;flex-direction:column}
+.sb-scroll{flex:1;overflow-y:auto;padding:16px}
+.sb-lbl{font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.sb-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'Nunito',sans-serif;outline:none;background:var(--white);color:var(--text);margin-bottom:16px}
+.sb-type-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.sb-type-btn{font-size:11px;font-weight:800;padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);cursor:pointer;background:var(--white);color:var(--muted);font-family:'Nunito',sans-serif;transition:all .15s}
+.sb-type-btn.active{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.sb-preview-card{background:var(--white);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:16px}
+.sb-passage-preview{font-size:12px;color:var(--text);line-height:1.75;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sb-q-row{padding:7px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}
+.sb-q-row:last-child{border-bottom:none;padding-bottom:0}
+.sb-q-num{width:20px;height:20px;background:var(--navy);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:2px}
+.sb-q-main{flex:1}
+.sb-q-text{font-size:12px;color:var(--text);font-weight:700;line-height:1.4}
+.sb-q-exp{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;line-height:1.3}
+.sb-footer{padding:14px 16px;background:var(--white);border-top:1.5px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.sb-regen{flex:1;background:var(--white);border:2px solid var(--navy);border-radius:12px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;color:var(--navy);font-family:'Nunito',sans-serif}
+.sb-send-btn{flex:1;background:var(--navy);color:var(--gold);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+.sb-loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;font-weight:700}
+
+/* ===== CLOUD ===== */
+#screen-cloud-settings{padding:20px}
+.cloud-card{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--border);margin-bottom:14px}
+.cloud-card h3{font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px}
+.cloud-status-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;font-weight:700}
+.status-dot{width:10px;height:10px;border-radius:50%;background:#ccc;flex-shrink:0}
+.status-dot.on{background:var(--green)}
+.cloud-btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.cloud-action-btn{flex:1;min-width:80px;background:var(--white);border:1.5px solid var(--navy);border-radius:10px;padding:9px 8px;font-size:12px;font-weight:800;cursor:pointer;color:var(--navy);font-family:'Nunito',sans-serif;text-align:center}
+.cloud-danger{border-color:var(--red);color:var(--red)}
+
+/* ===== MODALS ===== */
+.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-box{background:var(--white);border-radius:22px 22px 0 0;padding:26px;width:100%;max-width:500px}
+.modal-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:7px;text-align:center}
+.modal-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;line-height:1.55}
+.modal-btns{display:flex;gap:8px}
+.modal-cancel-btn{flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--muted)}
+.modal-confirm-btn{flex:1;background:var(--navy);color:var(--white);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* ===== NOTIFICATION POPUP ===== */
+.notif-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:24px}
+.notif-bg.show{display:flex}
+.notif-box{background:var(--white);border-radius:20px;padding:28px;width:100%;max-width:340px;text-align:center}
+.notif-icon{font-size:52px;margin-bottom:12px}
+.notif-title{font-size:20px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.notif-text{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.notif-ok{background:var(--navy);color:var(--gold);border:none;border-radius:12px;padding:13px 32px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--white);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN: SETUP ===== -->
+<div id="screen-api" class="screen">
+  <div class="logo-block">
+    <div class="logo-text">English<span>Genius</span></div>
+    <div class="logo-tag">Reading · Thinking · Writing</div>
+  </div>
+  <div class="setup-card">
+    <h3>Anthropic API Key</h3>
+    <input id="api-key-input" class="inp" type="password" placeholder="sk-ant-..." autocomplete="off">
+    <button class="btn btn-primary" onclick="saveApiKey()">Save &amp; Start</button>
+    <div class="divider"><span>already set up?</span></div>
+    <div class="restore-section">
+      <h3>Restore from cloud</h3>
+      <input id="supa-url-setup" class="inp" type="text" placeholder="Supabase URL">
+      <input id="supa-key-setup" class="inp" type="password" placeholder="Supabase anon key">
+      <button class="btn btn-secondary" onclick="restoreFromCloud()">Restore from cloud</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: PROFILE ===== -->
+<div id="screen-profile" class="screen">
+  <div class="profile-logo">
+    <h1>English<span>Genius</span></h1>
+    <p>Who's reading today?</p>
+  </div>
+  <div class="profile-cards">
+    <div class="profile-card alex" onclick="selectProfile('alexander')">
+      <div class="p-avatar" id="alex-avatar" onclick="event.stopPropagation();openIconPicker('alexander')">🦊</div>
+      <div class="p-name">Alexander</div>
+      <div class="p-grade">Age 9 · Year 3</div>
+      <div class="p-streak" id="alex-streak">🔥 0 day streak</div>
+      <button class="change-icon-btn" onclick="event.stopPropagation();openIconPicker('alexander')">✏️ Change icon</button>
+    </div>
+    <div class="profile-card est" onclick="selectProfile('estelle')">
+      <div class="p-avatar" id="est-avatar" onclick="event.stopPropagation();openIconPicker('estelle')">🦋</div>
+      <div class="p-name">Estelle</div>
+      <div class="p-grade">Age 11 · Year 6</div>
+      <div class="p-streak" id="est-streak">🔥 0 day streak</div>
+      <button class="change-icon-btn" onclick="event.stopPropagation();openIconPicker('estelle')">✏️ Change icon</button>
+    </div>
+  </div>
+  <div id="icon-picker-panel" class="icon-picker" style="max-width:420px;width:100%"></div>
+  <div style="height:12px"></div>
+  <button class="parent-btn" onclick="showParentPin()">🔒 Parent</button>
+</div>
+
+<!-- ===== SCREEN: TOPICS ===== -->
+<div id="screen-topics" class="screen">
+  <div class="nav-hdr">
+    <button class="nav-back" onclick="showScreen('screen-profile')">‹</button>
+    <div>
+      <div class="nav-title" id="topics-profile-name">Alexander</div>
+      <div class="nav-sub">Choose a topic</div>
+    </div>
+    <div class="nav-right">
+      <div id="topics-avatar" style="font-size:22px">🦊</div>
+    </div>
+  </div>
+  <div class="topics-tabs">
+    <div class="ttab active" onclick="switchTopicsTab(0)">📚 Topics</div>
+    <div class="ttab" onclick="switchTopicsTab(1)">🗺 My Journey</div>
+  </div>
+  <div id="topics-tab-content" class="topics-scroll"></div>
+  <div id="journey-tab-content" class="topics-scroll" style="display:none"></div>
+</div>
+
+<!-- ===== SCREEN: SESSION ===== -->
+<div id="screen-session" class="screen">
+  <div class="sess-hdr">
+    <button class="pause-btn" onclick="togglePause()">⏸</button>
+    <div class="sess-hdr-title" id="sess-hdr-title">Session</div>
+    <div class="sess-type-badge stb-factual" id="sess-type-badge">Factual</div>
+  </div>
+  <div class="phase-bar" id="phase-bar">
+    <div class="ph-item ph-active" id="ph1">
+      <div class="ph-num">1</div><div class="ph-lbl">Read</div>
+    </div>
+    <div class="ph-sep">›</div>
+    <div class="ph-item ph-idle" id="ph2">
+      <div class="ph-num">2</div><div class="ph-lbl">Answer</div>
+    </div>
+    <div class="ph-sep">›</div>
+    <div class="ph-item ph-idle" id="ph3">
+      <div class="ph-num">3</div><div class="ph-lbl">Write</div>
+    </div>
+  </div>
+  <div class="prog-strip" id="sess-prog-strip"></div>
+  <div class="correction-banner" id="correction-banner" style="display:none">🔧 Fix your mistakes from last session first!</div>
+  <div class="sess-body" id="sess-body"></div>
+  <div class="send-bar" id="send-bar" style="display:none">
+    <div class="send-meta" id="send-meta">Q0 answered · 00:00</div>
+    <button class="send-btn" onclick="sendSession()">Send ✉️</button>
+  </div>
+  <div class="pause-overlay" id="pause-overlay">
+    <div class="pause-icon">⏸</div>
+    <div class="pause-title">Session paused</div>
+    <button class="resume-btn" onclick="togglePause()">▶ Resume</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: COMPLETE ===== -->
+<div id="screen-complete" class="screen">
+  <div class="complete-icon">✉️</div>
+  <div class="complete-title">Session sent!</div>
+  <div class="complete-sub" id="complete-sub">Dad will review and approve it.</div>
+  <div class="streak-badge" id="complete-streak">🔥 1 day streak</div>
+  <button class="home-btn" onclick="goToTopics()">Back to topics</button>
+</div>
+
+<!-- ===== SCREEN: PARENT PIN ===== -->
+<div id="screen-parent-pin" class="screen">
+  <div style="position:absolute;top:20px;left:16px">
+    <button style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)" onclick="showScreen('screen-profile')">‹</button>
+  </div>
+  <div class="pin-card">
+    <div class="pin-title">🔒 Parent access</div>
+    <div class="pin-sub">Enter your 4-digit PIN</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key" onclick="pinPress('back')">⌫</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key" onclick="pinPress('clear')">C</button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: PARENT DASH ===== -->
+<div id="screen-parent-dash" class="screen">
+  <div class="nav-hdr">
+    <button class="nav-back" onclick="showScreen('screen-profile')">‹</button>
+    <div class="nav-title">Parent Dashboard</div>
+    <button style="background:none;border:none;color:rgba(255,255,255,.7);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif" onclick="showScreen('screen-cloud-settings')">☁️ Cloud</button>
+  </div>
+  <div class="dash-tabs">
+    <div class="dtab active" onclick="switchDashTab(0)">Overview</div>
+    <div class="dtab" onclick="switchDashTab(1)">Alexander</div>
+    <div class="dtab" onclick="switchDashTab(2)">Estelle</div>
+  </div>
+  <div class="dash-scroll" id="dash-content"></div>
+</div>
+
+<!-- ===== SCREEN: PARENT REVIEW ===== -->
+<div id="screen-parent-review" class="screen">
+  <div class="nav-hdr">
+    <button class="nav-back" onclick="showScreen('screen-parent-dash')">‹</button>
+    <div class="nav-title">Session review</div>
+    <div class="nav-sub">EnglishGenius</div>
+  </div>
+  <div class="review-info-bar" id="review-info-bar"></div>
+  <div class="sess-pills" id="sess-pills"></div>
+  <div class="review-scroll" id="review-scroll-content"></div>
+</div>
+
+<!-- ===== SCREEN: SESSION BUILDER ===== -->
+<div id="screen-session-builder" class="screen">
+  <div class="nav-hdr">
+    <button class="nav-back" onclick="showScreen('screen-parent-dash')">‹</button>
+    <div class="nav-title">Session Builder</div>
+  </div>
+  <div class="sb-scroll">
+    <div class="sb-lbl">Step 1 — Choose child &amp; topic</div>
+    <select id="sb-child-select" class="sb-select" onchange="sbUpdate()">
+      <option value="alexander">Alexander</option>
+      <option value="estelle">Estelle</option>
+    </select>
+    <select id="sb-topic-select" class="sb-select" onchange="sbUpdate()"></select>
+    <div class="sb-lbl">Step 2 — Session type</div>
+    <div class="sb-type-row" id="sb-type-row"></div>
+    <div id="sb-preview-area"></div>
+  </div>
+  <div class="sb-footer">
+    <button class="sb-regen" onclick="sbRegenerate()">🔄 Regenerate</button>
+    <button class="sb-send-btn" onclick="sbSendToChild()">🔒 Lock &amp; send</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: CLOUD SETTINGS ===== -->
+<div id="screen-cloud-settings" class="screen">
+  <div class="nav-hdr">
+    <button class="nav-back" onclick="showScreen('screen-parent-dash')">‹</button>
+    <div class="nav-title">Cloud Sync</div>
+  </div>
+  <div style="padding:20px">
+    <div class="cloud-card">
+      <div class="cloud-status-row">
+        <div class="status-dot" id="cloud-status-dot"></div>
+        <span id="cloud-status-text">Not connected</span>
+      </div>
+      <h3>Supabase credentials</h3>
+      <input id="cloud-url" class="inp" type="text" placeholder="Supabase URL">
+      <input id="cloud-key" class="inp" type="password" placeholder="Supabase anon key">
+      <div class="cloud-btn-row" style="margin-top:8px">
+        <button class="cloud-action-btn" onclick="saveCloudCreds()">Connect</button>
+        <button class="cloud-action-btn" onclick="pushToCloud()">⬆ Push</button>
+        <button class="cloud-action-btn" onclick="pullFromCloud()">⬇ Pull</button>
+        <button class="cloud-action-btn cloud-danger" onclick="disconnectCloud()">Disconnect</button>
+      </div>
+    </div>
+    <div class="cloud-card">
+      <h3>Change parent PIN</h3>
+      <input id="new-pin-input" class="inp" type="number" placeholder="New 4-digit PIN" maxlength="4">
+      <button class="btn btn-secondary" style="margin-top:4px" onclick="saveNewPin()">Save PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODALS & OVERLAYS ===== -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-sub" id="modal-sub">Are you sure?</div>
+    <div class="modal-btns">
+      <button class="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm-btn" id="modal-confirm-btn" onclick="">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif-bg" id="notif-bg">
+  <div class="notif-box">
+    <div class="notif-icon" id="notif-icon">🎉</div>
+    <div class="notif-title" id="notif-title">Well done!</div>
+    <div class="notif-text" id="notif-text"></div>
+    <button class="notif-ok" onclick="closeNotif()">Let's go! 🚀</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================
+   ENGLISHGENIUS — FULL APP
+   ===================================================== */
+
+// ===== TOPIC DATA =====
+const TOPICS = {
+  alexander:[
+    {id:'t1',month:'August',theme:'Amazing Animals',icon:'🐾',
+     sessions:{factual:'Big Cats & Predators',fiction:'Jungle Adventure Story',deeper:'Rainforest Ecosystems',nordic:'Emil-Style Farm Story',write:'Animal Superpowers Review'}},
+    {id:'t2',month:'September',theme:'Oceans & Adventures',icon:'🌊',
+     sessions:{factual:'Coral Reefs & Sea Life',fiction:'Treasure Island Story',deeper:'Deep Sea Mysteries',nordic:'Nordic Pirate Adventure',write:'Ocean Pollution Review'}},
+    {id:'t3',month:'October',theme:'Space & Sci-Fi',icon:'🚀',
+     sessions:{factual:'The Solar System',fiction:'Space Explorer Story',deeper:'Black Holes & Stars',nordic:'Nordic Space Tale',write:'Future Space Travel'}},
+    {id:'t4',month:'November',theme:'Weather & Survival',icon:'⛈️',
+     sessions:{factual:'How Storms Form',fiction:'Survival Cabin Story',deeper:'Volcanoes & Earthquakes',nordic:'Ronja Forest Survival',write:'Extreme Weather Review'}},
+    {id:'t5',month:'December',theme:'Winter & Nordic Stories',icon:'❄️',
+     sessions:{factual:'Arctic Animals',fiction:'Tomten Winter Tale',deeper:'Snow & Ice Science',nordic:'Northern Lights Legend',write:'Winter Traditions Review'}},
+    {id:'t6',month:'January',theme:'The Human Body',icon:'🧠',
+     sessions:{factual:'How the Brain Works',fiction:'Memory Challenge Story',deeper:'Heart & Circulation',nordic:'Sports Competition Story',write:'Healthy Habits Review'}},
+    {id:'t7',month:'February',theme:'Inventions & Machines',icon:'⚙️',
+     sessions:{factual:'Cars & Transport',fiction:'Train Journey Story',deeper:'Flying Machines',nordic:'Curious Inventor Story',write:'Robot Technology Review'}},
+    {id:'t8',month:'March',theme:'Vikings & Ancient Worlds',icon:'⚔️',
+     sessions:{factual:'Who Were the Vikings?',fiction:'Viking Child Adventure',deeper:'Ancient Egypt',nordic:'Norse Mythology Tale',write:'Medieval Life Review'}},
+    {id:'t9',month:'April',theme:'Nature & Forests',icon:'🌿',
+     sessions:{factual:'Forest Ecosystems',fiction:'Ronja Forest Adventure',deeper:'Mountains & Rivers',nordic:'Swedish Nature Story',write:'Saving Nature Review'}},
+    {id:'t10',month:'May',theme:'Sports & Competition',icon:'🏆',
+     sessions:{factual:'Olympic History',fiction:'Sports Camp Story',deeper:'Mental Strength in Sports',nordic:'Swedish Champion Story',write:'Teamwork Review'}},
+    {id:'t11',month:'June',theme:'Science & Experiments',icon:'🔬',
+     sessions:{factual:'Magnets & Electricity',fiction:'Science Lab Story',deeper:'Simple Experiments',nordic:'Young Inventor Story',write:'Amazing Science Facts'}},
+    {id:'t12',month:'July',theme:'Mysteries & Adventures',icon:'🔍',
+     sessions:{factual:'Dinosaur World',fiction:'Pirate Mystery Story',deeper:'Lost Cities',nordic:'Child Detective Story',write:'Great Adventure Review'}},
+  ],
+  estelle:[
+    {id:'t1',month:'August',theme:'Human Nature & Adventure',icon:'🧗',
+     sessions:{factual:'Human Survival Science',fiction:'Survival Story',deeper:'Explorers & Expeditions',nordic:'Pippi-Inspired Independence',write:'Courage & Leadership Review'}},
+    {id:'t2',month:'September',theme:'Oceans & Discovery',icon:'🌊',
+     sessions:{factual:'Ocean Ecosystems',fiction:'Lost at Sea Story',deeper:'Deep Sea Mysteries',nordic:'Scandinavian Sea Tale',write:'Climate & Oceans Review'}},
+    {id:'t3',month:'October',theme:'Space & Future Worlds',icon:'🚀',
+     sessions:{factual:'Space Exploration',fiction:'Sci-Fi Adventure',deeper:'Mars Missions',nordic:'Nordic Space Tale',write:'Artificial Intelligence Review'}},
+    {id:'t4',month:'November',theme:'Extreme Weather & Survival',icon:'⛈️',
+     sessions:{factual:'Natural Disasters',fiction:'Storm Survival Story',deeper:'Volcanoes & Earthquakes',nordic:'Ronja Forest Survival',write:'Climate Challenges Review'}},
+    {id:'t5',month:'December',theme:'Winter & Nordic Culture',icon:'❄️',
+     sessions:{factual:'Arctic Life',fiction:'Tomten Winter Tale',deeper:'Nordic Traditions',nordic:'Northern Lights Myth',write:'Winter Around the World'}},
+    {id:'t6',month:'January',theme:'Human Body & Mind',icon:'🧠',
+     sessions:{factual:'The Brain & Memory',fiction:'Psychological Mystery',deeper:'Sports Psychology',nordic:'Competition Narrative',write:'Health & Nutrition Review'}},
+    {id:'t7',month:'February',theme:'Inventions & Technology',icon:'⚙️',
+     sessions:{factual:'Great Inventions',fiction:'Young Inventor Story',deeper:'Robotics & AI',nordic:'Nordic Tech Pioneer',write:'Digital Life Review'}},
+    {id:'t8',month:'March',theme:'Vikings History & Myths',icon:'⚔️',
+     sessions:{factual:'Who Were the Vikings?',fiction:'Viking Adventure Story',deeper:'Ancient Egypt',nordic:'Norse Mythology Tale',write:'Greek Heroes & Myths'}},
+    {id:'t9',month:'April',theme:'Nature & Environment',icon:'🌿',
+     sessions:{factual:'Forests & Ecosystems',fiction:'Ronja Forest Story',deeper:'Wildlife Protection',nordic:'Swedish Nature Legend',write:'Climate Change Review'}},
+    {id:'t10',month:'May',theme:'Sports & Psychology',icon:'🏆',
+     sessions:{factual:'Olympic History',fiction:'Sports Narrative',deeper:'Mental Strength',nordic:'Swedish Athlete Story',write:'Motivation & Competition'}},
+    {id:'t11',month:'June',theme:'Science & Discovery',icon:'🔬',
+     sessions:{factual:'Electricity & Energy',fiction:'Science Lab Story',deeper:'Young Scientist Discovery',nordic:'Nordic Inventor Tale',write:'Future Science Review'}},
+    {id:'t12',month:'July',theme:'Mysteries & Great Adventures',icon:'🔍',
+     sessions:{factual:'Ancient Mysteries',fiction:'Detective Story',deeper:'Lost Cities',nordic:'Scandinavian Mystery',write:'Crime Solving & Logic'}},
+  ]
+};
+
+const SESSION_TYPES = ['factual','fiction','deeper','nordic','write'];
+const SESSION_LABELS = {factual:'Factual',fiction:'Fiction',deeper:'Deeper',nordic:'Nordic',write:'Write'};
+const SESSION_ICONS = {factual:'📰',fiction:'📚',deeper:'🔍',nordic:'🌲',write:'✍️'};
+
+// ===== STORAGE =====
+function saveCred(k,v){
+  try{const d=new Date();d.setFullYear(d.getFullYear()+1);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}catch(e){}
+  try{localStorage.setItem(k,v);}catch(e){}
+}
+function readCred(k){
+  try{const ls=localStorage.getItem(k);if(ls)return ls;}catch(e){}
+  try{const m=document.cookie.match('(^|;)\\s*'+k+'\\s*=\\s*([^;]+)');const v=m?decodeURIComponent(m[2]):null;if(v)try{localStorage.setItem(k,v);}catch(e){}return v;}catch(e){}
+  return null;
+}
+function saveData(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function readData(k,def=null){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+
+// ===== GLOBALS =====
+let _key='';
+let _profile='alexander';
+let S={
+  topicId:'t1',sessionType:'factual',
+  phase:1,currentQ:0,
+  sessionData:null,
+  answers:[],
+  annotationImg:null,
+  corrections:[],
+  timer:0,timerInterval:null,paused:false,
+  isTest:false
+};
+let _sbData={profile:'alexander',topicId:'t1',sessionType:'factual',generated:null};
+
+// ===== CLOUD =====
+function isCloudOn(){return !!(readCred('eg_supa_url')&&readCred('eg_supa_key'));}
+
+async function pushToCloud(){
+  if(!isCloudOn())return;
+  const url=readCred('eg_supa_url');const key=readCred('eg_supa_key');
+  const keys=['eg_prog_alexander','eg_prog_estelle','eg_hist_alexander','eg_hist_estelle',
+    'eg_streak_alexander','eg_streak_estelle','eg_lastday_alexander','eg_lastday_estelle',
+    'eg_pending_alexander','eg_pending_estelle','eg_icon_alexander','eg_icon_estelle',
+    'eg_apikey','eg_parent_pin'];
+  for(const k of keys){
+    const v=localStorage.getItem(k);if(!v)continue;
+    try{await fetch(`${url}/rest/v1/englishgenius_data`,{method:'POST',
+      headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({key:k,value:v,updated_at:new Date().toISOString()})});}catch(e){}
+  }
+  showToast('☁️ Pushed to cloud');
+}
+
+async function pullFromCloud(silent=false){
+  if(!isCloudOn())return;
+  const url=readCred('eg_supa_url');const key=readCred('eg_supa_key');
+  try{
+    const r=await fetch(`${url}/rest/v1/englishgenius_data?select=key,value`,
+      {headers:{'apikey':key,'Authorization':'Bearer '+key}});
+    if(!r.ok)return;
+    const rows=await r.json();
+    for(const row of rows){
+      if(row.key==='eg_prog_alexander'||row.key==='eg_prog_estelle'){
+        const local=readData(row.key,{});const cloud=JSON.parse(row.value||'{}');
+        const merged=mergeProgress(local,cloud);
+        saveData(row.key,merged);
+      } else {
+        if(!localStorage.getItem(row.key))localStorage.setItem(row.key,row.value);
+      }
+    }
+    if(!silent)showToast('☁️ Pulled from cloud');
+  }catch(e){if(!silent)showToast('Cloud pull failed');}
+}
+
+function mergeProgress(local,cloud){
+  const out={...local};
+  for(const tid in cloud){
+    if(!out[tid]){out[tid]=cloud[tid];continue;}
+    const l=out[tid],c=cloud[tid];
+    const lvlOrder=['','factual','fiction','deeper','nordic','write','test'];
+    const li=lvlOrder.indexOf(l.lastCompleted||''),ci=lvlOrder.indexOf(c.lastCompleted||'');
+    if(ci>li)out[tid]={...l,...c};
+    if(c.done&&!l.done)out[tid].done=true;
+  }
+  return out;
+}
+
+// Auto-sync
+setInterval(async()=>{if(S.phase===0&&isCloudOn()){await pullFromCloud(true);refreshProfileTags();}},60000);
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible'&&isCloudOn()&&S.phase===0){await pullFromCloud(true);refreshProfileTags();}
+});
+
+// ===== INIT =====
+window.addEventListener('load',async()=>{
+  _key=readCred('eg_apikey')||'';
+  const supaUrl=readCred('eg_supa_url');const supaKey=readCred('eg_supa_key');
+  if(supaUrl&&supaKey){await pullFromCloud(true);}
+  if(_key){showScreen('screen-profile');refreshProfileTags();}
+  else showScreen('screen-api');
+});
+
+function refreshProfileTags(){
+  const alexStreak=readData('eg_streak_alexander',0);
+  const estStreak=readData('eg_streak_estelle',0);
+  document.getElementById('alex-streak').textContent='🔥 '+alexStreak+' day streak';
+  document.getElementById('est-streak').textContent='🔥 '+estStreak+' day streak';
+  document.getElementById('alex-avatar').textContent=readCred('eg_icon_alexander')||'🦊';
+  document.getElementById('est-avatar').textContent=readCred('eg_icon_estelle')||'🦋';
+}
+
+// ===== API SETUP =====
+function saveApiKey(){
+  const k=document.getElementById('api-key-input').value.trim();
+  if(!k){showToast('Enter your API key');return;}
+  saveCred('eg_apikey',k);_key=k;
+  showScreen('screen-profile');refreshProfileTags();showToast('✅ Saved!');
+}
+
+async function restoreFromCloud(){
+  const url=document.getElementById('supa-url-setup').value.trim();
+  const key=document.getElementById('supa-key-setup').value.trim();
+  if(!url||!key){showToast('Enter Supabase URL and key');return;}
+  saveCred('eg_supa_url',url);saveCred('eg_supa_key',key);
+  await pullFromCloud();
+  _key=readCred('eg_apikey')||'';
+  if(_key){showScreen('screen-profile');refreshProfileTags();}
+  else showToast('Could not find API key in cloud');
+}
+
+// ===== PROFILE & ICON PICKER =====
+const ICONS={
+  alexander:{
+    Animals:['🦊','🐺','🦁','🐯','🦅','🐉'],
+    Sports:['⚽','🏀','🎮','🥊','🚴','⛷️'],
+    Adventure:['🚀','🤖','⚡','🔬','🎸','🏆'],
+    Heroes:['🥷','🦸','🧙','⚔️','🛡️','🏹']
+  },
+  estelle:{
+    Magical:['🦋','🧚','🦄','👸','🌙','⭐','✨','💎','🔮','🪄'],
+    Animals:['🐱','🐼','🐰','🦒','🦩','🦚','🦜','🐬'],
+    Nature:['🌸','🌺','🌻','🌈','🍓','🎀','💐','🌊'],
+    Talents:['🤸','🩰','🎨','🎵','🎹','🏊','🌍','📚']
+  }
+};
+
+function openIconPicker(profile){
+  const panel=document.getElementById('icon-picker-panel');
+  const icons=ICONS[profile];
+  let html=`<h4>Choose icon for ${profile==='alexander'?'Alexander':'Estelle'}</h4>`;
+  for(const [group,list] of Object.entries(icons)){
+    html+=`<div class="icon-row"><div class="icon-row-label">${group}</div><div class="icon-grid">`;
+    list.forEach(ic=>{
+      const current=readCred('eg_icon_'+profile)||'';
+      html+=`<div class="icon-opt${ic===current?' selected':''}" onclick="setIcon('${profile}','${ic}')">${ic}</div>`;
+    });
+    html+='</div></div>';
+  }
+  panel.innerHTML=html;
+  panel.classList.toggle('show',panel.style.display==='none'||!panel.classList.contains('show'));
+}
+
+function setIcon(profile,icon){
+  saveCred('eg_icon_'+profile,icon);
+  document.getElementById(profile==='alexander'?'alex-avatar':'est-avatar').textContent=icon;
+  document.getElementById('icon-picker-panel').classList.remove('show');
+  showToast('Icon updated!');
+}
+
+function selectProfile(profile){
+  _profile=profile;
+  const notif=readData('eg_notify_'+profile,null);
+  if(notif){showNotif('🎉','Session reviewed!',notif);saveData('eg_notify_'+profile,null);}
+  else goToTopics();
+}
+
+// ===== TOPICS SCREEN =====
+function goToTopics(){
+  S.phase=0;
+  showScreen('screen-topics');
+  switchTopicsTab(0);
+  document.getElementById('topics-profile-name').textContent=_profile==='alexander'?'Alexander':'Estelle';
+  document.getElementById('topics-avatar').textContent=readCred('eg_icon_'+_profile)||(_profile==='alexander'?'🦊':'🦋');
+}
+
+function switchTopicsTab(n){
+  document.querySelectorAll('.ttab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.getElementById('topics-tab-content').style.display=n===0?'block':'none';
+  document.getElementById('journey-tab-content').style.display=n===1?'block':'none';
+  if(n===0)renderTopicsTab();else renderJourneyTab();
+}
+
+function getProgress(profile){return readData('eg_prog_'+profile,{});}
+function saveProgress(profile,prog){saveData('eg_prog_'+profile,prog);if(isCloudOn())setTimeout(pushToCloud,500);}
+
+function getTopicStatus(profile,tid){
+  const prog=getProgress(profile);
+  const tp=prog[tid]||{done:false,sessions:{},testDone:false,testNeeded:false};
+  const done=SESSION_TYPES.filter(t=>tp.sessions&&tp.sessions[t]);
+  const allDone=done.length===5;
+  if(tp.done)return'done';
+  if(tp.testNeeded||allDone)return'test';
+  if(done.length>0)return'active';
+  const topics=TOPICS[profile];const idx=topics.findIndex(t=>t.id===tid);
+  if(idx===0)return'active';
+  const prevId=topics[idx-1].id;const prevStatus=getTopicStatus(profile,prevId);
+  if(prevStatus==='done')return'active';
+  return'locked';
+}
+
+function getNextSessionType(profile,tid){
+  const prog=getProgress(profile);
+  const tp=prog[tid]||{sessions:{}};
+  for(const st of SESSION_TYPES){if(!tp.sessions||!tp.sessions[st])return st;}
+  return'test';
+}
+
+function renderTopicsTab(){
+  const topics=TOPICS[_profile];
+  const prog=getProgress(_profile);
+  let total=0,done=0;
+  topics.forEach(t=>{
+    const st=getTopicStatus(_profile,t.id);
+    if(st==='done')done++;
+    total++;
+  });
+  const pct=Math.round(done/total*100);
+  let html=`<div class="overall-prog"><h3>Overall progress — ${_profile==='alexander'?'Alexander':'Estelle'}</h3>
+    <div class="prog-bg"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div class="prog-lbl">${done} of ${total} topics complete</div></div>
+    <div class="topics-grid">`;
+  topics.forEach(t=>{
+    const status=getTopicStatus(_profile,t.id);
+    const tp=prog[t.id]||{sessions:{}};
+    const nextSt=getNextSessionType(_profile,t.id);
+    const badgeMap={locked:'badge-locked',active:'badge-active',test:'badge-test',done:'badge-done'};
+    const labelMap={locked:'🔒 Locked',active:`▶ ${SESSION_LABELS[nextSt]||'Test'}`,test:'⭐ Test!',done:'✓ Done'};
+    const hasReady=readData('eg_next_'+_profile,null);
+    let badgeText=labelMap[status];
+    if(hasReady&&hasReady.topicId===t.id)badgeText='📋 Ready';
+    const dots=SESSION_TYPES.map(st=>{
+      const isDone=tp.sessions&&tp.sessions[st];
+      const isCurrent=!isDone&&st===nextSt&&status==='active';
+      const cls=isDone?'done':isCurrent?'next':'empty';
+      return`<div class="sdot ${cls}" title="${SESSION_LABELS[st]}">${isDone?'✓':isCurrent?'▶':''}</div>`;
+    }).join('');
+    const dotLabels=SESSION_TYPES.map(st=>`<div class="sdot-lbl">${SESSION_ICONS[st]}</div>`).join('');
+    const isLocked=status==='locked';
+    html+=`<div class="topic-card ${status}${isLocked?' locked':''}" onclick="${isLocked?'':('startTopicSession(\''+t.id+'\')')}">
+      <div class="tc-top"><div class="tc-icon">${t.icon}</div><div class="tc-badge ${badgeMap[status]}">${badgeText}</div></div>
+      <div class="tc-month">${t.month}</div>
+      <div class="tc-title">${t.theme}</div>
+      <div class="session-dots">${dots}</div>
+      <div class="sdot-labels">${dotLabels}</div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('topics-tab-content').innerHTML=html;
+}
+
+function renderJourneyTab(){
+  const topics=TOPICS[_profile];
+  const prog=getProgress(_profile);
+  const hist=readData('eg_hist_'+_profile,[]);
+  const streak=readData('eg_streak_'+_profile,0);
+  const totalDone=topics.filter(t=>getTopicStatus(_profile,t.id)==='done').length;
+  const totalSessions=hist.length;
+  const avgScore=hist.length?Math.round(hist.reduce((a,h)=>a+(h.score/h.total*100),0)/hist.length):0;
+  let html=`<div class="journey-hero">
+    <h2>${_profile==='alexander'?'Alexander':'Estelle'}'s Journey</h2>
+    <p>Keep reading, keep growing!</p>
+    <div class="journey-stats">
+      <div class="j-stat"><div class="j-stat-num">${streak}</div><div class="j-stat-lbl">Day streak</div></div>
+      <div class="j-stat"><div class="j-stat-num">${totalDone}</div><div class="j-stat-lbl">Topics done</div></div>
+      <div class="j-stat"><div class="j-stat-num">${totalSessions>0?avgScore+'%':'—'}</div><div class="j-stat-lbl">Avg score</div></div>
+    </div>
+  </div><div class="timeline">`;
+  topics.forEach(t=>{
+    const status=getTopicStatus(_profile,t.id);
+    const tp=prog[t.id]||{sessions:{}};
+    const sessComplete=SESSION_TYPES.filter(st=>tp.sessions&&tp.sessions[st]);
+    const sessChips=sessComplete.map(st=>{
+      const colors={factual:'background:#BFDBFE;color:#1e40af;border-color:#93C5FD',
+        fiction:'background:#DDD6FE;color:#4C1D95;border-color:#C4B5FD',
+        deeper:'background:#FDE68A;color:#78350F;border-color:#FCD34D',
+        nordic:'background:#A7F3D0;color:#064E3B;border-color:#6EE7B7',
+        write:'background:#FECACA;color:#7F1D1D;border-color:#FCA5A5'};
+      return`<div class="tl-sess" style="${colors[st]}">${SESSION_ICONS[st]} ${SESSION_LABELS[st]}</div>`;
+    }).join('');
+    const th=hist.filter(h=>h.tid===t.id);
+    const metaParts=[];
+    if(tp.done)metaParts.push('✓ Complete');
+    if(th.length)metaParts.push(`${th.length} session${th.length>1?'s':''}`);
+    if(th.length){const avg=Math.round(th.reduce((a,h)=>a+(h.score/h.total*100),0)/th.length);metaParts.push(`avg ${avg}%`);}
+    html+=`<div class="tl-item">
+      <div class="tl-dot ${status}"></div>
+      <div class="tl-title">${t.icon} ${t.theme}</div>
+      <div class="tl-meta">${t.month}${metaParts.length?' · '+metaParts.join(' · '):''}</div>
+      ${sessChips?`<div class="tl-sessions">${sessChips}</div>`:''}
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('journey-tab-content').innerHTML=html;
+}
+
+// ===== START SESSION =====
+async function startTopicSession(tid){
+  const status=getTopicStatus(_profile,tid);
+  if(status==='locked')return;
+  S.topicId=tid;
+  const prog=getProgress(_profile);
+  const tp=prog[tid]||{sessions:{}};
+  const allDone=SESSION_TYPES.every(st=>tp.sessions&&tp.sessions[st]);
+
+  // Check for parent-locked session
+  const locked=readData('eg_next_'+_profile,null);
+  if(locked&&locked.topicId===tid){
+    S.sessionType=locked.sessionType;
+    S.sessionData=locked;
+    saveData('eg_next_'+_profile,null);
+    showToast('📋 Using parent-approved session');
+    runSession();return;
+  }
+
+  if(status==='test'||allDone){S.sessionType='test';S.isTest=true;}
+  else{S.sessionType=getNextSessionType(_profile,tid);S.isTest=false;}
+
+  await generateAndRunSession();
+}
+
+async function generateAndRunSession(){
+  const topic=TOPICS[_profile].find(t=>t.id===S.topicId);
+  showScreen('screen-session');
+  S.phase=1;S.currentQ=0;S.answers=[];S.annotationImg=null;S.paused=false;
+  document.getElementById('sess-hdr-title').textContent=topic.theme;
+  const badge=document.getElementById('sess-type-badge');
+  badge.textContent=SESSION_LABELS[S.sessionType]||'Test';
+  badge.className='sess-type-badge stb-'+(S.isTest?'test':S.sessionType);
+  updatePhaseBar(1);
+  renderProgStrip(0,9);
+
+  // Check corrections
+  const corrections=readData('eg_corrections_'+_profile,[]);
+  S.corrections=S.isTest?[]:corrections.slice(0,5);
+  if(S.corrections.length>0){
+    document.getElementById('correction-banner').style.display='flex';
+  }else{
+    document.getElementById('correction-banner').style.display='none';
+  }
+
+  document.getElementById('send-bar').style.display='none';
+  document.getElementById('sess-body').innerHTML=`<div class="gen-box">
+    <div class="gen-spinner"></div>
+    <div class="gen-text">Generating your ${SESSION_LABELS[S.sessionType]||'Test'} session...</div>
+  </div>`;
+
+  try{
+    const data=await genSession(_profile,S.topicId,S.sessionType,S.isTest);
+    S.sessionData=data;
+    startTimer();
+    renderPhase1();
+  }catch(e){
+    document.getElementById('sess-body').innerHTML=`<div class="gen-box">
+      <div class="gen-text" style="color:var(--red)">⚠️ Failed to generate session. Check your API key and try again.</div>
+    </div>`;
+  }
+}
+
+// ===== CONTENT GENERATION =====
+async function genSession(profile,tid,sessionType,isTest){
+  const topic=TOPICS[profile].find(t=>t.id===tid);
+  const age=profile==='alexander'?9:11;
+  const grade=profile==='alexander'?3:6;
+  const words=profile==='alexander'?'160-220':'270-360';
+  const passScore=profile==='alexander'?70:75;
+
+  const typeDesc={
+    factual:`a factual/informational non-fiction passage about "${topic.sessions.factual}"`,
+    fiction:`a fiction story passage inspired by "${topic.sessions.fiction}"`,
+    deeper:`an analytical informational passage about "${topic.sessions.deeper}"`,
+    nordic:`a Nordic/Scandinavian-inspired fiction story based on "${topic.sessions.nordic}"`,
+    write:`an informational passage about "${topic.sessions.write}" that requires structured paragraph writing`
+  };
+
+  const qMix=profile==='alexander'?
+    {vocab:2,factual:3,inference:2,evidence:1,opinion:1}:
+    {vocab:3,factual:2,inference:2,evidence:1,opinion:1};
+
+  const testInstructions=isTest?`This is a topic MASTERY TEST covering the theme "${topic.theme}". Mix question types across all session types. Include vocabulary, comprehension, inference, evidence, and opinion questions. Passage should be fresh and not repeat previous sessions.`:'';
+
+  const prompt=`You are generating an English reading session for a ${age}-year-old (Year ${grade}) Swedish student learning English as a subject. Topic theme: "${topic.theme}" (${topic.month}).
+${isTest?testInstructions:`Session type: ${typeDesc[sessionType]}`}
+
+IMPORTANT: Return ONLY valid JSON. No markdown, no backticks, no explanation.
+
+Generate a complete session with:
+1. A reading passage (${words} words, engaging and age-appropriate)
+2. Exactly 9 comprehension questions with expected answers
+3. 1 writing task (Q10)
+
+Question mix: ${JSON.stringify(qMix)}
+Question types to use: vocab (word meanings), factual (directly in text), inference (read between lines), evidence (find proof in text), opinion (supported view)
+
+The 9 questions must relate directly to the passage. Questions 1-3 should be accessible (vocab/factual), Questions 4-7 medium (inference/evidence), Questions 8-9 harder (analysis/opinion).
+
+For inference/evidence/opinion questions include a SHORT AI note explaining what makes a good answer (for parent guidance).
+
+Return exactly this JSON structure:
+{
+  "passage": "...",
+  "questions": [
+    {"type":"vocab","q":"Question text?","expected":"Expected answer","aiNote":""},
+    {"type":"factual","q":"Question text?","expected":"Expected answer","aiNote":""},
+    {"type":"factual","q":"Question text?","expected":"Expected answer","aiNote":""},
+    {"type":"factual","q":"Question text?","expected":"Expected answer","aiNote":""},
+    {"type":"inference","q":"Question text?","expected":"Expected answer","aiNote":"Brief note for parent"},
+    {"type":"evidence","q":"Quote a phrase that shows X...","expected":"Phrase1 / Phrase2 / Phrase3","aiNote":"Multiple valid quotes listed"},
+    {"type":"inference","q":"Question text?","expected":"Expected answer","aiNote":"Brief note"},
+    {"type":"opinion","q":"What do you think about...?","expected":"Any supported view + reason","aiNote":"Accept any reasoned opinion"},
+    {"type":"opinion","q":"Question text?","expected":"Any supported view + reason","aiNote":"Accept any reasoned opinion"}
+  ],
+  "writeTask": {
+    "prompt": "Write a paragraph answering: [specific question requiring 3-4 sentences]",
+    "keyPoints": "Good answer should include: [3-4 bullet points describing what makes a strong response]"
+  }
+}`;
+
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':_key,
+      'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,
+      messages:[{role:'user',content:prompt}]})
+  });
+  const d=await resp.json();
+  let text=d.content?.[0]?.text||'{}';
+  text=text.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+  return JSON.parse(text);
+}
+
+// ===== SESSION PHASES =====
+function updatePhaseBar(phase){
+  [1,2,3].forEach(n=>{
+    const el=document.getElementById('ph'+n);
+    el.className='ph-item '+(n<phase?'ph-done':n===phase?'ph-active':'ph-idle');
+  });
+}
+
+function renderProgStrip(answered,total){
+  let html='';
+  for(let i=0;i<total;i++){
+    const cl=i<answered?'answered':i===answered?'current':'';
+    html+=`<div class="pq ${cl}">${i+1}</div>`;
+  }
+  document.getElementById('sess-prog-strip').innerHTML=html;
+}
+
+// PHASE 1: READING
+function renderPhase1(){
+  S.phase=1;
+  updatePhaseBar(1);
+  renderProgStrip(0,9);
+  document.getElementById('send-bar').style.display='none';
+  const body=document.getElementById('sess-body');
+  body.innerHTML=`
+    <div class="reading-lbl">📖 Read &amp; annotate with your stylus</div>
+    <div class="passage-wrap" id="passage-wrap">
+      <div class="passage-txt" id="passage-txt">${S.sessionData.passage}</div>
+      <canvas id="annotation-canvas"></canvas>
+      <div class="anno-tools">
+        <div class="anno-tool active" id="tool-pen" style="background:#1a1a2e" onclick="setTool('pen')" title="Draw">✏️</div>
+        <div class="anno-tool" id="tool-hl" style="background:#FEF08A" onclick="setTool('highlight')" title="Highlight"></div>
+        <div class="anno-tool" id="tool-circle" style="background:transparent;border-color:#3B82F6" onclick="setTool('circle')" title="Circle">⭕</div>
+        <button class="anno-clear" onclick="clearAnnotation()">Clear</button>
+      </div>
+    </div>
+    <button class="done-reading-btn" onclick="goToPhase2()">Done reading — start questions →</button>`;
+  initAnnotationCanvas();
+}
+
+let _annoTool='pen';
+function setTool(t){
+  _annoTool=t;
+  document.querySelectorAll('.anno-tool').forEach(el=>el.classList.remove('active'));
+  const ids={pen:'tool-pen',highlight:'tool-hl',circle:'tool-circle'};
+  if(ids[t])document.getElementById(ids[t]).classList.add('active');
+}
+
+function initAnnotationCanvas(){
+  const wrap=document.getElementById('passage-wrap');
+  const canvas=document.getElementById('annotation-canvas');
+  if(!canvas)return;
+  const resize=()=>{canvas.width=wrap.offsetWidth;canvas.height=wrap.offsetHeight;};
+  resize();new ResizeObserver(resize).observe(wrap);
+  const ctx=canvas.getContext('2d');
+  let drawing=false,lastX=0,lastY=0,startX=0,startY=0;
+  let snapshot=null;
+
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return{x:(src.clientX-r.left),y:(src.clientY-r.top)};
+  };
+  const blockSwipe=e=>{e.preventDefault();e.stopPropagation();};
+  ['touchstart','touchmove','touchend','gesturestart','gesturechange','gestureend'].forEach(ev=>
+    canvas.addEventListener(ev,blockSwipe,{passive:false}));
+
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();canvas.setPointerCapture(e.pointerId);
+    drawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;startX=p.x;startY=p.y;
+    if(_annoTool==='circle')snapshot=ctx.getImageData(0,0,canvas.width,canvas.height);
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!drawing)return;e.preventDefault();
+    const p=getPos(e);
+    if(_annoTool==='pen'){
+      ctx.beginPath();ctx.strokeStyle='rgba(26,26,46,0.8)';ctx.lineWidth=2;ctx.lineCap='round';
+      ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();
+    }else if(_annoTool==='highlight'){
+      ctx.beginPath();ctx.strokeStyle='rgba(254,240,138,0.6)';ctx.lineWidth=16;ctx.lineCap='round';
+      ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();
+    }else if(_annoTool==='circle'){
+      ctx.putImageData(snapshot,0,0);
+      ctx.beginPath();ctx.strokeStyle='rgba(59,130,246,0.8)';ctx.lineWidth=2;
+      const rx=Math.abs(p.x-startX)/2,ry=Math.abs(p.y-startY)/2;
+      ctx.ellipse(startX+(p.x-startX)/2,startY+(p.y-startY)/2,rx,ry,0,0,2*Math.PI);
+      ctx.stroke();
+    }
+    lastX=p.x;lastY=p.y;
+  });
+  canvas.addEventListener('pointerup',()=>{drawing=false;snapshot=null;});
+}
+
+function clearAnnotation(){document.getElementById('annotation-canvas')?.getContext('2d').clearRect(0,0,9999,9999);}
+
+function goToPhase2(){
+  const canvas=document.getElementById('annotation-canvas');
+  S.annotationImg=canvas?canvas.toDataURL('image/png'):null;
+  renderPhase2();
+}
+
+// PHASE 2: QUESTIONS
+let _peekOpen=false;
+function renderPhase2(){
+  S.phase=2;S.currentQ=0;
+  updatePhaseBar(2);
+  renderProgStrip(0,9);
+  document.getElementById('send-bar').style.display='none';
+  renderQuestion(0);
+}
+
+function renderQuestion(qi){
+  S.currentQ=qi;
+  renderProgStrip(qi,9);
+  const q=S.sessionData.questions[qi];
+  const body=document.getElementById('sess-body');
+  _peekOpen=false;
+  const isLast = qi === 8;
+  body.innerHTML=`
+    <div class="peek-bar" id="peek-bar" onclick="togglePeek()">
+      <div class="peek-bar-lbl">📖 Passage reference</div>
+      <span id="peek-icon">▾</span>
+    </div>
+    <div class="peek-body" id="peek-body">${S.sessionData.passage}</div>
+    <div>
+      <div class="q-lbl">${q.type.toUpperCase()} · Q${qi+1} of 9</div>
+      <div class="q-text">${q.q}</div>
+    </div>
+    <div class="answer-wrap">
+      <canvas id="answer-canvas"></canvas>
+      <button class="clear-ans-btn" onclick="clearAnswerCanvas()">Clear</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      ${qi>0?`<button id="prev-q-btn" style="flex:1;background:var(--white);border:2px solid var(--navy);color:var(--navy);border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">‹ Previous</button>`:'<div style="flex:1"></div>'}
+      <button id="next-q-btn" style="flex:2;background:var(--navy);color:var(--gold);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">
+        ${isLast ? '✍️ Go to writing →' : 'Next question →'}
+      </button>
+    </div>`;
+  initAnswerCanvas(qi);
+}
+
+function togglePeek(){
+  _peekOpen=!_peekOpen;
+  document.getElementById('peek-body').style.display=_peekOpen?'block':'none';
+  document.getElementById('peek-icon').textContent=_peekOpen?'▴':'▾';
+}
+
+function initAnswerCanvas(qi){
+  const canvas=document.getElementById('answer-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.parentElement.offsetWidth-6;
+  const h=180;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  // Draw lines
+  ctx.strokeStyle='#f0f0f0';ctx.lineWidth=1;
+  for(let y=30;y<h;y+=30){ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(w-10,y);ctx.stroke();}
+  
+  let drawing=false,lastX=0,lastY=0;
+  const blockSwipe=e=>{e.preventDefault();e.stopPropagation();};
+  ['touchstart','touchmove','touchend','gesturestart'].forEach(ev=>
+    canvas.addEventListener(ev,blockSwipe,{passive:false}));
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();canvas.setPointerCapture(e.pointerId);
+    const r=canvas.getBoundingClientRect();
+    lastX=(e.clientX-r.left);lastY=(e.clientY-r.top);drawing=true;
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!drawing)return;e.preventDefault();
+    const r=canvas.getBoundingClientRect();
+    const x=(e.clientX-r.left),y=(e.clientY-r.top);
+    ctx.beginPath();ctx.strokeStyle='#1a1a2e';ctx.lineWidth=2;ctx.lineCap='round';
+    ctx.moveTo(lastX,lastY);ctx.lineTo(x,y);ctx.stroke();
+    lastX=x;lastY=y;
+  });
+  canvas.addEventListener('pointerup',()=>{drawing=false;});
+
+  // Restore if already answered
+  if(S.answers[qi]?.img){
+    const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,w,h);img.src=S.answers[qi].img;
+  }
+}
+
+function clearAnswerCanvas(){
+  const canvas=document.getElementById('answer-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.width/dpr,h=canvas.height/dpr;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,w*dpr,h*dpr);ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#f0f0f0';ctx.lineWidth=1;
+  for(let y=30;y<h;y+=30){ctx.beginPath();ctx.moveTo(10,y);ctx.lineTo(w-10,y);ctx.stroke();}
+}
+
+function saveCurrentAnswer(){
+  const canvas=document.getElementById('answer-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const ctx=canvas.getContext('2d');
+  const isEmpty=!ctx.getImageData(0,0,canvas.width,canvas.height).data.some(v=>v!==0);
+  S.answers[S.currentQ]={img:isEmpty?null:canvas.toDataURL('image/png'),isEmpty};
+}
+
+function nextQuestion(){
+  saveCurrentAnswer();
+  const qi=S.currentQ;
+  renderProgStrip(qi+1,9);
+  if(qi<8)renderQuestion(qi+1);
+  else renderPhase3();
+  updateSendMeta();
+}
+
+function prevQuestion(){
+  saveCurrentAnswer();
+  if(S.currentQ>0)renderQuestion(S.currentQ-1);
+}
+
+// PHASE 3: WRITE
+function renderPhase3(){
+  S.phase=3;
+  updatePhaseBar(3);
+  renderProgStrip(9,9);
+  const wt=S.sessionData.writeTask;
+  document.getElementById('sess-body').innerHTML=`
+    <div class="write-prompt-card">
+      <div class="write-prompt-lbl">✍️ Write · Q10</div>
+      <div class="write-prompt-text">${wt.prompt}</div>
+    </div>
+    <div class="write-wrap">
+      <canvas id="write-canvas"></canvas>
+      <button class="clear-write-btn" onclick="clearWriteCanvas()">Clear</button>
+    </div>`;
+  document.getElementById('send-bar').style.display='flex';
+  updateSendMeta();
+  initWriteCanvas();
+}
+
+function initWriteCanvas(){
+  const canvas=document.getElementById('write-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.parentElement.offsetWidth-6;
+  const h=280;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  // Dot grid
+  ctx.fillStyle='#e0e0e0';
+  for(let y=20;y<h;y+=20)for(let x=20;x<w;x+=20){ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);ctx.fill();}
+  
+  let drawing=false,lastX=0,lastY=0;
+  const blockSwipe=e=>{e.preventDefault();e.stopPropagation();};
+  ['touchstart','touchmove','touchend','gesturestart'].forEach(ev=>
+    canvas.addEventListener(ev,blockSwipe,{passive:false}));
+  canvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();canvas.setPointerCapture(e.pointerId);
+    const r=canvas.getBoundingClientRect();
+    lastX=e.clientX-r.left;lastY=e.clientY-r.top;drawing=true;
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!drawing)return;e.preventDefault();
+    const r=canvas.getBoundingClientRect();
+    const x=e.clientX-r.left,y=e.clientY-r.top;
+    ctx.beginPath();ctx.strokeStyle='#1a1a2e';ctx.lineWidth=2;ctx.lineCap='round';
+    ctx.moveTo(lastX,lastY);ctx.lineTo(x,y);ctx.stroke();
+    lastX=x;lastY=y;
+  });
+  canvas.addEventListener('pointerup',()=>{drawing=false;});
+}
+
+function clearWriteCanvas(){
+  const canvas=document.getElementById('write-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.width/dpr,h=canvas.height/dpr;
+  const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.scale(dpr,dpr);
+  ctx.fillStyle='#e0e0e0';
+  for(let y=20;y<h;y+=20)for(let x=20;x<w;x+=20){ctx.beginPath();ctx.arc(x,y,1.5,0,2*Math.PI);ctx.fill();}
+}
+
+// ===== TIMER =====
+function startTimer(){S.timer=0;clearInterval(S.timerInterval);S.timerInterval=setInterval(()=>{if(!S.paused){S.timer++;updateSendMeta();}},1000);}
+function stopTimer(){clearInterval(S.timerInterval);}
+function fmtTime(s){const m=Math.floor(s/60),sec=s%60;return`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+function updateSendMeta(){const q=S.answers.filter(a=>a&&!a.isEmpty).length;document.getElementById('send-meta').textContent=`Answered ${q} · ${fmtTime(S.timer)}`;}
+
+function togglePause(){
+  S.paused=!S.paused;
+  document.getElementById('pause-overlay').classList.toggle('show',S.paused);
+  document.getElementById('pause-btn')?.setAttribute('data-paused',S.paused);
+}
+
+// ===== SEND SESSION =====
+function sendSession(){
+  showModal(
+    'Send session?',
+    'Your work will be sent to Dad to review. Once sent you cannot change it.',
+    ()=>{doSendSession();}
+  );
+}
+
+async function doSendSession(){
+  stopTimer();
+  // Save write canvas
+  const wc=document.getElementById('write-canvas');
+  const writeImg=wc?wc.toDataURL('image/png'):null;
+  // Save any unsaved answer
+  saveCurrentAnswer();
+
+  const pending=readData('eg_pending_'+_profile,[])||[];
+  const existIdx=pending.findIndex(p=>p.topicId===S.topicId&&p.sessionType===S.sessionType);
+
+  const sessionRecord={
+    id:Date.now(),
+    profile:_profile,topicId:S.topicId,sessionType:S.sessionType,isTest:S.isTest,
+    date:new Date().toISOString(),timer:S.timer,
+    passage:S.sessionData.passage,
+    questions:S.sessionData.questions,
+    writeTask:S.sessionData.writeTask,
+    answers:S.answers,
+    annotationImg:S.annotationImg,
+    writeImg,
+    aiResults:[],writeResult:null,
+    approved:false,
+    passScore:_profile==='alexander'?70:75
+  };
+
+  if(existIdx>=0)pending.splice(existIdx,1,sessionRecord);
+  else pending.push(sessionRecord);
+  saveData('eg_pending_'+_profile,pending);
+
+  // Update streak
+  const today=new Date().toDateString();
+  const lastDay=readData('eg_lastday_'+_profile,'');
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  let streak=readData('eg_streak_'+_profile,0);
+  if(lastDay===today){/* same day, no change */}
+  else if(lastDay===yesterday)streak++;
+  else streak=1;
+  saveData('eg_streak_'+_profile,streak);
+  saveData('eg_lastday_'+_profile,today);
+
+  if(isCloudOn())await pushToCloud();
+
+  // Show complete screen
+  showScreen('screen-complete');
+  document.getElementById('complete-sub').textContent=`Dad will review your ${SESSION_LABELS[S.sessionType]||'Test'} session.`;
+  document.getElementById('complete-streak').textContent=`🔥 ${streak} day streak`;
+}
+
+// ===== AI CHECKING =====
+async function checkAnswer(question,questionType,expectedAnswer,passageText){
+  const prompt=`You are marking an English comprehension question for a child aged ${_profile==='alexander'?9:11}.
+
+Passage context: "${passageText.substring(0,200)}..."
+Question: "${question}"
+Expected answer: "${expectedAnswer}"
+Child's written answer: [This is a canvas image - mark as PENDING if unclear]
+Question type: ${questionType}
+
+For this AI check, evaluate based on the expected answer.
+If the expected answer is "any supported view" or similar, mark CORRECT if any reasonable response.
+For evidence questions, accept any of the valid quotes listed.
+For inference questions, accept the core idea even if wording differs.
+
+Respond with exactly: CORRECT: [one sentence comment] or WRONG: [one sentence comment]
+Keep comment brief and helpful for parent review. For vocab/factual: no comment if correct.`;
+  
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':_key,
+        'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:100,
+        messages:[{role:'user',content:prompt}]})
+    });
+    const d=await r.json();
+    const text=d.content?.[0]?.text||'PENDING';
+    const correct=text.toUpperCase().startsWith('CORRECT');
+    const comment=text.replace(/^(CORRECT|WRONG)[:\s-]*/i,'').trim();
+    return{correct,comment:(correct?'✅ ':'❌ ')+comment};
+  }catch(e){return{correct:null,comment:'⏳ Pending'};}
+}
+
+// ===== PARENT PIN =====
+let _pinBuffer='';
+function showParentPin(){_pinBuffer='';updatePinDots();document.getElementById('pin-error').textContent='';showScreen('screen-parent-pin');}
+function pinPress(k){
+  if(k==='back')_pinBuffer=_pinBuffer.slice(0,-1);
+  else if(k==='clear')_pinBuffer='';
+  else if(_pinBuffer.length<4)_pinBuffer+=k;
+  updatePinDots();
+  if(_pinBuffer.length===4){
+    const saved=readData('eg_parent_pin','1234');
+    if(_pinBuffer===saved){showParentDash();}
+    else{document.getElementById('pin-error').textContent='Wrong PIN. Try again.';_pinBuffer='';setTimeout(()=>{updatePinDots();document.getElementById('pin-error').textContent='';},500);}
+  }
+}
+function updatePinDots(){
+  document.querySelectorAll('.pin-dot').forEach((d,i)=>d.classList.toggle('filled',i<_pinBuffer.length));
+}
+
+// ===== PARENT DASHBOARD =====
+let _dashTab=0;
+function showParentDash(){showScreen('screen-parent-dash');switchDashTab(0);}
+function switchDashTab(n){
+  _dashTab=n;
+  document.querySelectorAll('.dtab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  if(n===0)renderDashOverview();
+  else renderDashChild(n===1?'alexander':'estelle');
+}
+
+function renderDashOverview(){
+  const alexPending=readData('eg_pending_alexander',[])||[];
+  const estPending=readData('eg_pending_estelle',[])||[];
+  const allPending=[...alexPending.map(p=>({...p,pname:'Alexander'})),...estPending.map(p=>({...p,pname:'Estelle'}))];
+  let html='<div class="dash-sec"><h3>📋 Pending review ('+allPending.length+')</h3>';
+  if(allPending.length===0)html+=`<div class="no-pending"><p>No sessions waiting for review</p></div>`;
+  else allPending.forEach(p=>{
+    const topic=TOPICS[p.profile]?.find(t=>t.id===p.topicId);
+    html+=`<div class="pending-card" onclick="openReview('${p.profile}','${p.id}')">
+      <div class="pc-top"><div class="pc-name">${p.pname} — ${topic?.theme||p.topicId}</div>
+      <div class="pc-badge">${SESSION_ICONS[p.sessionType]||'📋'} ${SESSION_LABELS[p.sessionType]||'Test'}</div></div>
+      <div class="pc-meta">${new Date(p.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${fmtTime(p.timer)}</div>
+    </div>`;
+  });
+  html+='</div>';
+  // Combined stats
+  const alexHist=readData('eg_hist_alexander',[])||[];const estHist=readData('eg_hist_estelle',[])||[];
+  const allHist=[...alexHist,...estHist];
+  const weekSess=allHist.filter(h=>new Date(h.date)>new Date(Date.now()-7*86400000)).length;
+  html+=`<div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">${allPending.length}</div><div class="stat-lbl">Pending review</div></div>
+    <div class="stat-card"><div class="stat-num">${weekSess}</div><div class="stat-lbl">Sessions this week</div></div>
+    <div class="stat-card"><div class="stat-num">${readData('eg_streak_alexander',0)}</div><div class="stat-lbl">Alexander streak</div></div>
+    <div class="stat-card"><div class="stat-num">${readData('eg_streak_estelle',0)}</div><div class="stat-lbl">Estelle streak</div></div>
+  </div>`;
+  document.getElementById('dash-content').innerHTML=html;
+}
+
+function renderDashChild(profile){
+  const name=profile==='alexander'?'Alexander':'Estelle';
+  const topics=TOPICS[profile];
+  const prog=getProgress(profile);
+  const hist=readData('eg_hist_'+profile,[])||[];
+  const pending=readData('eg_pending_'+profile,[])||[];
+  const streak=readData('eg_streak_'+profile,0);
+  const avgScore=hist.length?Math.round(hist.reduce((a,h)=>a+(h.score/h.total*100),0)/hist.length):0;
+  let html=`<div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">${streak}</div><div class="stat-lbl">Day streak</div></div>
+    <div class="stat-card"><div class="stat-num">${hist.length>0?avgScore+'%':'—'}</div><div class="stat-lbl">Avg score</div></div>
+    <div class="stat-card"><div class="stat-num">${topics.filter(t=>getTopicStatus(profile,t.id)==='done').length}</div><div class="stat-lbl">Topics done</div></div>
+    <div class="stat-card"><div class="stat-num">${pending.length}</div><div class="stat-lbl">Awaiting review</div></div>
+  </div>`;
+  // Actions
+  html+=`<div class="dash-sec"><h3>⚡ Actions</h3><div class="action-grid">
+    <div class="action-btn-card" onclick="showSessionBuilder('${profile}')"><div class="action-icon">📋</div><div class="action-lbl">Build session</div></div>
+    <div class="action-btn-card" onclick="unlockNextTopic('${profile}')"><div class="action-icon">🔓</div><div class="action-lbl">Unlock topic</div></div>
+    <div class="action-btn-card" onclick="resetTopicLevel('${profile}')"><div class="action-icon">↩</div><div class="action-lbl">Reset session</div></div>
+    <div class="action-btn-card" onclick="fixProgress('${profile}')"><div class="action-icon">🔧</div><div class="action-lbl">Fix progress</div></div>
+  </div></div>`;
+  // Topic list
+  html+=`<div class="dash-sec"><h3>📚 ${name}'s topics</h3><div class="topic-list">`;
+  topics.forEach(t=>{
+    const status=getTopicStatus(profile,t.id);
+    const tp=prog[t.id]||{sessions:{}};
+    const done=SESSION_TYPES.filter(st=>tp.sessions&&tp.sessions[st]).length;
+    const colors={locked:'background:#f0f0f0;color:#999',active:'background:#EFF6FF;color:#1D4ED8',test:'background:#FEF9C3;color:#854D0E',done:'background:#F0FDF4;color:#166534'};
+    html+=`<div class="tp-row">
+      <div class="tp-icon">${t.icon}</div>
+      <div class="tp-info"><div class="tp-name">${t.theme}</div><div class="tp-meta">${t.month} · ${done}/5 sessions</div></div>
+      <div class="tp-badge" style="${colors[status]}">${status==='done'?'✓ Done':status==='test'?'⭐ Test':status==='active'?`${done}/5`:'🔒'}</div>
+    </div>`;
+  });
+  html+='</div></div>';
+  document.getElementById('dash-content').innerHTML=html;
+}
+
+function showSessionBuilder(profile){
+  _sbData.profile=profile||_profile;
+  showScreen('screen-session-builder');
+  initSB();
+}
+
+function unlockNextTopic(profile){
+  const prog=getProgress(profile);
+  const topics=TOPICS[profile];
+  for(const t of topics){
+    if(getTopicStatus(profile,t.id)==='locked'){
+      if(!prog[t.id])prog[t.id]={sessions:{},done:false,testNeeded:false};
+      prog[t.id]._forceUnlocked=true;
+      saveProgress(profile,prog);
+      showToast(`🔓 Unlocked: ${t.theme}`);
+      switchDashTab(_dashTab);return;
+    }
+  }
+  showToast('All topics already unlocked');
+}
+
+function resetTopicLevel(profile){
+  showModal('Reset session?','Select a topic to reset the last session type. The child will redo it.',()=>{showToast('Use Fix Progress to manually adjust');});
+}
+
+function fixProgress(profile){
+  const hist=readData('eg_hist_'+profile,[])||[];
+  if(!hist.length){showToast('No history to fix');return;}
+  const prog={};
+  hist.forEach(h=>{
+    if(!prog[h.tid])prog[h.tid]={sessions:{},done:false,testNeeded:false};
+    if(h.sessionType&&h.sessionType!=='test')prog[h.tid].sessions[h.sessionType]=true;
+    if(h.sessionType==='test'&&h.score/h.total>=h.passScore/100)prog[h.tid].done=true;
+  });
+  saveProgress(profile,prog);showToast('✅ Progress recalculated');switchDashTab(_dashTab);
+}
+
+// ===== PARENT REVIEW =====
+let _reviewSession=null;
+function openReview(profile,sessionId){
+  const pending=readData('eg_pending_'+profile,[])||[];
+  const sess=pending.find(p=>p.id==sessionId);
+  if(!sess){showToast('Session not found');return;}
+  _reviewSession={...sess,profile};
+  renderReview(profile,sessionId);
+  showScreen('screen-parent-review');
+}
+
+async function renderReview(profile,sessionId){
+  const sess=_reviewSession;
+  const topic=TOPICS[profile]?.find(t=>t.id===sess.topicId);
+  const name=profile==='alexander'?'Alexander':'Estelle';
+  const date=new Date(sess.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+  // Info bar
+  const icon=readCred('eg_icon_'+profile)||(profile==='alexander'?'🦊':'🦋');
+  document.getElementById('review-info-bar').innerHTML=`
+    <div style="font-size:28px;margin-right:4px">${icon}</div>
+    <div class="ri-left">
+      <div class="ri-name">${name}</div>
+      <div class="ri-meta">
+        <span>${topic?.theme||sess.topicId}</span>
+        <span>·</span>
+        <span class="ri-badge stb-${sess.isTest?'test':sess.sessionType}">${SESSION_ICONS[sess.sessionType]||'📋'} ${SESSION_LABELS[sess.sessionType]||'Test'}</span>
+        <span>·</span><span>${date} · ${fmtTime(sess.timer)}</span>
+      </div>
+    </div>
+    <button id="apr-btn" class="apr-btn" onclick="approveSession()">✓ Approve</button>`;
+
+  // Session type pills
+  const pending=readData('eg_pending_'+profile,[])||[];
+  let pillsHtml='';
+  SESSION_TYPES.forEach(st=>{
+    const hasPend=pending.find(p=>p.topicId===sess.topicId&&p.sessionType===st);
+    const isCur=st===sess.sessionType;
+    pillsHtml+=`<div class="sp-pill${isCur?' active-pill':''}${hasPend&&!isCur?' pend-pill':''}" 
+      onclick="${hasPend&&!isCur?`openReview('${profile}','${hasPend.id}`):''}">
+      ${SESSION_ICONS[st]} ${SESSION_LABELS[st]}${hasPend&&!isCur?' ·':isCur?' ✓':''}</div>`;
+  });
+  document.getElementById('sess-pills').innerHTML=pillsHtml;
+
+  // Main content
+  let html=`<div class="passage-toggle">
+    <div class="pt-hdr" onclick="togglePassageReview()">
+      <div class="pt-lbl">✏️ Passage + ${name}'s annotations</div>
+      <span id="pt-icon">▾</span>
+    </div>
+    <div class="pt-body" id="pt-body">
+      <div class="pt-text">${sess.passage}</div>
+      ${sess.annotationImg?`<img src="${sess.annotationImg}" style="position:absolute;top:0;left:0;width:100%;pointer-events:none;opacity:.8" alt="annotations">`:
+        '<p style="font-size:11px;color:var(--muted);margin-top:6px;font-weight:600">No annotations saved</p>'}
+      <div class="pt-ann-key"><div class="pt-ann-item">✏️ Child annotated passage with stylus</div></div>
+    </div>
+  </div>`;
+
+  html+=`<div class="review-q-hdr">Questions Q1–Q9</div>`;
+
+  // Run AI checks
+  const aiResults=sess.aiResults||[];
+
+  for(let i=0;i<9;i++){
+    const q=sess.questions[i];
+    const ans=sess.answers[i];
+    const ai=aiResults[i];
+    const showNote=['inference','evidence','opinion'].includes(q.type)&&q.aiNote;
+    const numClass=ai?.correct===true?'rqn-ok':ai?.correct===false?'rqn-wr':'rqn-pd';
+    const chipClass=ai?.correct===true?'rqc-ok':ai?.correct===false?'rqc-wr':'rqc-pd';
+    const chipText=ai?.correct===true?'✓ Correct':ai?.correct===false?'✗ Wrong':'⏳ Pending';
+    const childImgHtml=ans?.img?`<img src="${ans.img}" style="width:100%;border-radius:4px" alt="child answer">`:
+      '<span style="color:var(--muted);font-size:11px;font-style:italic">No answer written</span>';
+    html+=`<div class="review-q-row" id="qrow-${i}">
+      <div class="rq-num ${numClass}">${i+1}</div>
+      <div class="rq-main">
+        <div class="rq-type">${q.type}</div>
+        <div class="rq-text">${q.q}</div>
+        <div class="answers-2col">
+          <div class="ans-child-box">
+            <div class="ans-box-lbl">${name} wrote</div>
+            <div class="ans-child-text">${childImgHtml}</div>
+          </div>
+          <div class="ans-ai-box">
+            <div class="ans-box-lbl" style="color:#1D4ED8">Expected answer</div>
+            <div class="ans-ai-text">${q.expected}</div>
+          </div>
+        </div>
+        ${showNote&&q.aiNote?`<div class="rq-ai-note">🤖 ${q.aiNote}</div>`:''}
+        ${ai?.comment&&ai.correct===false?`<div class="rq-ai-note">${ai.comment}</div>`:''}
+      </div>
+      <div class="rq-right">
+        <div class="rq-chip ${chipClass}" id="chip-${i}">${chipText}</div>
+        <div class="ov-row">
+          <button class="ov-b" id="ovok-${i}" onclick="markQ(${i},true)">✓</button>
+          <button class="ov-b" id="ovwr-${i}" onclick="markQ(${i},false)">✗</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Q10 Write
+  const wt=sess.writeTask;
+  const wrResult=sess.writeResult;
+  html+=`<div class="q10-review-wrap">
+    <div class="q10-review-badge">✍️ Write · Q10 · Paragraph</div>
+    <div class="q10-review-prompt">${wt?.prompt||'Writing task'}</div>
+    <div class="q10-child-box">
+      <div class="ans-box-lbl">${name} wrote</div>
+      <div class="q10-child-writing">${sess.writeImg?`<img src="${sess.writeImg}" style="width:100%;border-radius:4px" alt="writing">`:
+        '<span style="color:var(--muted);font-size:11px;font-style:italic">No writing saved</span>'}</div>
+    </div>
+    <div class="q10-expected-box">
+      <div class="ans-box-lbl" style="color:#1D4ED8">A good answer should include</div>
+      <div class="q10-exp-text">${wt?.keyPoints||'Strong structure, evidence from passage, clear opinions'}</div>
+    </div>
+    ${wrResult?`<div class="ai-feedback-box"><div class="ai-fb-lbl">🤖 AI feedback</div><div class="ai-fb-text">${wrResult.comment||'Pending review'}</div></div>`:''}
+    <div class="q10-btns">
+      <button class="q10-ovb" id="q10-ok" onclick="markWrite(true)">✓ Accept</button>
+      <button class="q10-ovb" id="q10-wr" onclick="markWrite(false)">✗ Redo</button>
+    </div>
+  </div>`;
+
+  document.getElementById('review-scroll-content').innerHTML=html;
+
+  // Restore already-marked overrides
+  if(sess.aiResults){
+    sess.aiResults.forEach((r,i)=>{if(r?.override!==undefined)updateMarkUI(i,r.override);});
+  }
+  if(sess.writeResult?.override!==undefined)updateWriteMarkUI(sess.writeResult.override);
+}
+
+function togglePassageReview(){
+  const body=document.getElementById('pt-body');
+  const icon=document.getElementById('pt-icon');
+  const open=body.style.display==='none'||!body.style.display;
+  if(body.style.display==='none'){body.style.display='block';icon.textContent='▴';}
+  else{body.style.display='none';icon.textContent='▾';}
+}
+
+function markQ(qi,correct){
+  if(!_reviewSession)return;
+  if(!_reviewSession.aiResults)_reviewSession.aiResults=[];
+  const prev=_reviewSession.aiResults[qi]||{};
+  _reviewSession.aiResults[qi]={...prev,correct,override:correct,comment:correct?'✅ Marked correct by parent':'❌ Marked wrong by parent'};
+  updateMarkUI(qi,correct);
+  // save
+  const pending=readData('eg_pending_'+_reviewSession.profile,[])||[];
+  const idx=pending.findIndex(p=>p.id===_reviewSession.id);
+  if(idx>=0){pending[idx]=_reviewSession;saveData('eg_pending_'+_reviewSession.profile,pending);}
+}
+
+function updateMarkUI(qi,correct){
+  const chip=document.getElementById('chip-'+qi);
+  const okb=document.getElementById('ovok-'+qi);
+  const wrb=document.getElementById('ovwr-'+qi);
+  const row=document.getElementById('qrow-'+qi);
+  if(chip){chip.className='rq-chip '+(correct?'rqc-ok':'rqc-wr');chip.textContent=correct?'✓ Correct':'✗ Wrong';}
+  if(okb){okb.className='ov-b'+(correct?' marked-ok':'');}
+  if(wrb){wrb.className='ov-b'+(correct?'':' marked-wr');}
+  if(row){const num=row.querySelector('.rq-num');if(num)num.className='rq-num '+(correct?'rqn-ok':'rqn-wr');}
+}
+
+function markWrite(correct){
+  if(!_reviewSession)return;
+  _reviewSession.writeResult={correct,override:correct,comment:correct?'✅ Writing accepted by parent':'❌ Writing needs to be redone'};
+  updateWriteMarkUI(correct);
+  const pending=readData('eg_pending_'+_reviewSession.profile,[])||[];
+  const idx=pending.findIndex(p=>p.id===_reviewSession.id);
+  if(idx>=0){pending[idx]=_reviewSession;saveData('eg_pending_'+_reviewSession.profile,pending);}
+}
+
+function updateWriteMarkUI(correct){
+  document.getElementById('q10-ok').className='q10-ovb'+(correct?' marked-ok':'');
+  document.getElementById('q10-wr').className='q10-ovb'+(correct?'':' marked-wr');
+}
+
+function approveSession(){
+  if(!_reviewSession)return;
+  const sess=_reviewSession;
+  const profile=sess.profile;
+
+  // Calculate score (Q1-Q9 only)
+  const results=sess.aiResults||[];
+  const scored=results.filter(r=>r&&r.correct===true).length;
+  const total=9;
+  const pct=Math.round(scored/total*100);
+  const passScore=profile==='alexander'?70:75;
+  const passed=pct>=passScore;
+
+  // Remove from pending
+  const pending=readData('eg_pending_'+profile,[])||[];
+  const newPending=pending.filter(p=>p.id!==sess.id);
+  saveData('eg_pending_'+profile,newPending);
+
+  // Save to history
+  const hist=readData('eg_hist_'+profile,[])||[];
+  hist.push({date:sess.date,tid:sess.topicId,sessionType:sess.sessionType,score:scored,total,pct,passed});
+  while(hist.length>60)hist.shift();
+  saveData('eg_hist_'+profile,hist);
+
+  // Update progress
+  const prog=getProgress(profile);
+  if(!prog[sess.topicId])prog[sess.topicId]={sessions:{},done:false,testNeeded:false};
+  const tp=prog[sess.topicId];
+
+  if(sess.isTest){
+    if(passed){tp.done=true;tp.testNeeded=false;
+      // Unlock notification
+      const topics=TOPICS[profile];const idx=topics.findIndex(t=>t.id===sess.topicId);
+      if(idx<topics.length-1){const nextTopic=topics[idx+1];saveData('eg_notify_'+profile,`You passed the ${topics[idx].theme} test! ${nextTopic.theme} is unlocked.`);}
+      else saveData('eg_notify_'+profile,`Amazing! You completed the ${topics[idx].theme} test! 🎉`);
+    }else{
+      tp.testNeeded=true;// allow retry
+      saveData('eg_notify_'+profile,`You got ${pct}% on the ${TOPICS[profile].find(t=>t.id===sess.topicId)?.theme} test. Need ${passScore}% to pass — keep practising!`);
+    }
+  }else{
+    tp.sessions=tp.sessions||{};
+    tp.sessions[sess.sessionType]=true;
+    const allDone=SESSION_TYPES.every(st=>tp.sessions[st]);
+    if(allDone)tp.testNeeded=true;
+    // Save corrections for wrong answers (not for tests)
+    const wrongs=sess.questions.filter((_,i)=>results[i]&&results[i].correct===false);
+    const corrections=wrongs.map(q=>({...q,tid:sess.topicId,sessionType:sess.sessionType}));
+    saveData('eg_corrections_'+profile,corrections.slice(0,5));
+    if(passed){
+      saveData('eg_notify_'+profile,`${scored}/${total} correct on ${SESSION_LABELS[sess.sessionType]}! ${allDone?'⭐ Topic test unlocked!':'Keep going!'}`);
+    }else{
+      saveData('eg_notify_'+profile,`${scored}/${total} on ${SESSION_LABELS[sess.sessionType]}. You can try this one again — check your mistakes!`);
+      tp.sessions[sess.sessionType]=false;// allow retry
+    }
+  }
+  saveProgress(profile,prog);
+  if(isCloudOn())pushToCloud();
+
+  document.getElementById('apr-btn').className='apr-btn approved';
+  document.getElementById('apr-btn').textContent='✓✓ Approved';
+  showToast(`Session approved — ${pct}% (${passed?'Passed':'Needs retry'})`);
+  setTimeout(()=>{showParentDash();},1200);
+}
+
+// ===== SESSION BUILDER =====
+function initSB(){
+  // Populate topic dropdown
+  const profile=_sbData.profile;
+  const sel=document.getElementById('sb-topic-select');
+  sel.innerHTML=TOPICS[profile].map(t=>`<option value="${t.id}">${t.icon} ${t.month} — ${t.theme}</option>`).join('');
+  _sbData.topicId=TOPICS[profile][0].id;
+  // Session type buttons
+  renderSBTypeBtns();
+  _sbData.generated=null;
+  document.getElementById('sb-preview-area').innerHTML='<div class="sb-loading">Select a session type to preview</div>';
+}
+
+function renderSBTypeBtns(){
+  const row=document.getElementById('sb-type-row');
+  row.innerHTML=SESSION_TYPES.map(st=>`<button class="sb-type-btn${st===_sbData.sessionType?' active':''}" onclick="sbSetType('${st}')">${SESSION_ICONS[st]} ${SESSION_LABELS[st]}</button>`).join('');
+}
+
+function sbSetType(st){
+  _sbData.sessionType=st;_sbData.generated=null;
+  renderSBTypeBtns();
+  document.getElementById('sb-preview-area').innerHTML='<div class="sb-loading">Press Regenerate to generate this session</div>';
+}
+
+function sbUpdate(){
+  _sbData.profile=document.getElementById('sb-child-select').value;
+  _sbData.topicId=document.getElementById('sb-topic-select').value;
+  _sbData.generated=null;
+}
+
+async function sbRegenerate(){
+  document.getElementById('sb-preview-area').innerHTML='<div class="sb-loading"><div class="gen-spinner" style="margin:0 auto 10px"></div>Generating session...</div>';
+  try{
+    const data=await genSession(_sbData.profile,_sbData.topicId,_sbData.sessionType,false);
+    _sbData.generated=data;
+    renderSBPreview(data);
+  }catch(e){
+    document.getElementById('sb-preview-area').innerHTML='<div class="sb-loading" style="color:var(--red)">⚠️ Generation failed. Check API key.</div>';
+  }
+}
+
+function renderSBPreview(data){
+  let html=`<div class="sb-preview-card">
+    <div class="sb-passage-preview">${data.passage}</div>`;
+  data.questions.forEach((q,i)=>{
+    html+=`<div class="sb-q-row">
+      <div class="sb-q-num">${i+1}</div>
+      <div class="sb-q-main">
+        <div class="sb-q-text">${q.q}</div>
+        <div class="sb-q-exp">Expected: ${q.expected}</div>
+      </div>
+    </div>`;
+  });
+  html+=`<div style="padding:10px 0 0;border-top:1px solid var(--border);margin-top:4px">
+    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">✍️ Q10 Write</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text)">${data.writeTask.prompt}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">${data.writeTask.keyPoints}</div>
+  </div></div>`;
+  document.getElementById('sb-preview-area').innerHTML=html;
+}
+
+function sbSendToChild(){
+  if(!_sbData.generated){showToast('Generate a session first');return;}
+  const child=_sbData.profile;
+  const data={..._sbData.generated,topicId:_sbData.topicId,sessionType:_sbData.sessionType,profile:child};
+  saveData('eg_next_'+child,data);
+  showToast(`📋 Locked session sent to ${child==='alexander'?'Alexander':'Estelle'}`);
+  showScreen('screen-parent-dash');
+}
+
+// ===== CLOUD SETTINGS =====
+function updateCloudStatus(){
+  const on=isCloudOn();
+  document.getElementById('cloud-status-dot').className='status-dot'+(on?' on':'');
+  document.getElementById('cloud-status-text').textContent=on?'Connected to Supabase':'Not connected';
+  document.getElementById('cloud-url').value=readCred('eg_supa_url')||'';
+}
+
+function saveCloudCreds(){
+  const url=document.getElementById('cloud-url').value.trim();
+  const key=document.getElementById('cloud-key').value.trim();
+  if(!url||!key){showToast('Enter both URL and key');return;}
+  saveCred('eg_supa_url',url);saveCred('eg_supa_key',key);
+  updateCloudStatus();showToast('✅ Cloud connected');
+}
+
+function disconnectCloud(){
+  saveCred('eg_supa_url','');saveCred('eg_supa_key','');
+  document.getElementById('cloud-url').value='';document.getElementById('cloud-key').value='';
+  updateCloudStatus();showToast('Cloud disconnected');
+}
+
+function saveNewPin(){
+  const pin=document.getElementById('new-pin-input').value.trim();
+  if(!/^\d{4}$/.test(pin)){showToast('PIN must be 4 digits');return;}
+  saveData('eg_parent_pin',pin);showToast('PIN updated');
+}
+
+// ===== SCREEN NAVIGATION =====
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-cloud-settings')updateCloudStatus();
+}
+
+// ===== MODAL =====
+let _modalFn=null;
+function showModal(title,sub,fn){
+  _modalFn=fn;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
+  document.getElementById('modal-bg').classList.add('show');
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('show');_modalFn=null;}
+document.getElementById('modal-confirm-btn').onclick=()=>{closeModal();if(_modalFn)_modalFn();};
+
+// ===== NOTIFICATION =====
+function showNotif(icon,title,text){
+  document.getElementById('notif-icon').textContent=icon;
+  document.getElementById('notif-title').textContent=title;
+  document.getElementById('notif-text').textContent=text;
+  document.getElementById('notif-bg').classList.add('show');
+}
+function closeNotif(){document.getElementById('notif-bg').classList.remove('show');goToTopics();}
+
+// ===== TOAST =====
+let _toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ===== RUN SESSION (from locked) =====
+function runSession(){
+  S.phase=1;S.currentQ=0;S.answers=[];S.annotationImg=null;S.paused=false;S.isTest=false;
+  S.corrections=[];
+  const topic=TOPICS[_profile].find(t=>t.id===S.topicId);
+  showScreen('screen-session');
+  document.getElementById('sess-hdr-title').textContent=topic.theme;
+  const badge=document.getElementById('sess-type-badge');
+  badge.textContent=SESSION_LABELS[S.sessionType]||'Session';
+  badge.className='sess-type-badge stb-'+(S.sessionType);
+  updatePhaseBar(1);renderProgStrip(0,9);
+  document.getElementById('correction-banner').style.display='none';
+  document.getElementById('send-bar').style.display='none';
+  startTimer();
+  renderPhase1();
+}
+
+// Navigation buttons in session
+document.addEventListener('click',e=>{
+  if(e.target.id==='next-q-btn')nextQuestion();
+  if(e.target.id==='prev-q-btn')prevQuestion();
+  if(e.target.id==='go-write-btn')renderPhase3();
+});
+</script>
+</body>
+</html>
