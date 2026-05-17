@@ -2339,10 +2339,14 @@ function autoSaveSession(){
       answered:S.sess.answered||{}
     };
     localStorage.setItem('md_autosave',JSON.stringify(save));
+    cloudSet('md_autosave',save); // push to Supabase — same questions reload on any device
   }catch(e){}
 }
 
-function clearAutoSave(){localStorage.removeItem('md_autosave');}
+function clearAutoSave(){
+  localStorage.removeItem('md_autosave');
+  cloudDelete('md_autosave');
+}
 
 function checkAutoSave(){
   try{
