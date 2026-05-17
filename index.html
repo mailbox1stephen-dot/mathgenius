@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>MathGenius</title>
@@ -2000,6 +2003,14 @@ function buildOverviewTab(){
     html+=`<div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:2px;background:${bg}"></div><span style="font-size:9px;color:#78716C;font-weight:700">${lbl}</span></div>`;
   });
   html+=`</div></div>`;
+  // Backup / Restore
+  html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin:12px 0 7px">Data backup</div>`;
+  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:14px">`;
+  html+=`<div style="font-size:10px;font-weight:700;color:#78716C;margin-bottom:10px">Download a backup before updating the app or deleting the home screen icon.</div>`;
+  html+=`<div style="display:flex;gap:8px">`;
+  html+=`<button onclick="exportBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#1D4ED8;cursor:pointer">⬇ Download backup</button>`;
+  html+=`<button onclick="importBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#78716C;cursor:pointer">⬆ Restore from file</button>`;
+  html+=`</div></div>`;
   return html;
 }
 
@@ -2564,6 +2575,47 @@ function fixProgressFromHistory(profile){
   setProgress(profile,prog);
   showToast('✓ Progress fixed — '+changes+' level(s) updated from history');
   showParentDash();
+}
+
+function exportBackup(){
+  const keys=['md_prog_alexander','md_prog_estelle','md_hist_alexander','md_hist_estelle',
+    'md_streak_alexander','md_streak_estelle','md_lastday_alexander','md_lastday_estelle',
+    'md_pending_alexander','md_pending_estelle','md_corrections_alexander','md_corrections_estelle',
+    'md_icon_alexander','md_icon_estelle','md_parent_pin','md_apikey'];
+  const data={exported:new Date().toISOString(),version:'MathGenius-1.0',data:{}};
+  keys.forEach(k=>{const v=localStorage.getItem(k);if(v)data.data[k]=JSON.parse(v);});
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='MathGenius-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  showToast('Backup downloaded ✓');
+}
+
+function importBackup(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!data.data)throw new Error('Invalid backup file');
+        let count=0;
+        Object.entries(data.data).forEach(([k,v])=>{
+          localStorage.setItem(k,JSON.stringify(v));
+          cloudSet(k,v);
+          count++;
+        });
+        loadIcons();refreshProfileTags();
+        showToast('✓ Restored '+count+' items from backup');
+        showParentDash();
+      }catch(err){showToast('❌ Invalid backup file');}
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
 }
 
 async function cloudSet(key,value){
