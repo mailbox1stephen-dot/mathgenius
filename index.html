@@ -264,6 +264,48 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .icon-opt:active{transform:scale(.88)}
 .icon-opt.selected{border-color:#F59E0B;background:#FFFBEB}
 
+/* ── ESTELLE PASTEL PURPLE THEME ── */
+body[data-profile="estelle"] #screen-topics .hdr,
+body[data-profile="estelle"] #screen-session .hdr,
+body[data-profile="estelle"] #screen-complete .hdr{
+  background:linear-gradient(135deg,#667EEA 0%,#764BA2 100%);
+}
+body[data-profile="estelle"] #tm-pane-topics,
+body[data-profile="estelle"] #tm-pane-journey{
+  background:#F8F7FF;
+}
+body[data-profile="estelle"] #screen-session{
+  background:#F8F7FF;
+}
+body[data-profile="estelle"] #screen-complete{
+  background:#F8F7FF;
+}
+body[data-profile="estelle"] .send-bar{
+  background:linear-gradient(135deg,#667EEA 0%,#764BA2 100%);
+}
+body[data-profile="estelle"] .tm-tabs{
+  background:linear-gradient(135deg,#5B6FD4 0%,#6A42A0 100%);
+}
+body[data-profile="estelle"] #screen-topics .tm-prog-bg{
+  background:rgba(102,126,234,.15);
+}
+body[data-profile="estelle"] #screen-topics .tm-prog-fill{
+  background:linear-gradient(90deg,#667EEA,#764BA2);
+}
+body[data-profile="estelle"] #screen-session .hdr-chip{
+  background:rgba(255,255,255,.2);
+}
+
+/* ── CHILD PIN SCREEN ── */
+#screen-child-pin{background:#F4F1EC}
+.cpn-dot{width:18px;height:18px;border-radius:50%;border:2px solid #D1D5DB;background:#fff;transition:all .15s}
+.cpn-dot.filled{background:#1E3A8A;border-color:#1E3A8A}
+body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#764BA2}
+.cpn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:280px}
+.cpn-key{background:#fff;border:1.5px solid #E5E7EB;border-radius:14px;height:58px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#1C1917;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.cpn-key:active{transform:scale(.93);background:#F3F4F6}
+.cpn-key.ghost{background:transparent;border-color:transparent;box-shadow:none}
+
 /* ── PAUSE OVERLAY ── */
 #pause-overlay{position:fixed;inset:0;background:rgba(28,25,23,.92);z-index:8888;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 #pause-overlay.active{display:flex}
@@ -348,16 +390,14 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="ps-logo">Math<span>Genius</span></div>
   <div class="ps-sub">Who's practicing today?</div>
   <div class="profiles">
-    <div class="p-card blue" onclick="selectProfile('alexander')">
+    <div class="p-card blue" onclick="showChildPin('alexander')">
       <div class="p-av" id="p-av-alexander" style="font-size:38px;background:#DBEAFE">🏌️</div>
-      <div onclick="showIconPicker('alexander',event)" style="font-size:10px;font-weight:800;color:#3B82F6;cursor:pointer;margin:4px 0 6px;-webkit-tap-highlight-color:transparent">✏️ Change icon</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
     </div>
-    <div class="p-card purple" onclick="selectProfile('estelle')">
+    <div class="p-card purple" onclick="showChildPin('estelle')">
       <div class="p-av" id="p-av-estelle" style="font-size:38px;background:#EDE9FE">🦄</div>
-      <div onclick="showIconPicker('estelle',event)" style="font-size:10px;font-weight:800;color:#8B5CF6;cursor:pointer;margin:4px 0 6px;-webkit-tap-highlight-color:transparent">✏️ Change icon</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
       <div class="p-tag" id="est-tag">Topic 1 · Level A</div>
@@ -411,9 +451,16 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 <!-- ── TOPIC MAP ── -->
 <div class="screen" id="screen-topics">
   <div class="hdr">
-    <button class="hdr-back" onclick="showScreen('screen-profile')">←</button>
-    <div class="hdr-title" id="topics-title">Topics</div>
+    <button class="hdr-back" onclick="switchUser()">←</button>
+    <div id="topics-hdr-icon" style="font-size:22px;line-height:1;cursor:pointer" onclick="showTopicIconPicker()" title="Change your icon">🏌️</div>
+    <div class="hdr-title" id="topics-title" style="flex:1">Topics</div>
     <div class="hdr-chip" id="streak-chip">🔥 0 days</div>
+  </div>
+  <!-- Icon picker (hidden by default, shown inside topics screen) -->
+  <div id="topic-icon-picker" style="display:none;position:absolute;top:52px;left:0;right:0;z-index:500;background:#fff;border-bottom:1.5px solid #EDE9E0;padding:12px;max-height:50vh;overflow-y:auto">
+    <div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px" id="tip-title">Choose your icon</div>
+    <div id="tip-body"></div>
+    <div style="text-align:center;margin-top:8px"><button onclick="document.getElementById('topic-icon-picker').style.display='none'" style="font-size:11px;font-weight:800;color:#A8A29E;background:transparent;border:none;cursor:pointer;padding:4px 12px">Done ✓</button></div>
   </div>
   <div class="tm-tabs">
     <div class="tm-tab on" id="tm-tab-0" onclick="switchTopicsTab(0)">📚 Topics</div>
@@ -487,6 +534,36 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
   <div class="sc-sub" id="sc-sub">All problems completed. Dad will check your work.</div>
   <div class="sc-unlock" id="sc-unlock"></div>
   <button class="sc-btn" onclick="goToTopics()">Back to Topics</button>
+</div>
+
+<!-- ── CHILD PIN SCREEN ── -->
+<div class="screen" id="screen-child-pin">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:14px">
+    <div id="cpn-avatar" style="font-size:64px;line-height:1;margin-bottom:4px"></div>
+    <div id="cpn-name" style="font-size:24px;font-weight:900;color:#1C1917"></div>
+    <div style="font-size:13px;font-weight:700;color:#A8A29E">Enter your secret number</div>
+    <div style="display:flex;gap:16px;margin:6px 0" id="cpn-dots">
+      <div class="cpn-dot"></div>
+      <div class="cpn-dot"></div>
+      <div class="cpn-dot"></div>
+      <div class="cpn-dot"></div>
+    </div>
+    <div id="cpn-err" style="font-size:11px;font-weight:700;color:#EF4444;min-height:16px"></div>
+    <div class="cpn-grid">
+      <div class="cpn-key" onclick="cpnPress(1)">1</div>
+      <div class="cpn-key" onclick="cpnPress(2)">2</div>
+      <div class="cpn-key" onclick="cpnPress(3)">3</div>
+      <div class="cpn-key" onclick="cpnPress(4)">4</div>
+      <div class="cpn-key" onclick="cpnPress(5)">5</div>
+      <div class="cpn-key" onclick="cpnPress(6)">6</div>
+      <div class="cpn-key" onclick="cpnPress(7)">7</div>
+      <div class="cpn-key" onclick="cpnPress(8)">8</div>
+      <div class="cpn-key" onclick="cpnPress(9)">9</div>
+      <div class="cpn-key" onclick="showScreen('screen-profile')" style="font-size:14px;color:#A8A29E;font-weight:700">← Back</div>
+      <div class="cpn-key" onclick="cpnPress(0)">0</div>
+      <div class="cpn-key" onclick="cpnDel()" style="font-size:20px;color:#A8A29E">⌫</div>
+    </div>
+  </div>
 </div>
 
 <!-- ── PARENT PIN ── -->
@@ -1118,8 +1195,103 @@ function refreshProfileTags(){
   });
 }
 
+// ════════════════════════════════════════════
+// CHILD PIN
+// ════════════════════════════════════════════
+const DEFAULT_CHILD_PINS={alexander:'1111',estelle:'2222'};
+let cpnEntry='';let cpnProfile=null;
+
+function getChildPin(profile){
+  return localStorage.getItem('md_pin_'+profile)||DEFAULT_CHILD_PINS[profile];
+}
+function setChildPin(profile,pin){
+  localStorage.setItem('md_pin_'+profile,pin);
+  cloudSet('md_pin_'+profile,pin);
+}
+
+function showChildPin(profile){
+  cpnProfile=profile;cpnEntry='';
+  document.getElementById('cpn-avatar').textContent=getIcon(profile);
+  document.getElementById('cpn-name').textContent=profile==='alexander'?'Alexander':'Estelle';
+  document.getElementById('cpn-err').textContent='';
+  document.body.dataset.profile=profile;
+  updateCpnDots();
+  showScreen('screen-child-pin');
+}
+function updateCpnDots(){
+  const dots=document.getElementById('cpn-dots').querySelectorAll('.cpn-dot');
+  dots.forEach((d,i)=>{d.classList.toggle('filled',i<cpnEntry.length);});
+}
+function cpnPress(d){
+  if(cpnEntry.length>=4)return;
+  cpnEntry+=d;updateCpnDots();
+  if(cpnEntry.length===4)setTimeout(checkCpn,150);
+}
+function cpnDel(){
+  if(cpnEntry.length>0){cpnEntry=cpnEntry.slice(0,-1);updateCpnDots();}
+}
+function checkCpn(){
+  const correct=getChildPin(cpnProfile);
+  if(cpnEntry===correct){
+    document.getElementById('cpn-err').textContent='';
+    // Remember this child on this device permanently
+    saveCred('md_remembered_profile',cpnProfile);
+    selectProfile(cpnProfile);
+  }else{
+    document.getElementById('cpn-err').textContent='Wrong number — try again';
+    cpnEntry='';updateCpnDots();
+  }
+}
+
+// Change child PIN from parent dashboard
+function changeChildPin(profile){
+  const name=profile==='alexander'?'Alexander':'Estelle';
+  const el=document.createElement('div');
+  el.className='modal-overlay';
+  el.innerHTML=`<div class="modal-box">
+    <div style="font-size:18px;margin-bottom:8px">${getIcon(profile)}</div>
+    <div class="modal-msg">${name}'s PIN</div>
+    <div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:8px">Current PIN: ${getChildPin(profile)}</div>
+    <input id="new-pin-input" class="modal-typed-input" type="number" placeholder="Enter new 4-digit PIN" maxlength="4" style="letter-spacing:.3em;font-size:20px;font-weight:900;text-align:center">
+    <div class="modal-btns" style="margin-top:10px">
+      <button class="modal-cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+      <button class="modal-ok" onclick="
+        const v=document.getElementById('new-pin-input').value.trim();
+        if(v.length===4&&/^[0-9]{4}$/.test(v)){
+          setChildPin('${profile}',v);
+          this.closest('.modal-overlay').remove();
+          showToast('${name} PIN changed to '+v+' ✓');
+        }else{
+          document.getElementById('new-pin-input').style.borderColor='#EF4444';
+        }
+      ">Save PIN</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.querySelector('#new-pin-input').focus(),100);
+}
+
+function switchUser(){
+  const remembered=readCred('md_remembered_profile');
+  if(remembered){
+    showConfirm(
+      `Switch user?<br><span style="font-size:11px;color:#78716C;font-weight:700">This will forget ${remembered==='alexander'?'Alexander':'Estelle'} on this iPad</span>`,
+      ()=>{
+        clearCred('md_remembered_profile');
+        document.body.dataset.profile='';
+        showScreen('screen-profile');
+        refreshProfileTags();
+      }
+    );
+  }else{
+    showScreen('screen-profile');
+    refreshProfileTags();
+  }
+}
+
 function selectProfile(p){
   S.profile=p;
+  document.body.dataset.profile=p;
   buildTopicsScreen();
   showScreen('screen-topics');
   setTimeout(()=>checkChildNotification(p),400);
@@ -1233,6 +1405,8 @@ function buildTopicsScreen(){
 
   document.getElementById('topics-title').textContent=(p==='alexander'?'Alexander':'Estelle')+"'s Topics";
   document.getElementById('streak-chip').textContent=`🔥 ${streak} day${streak!==1?'s':''}`;
+  const hdrIcon=document.getElementById('topics-hdr-icon');
+  if(hdrIcon)hdrIcon.textContent=getIcon(p);
 
   let doneCt=0;
   topics.forEach(t=>{ if(d['t'+t.id].done) doneCt++; });
@@ -1805,6 +1979,7 @@ function showToast(msg){
 // ════════════════════════════════════════════
 let pinEntry='';
 function showParentPin(){
+  document.body.dataset.profile='parent';
   pinEntry='';updatePinDots();
   document.getElementById('pp-err').textContent='';
   showScreen('screen-parent-pin');
@@ -2111,6 +2286,9 @@ function buildChildTab(profile){
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;text-align:center;cursor:pointer" onclick="unlockNextTopic('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔓</div><div style="font-size:10px;font-weight:800;color:#1D4ED8">Unlock topic</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #FDE68A;background:#FFFBEB;text-align:center;cursor:pointer" onclick="resetCurrentLevel('${profile}')"><div style="font-size:16px;margin-bottom:3px">↩</div><div style="font-size:10px;font-weight:800;color:#92400E">Reset level</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#F0FDF9;text-align:center;cursor:pointer" onclick="fixProgressFromHistory('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔧</div><div style="font-size:10px;font-weight:800;color:#065F46">Fix progress</div></div>`;
+  html+=`</div>`;
+  html+=`<div style="display:flex;gap:7px;margin-bottom:16px">`;
+  html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;text-align:center;cursor:pointer" onclick="changeChildPin('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔢</div><div style="font-size:10px;font-weight:800;color:#78716C">Change PIN<br><span style="font-size:9px;font-weight:700;color:#A8A29E">Current: ${getChildPin(profile)}</span></div></div>`;
   html+=`</div>`;
   return html;
 }
@@ -3103,21 +3281,55 @@ function loadIcons(){
   if(e)e.textContent=getIcon('estelle');
 }
 
+const ICONS_ALEX=[
+  {cat:'Warriors & Heroes',icons:['🥷','🦸','🧙','⚔️','🛡️','🏹']},
+  {cat:'Cool Animals',icons:['🦁','🐺','🦊','🐯','🦅','🦈','🐉','🦖','🦕','🐊','🦏','🐻']},
+  {cat:'Sports & Games',icons:['⚽','🏀','🏈','🎮','🎯','🥊','🏌️','🏋️','🤸','🏄','🚴','⛷️','🎱']},
+  {cat:'Adventure & Science',icons:['🚀','🛸','🤖','👾','⚡','🔬','🧲','💥','🌋','🏔️','🎸','🏆']}
+];
+const ICONS_EST=[
+  {cat:'Magical & Fantasy',icons:['🦄','🧚','🧜','👸','🌙','⭐','🌟','✨','💫','🔮','🪄','💎']},
+  {cat:'Cute Animals',icons:['🐱','🐼','🦋','🐰','🐨','🦒','🦩','🦚','🦜','🐬','🦭','🦊']},
+  {cat:'Nature & Flowers',icons:['🌸','🌺','🌻','🌷','🌈','🍀','🍓','🍭','🎀','💐','🌊','🏖️']},
+  {cat:'Sports & Talents',icons:['🤸','🩰','🎨','🎭','🎵','🎹','🏊','🚴','⛷️','🏆','🌍','📚']}
+];
+
+function showTopicIconPicker(){
+  const p=S.profile;
+  const picker=document.getElementById('topic-icon-picker');
+  const title=document.getElementById('tip-title');
+  const body=document.getElementById('tip-body');
+  if(picker.style.display==='block'){picker.style.display='none';return;}
+  const cats=p==='alexander'?ICONS_ALEX:ICONS_EST;
+  const cur=getIcon(p);
+  title.textContent=p==='alexander'?"Alexander's icons":"Estelle's icons";
+  let html='';
+  cats.forEach(cat=>{
+    html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin:8px 0 5px">${cat.cat}</div>`;
+    html+=`<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:4px">`;
+    cat.icons.forEach(ic=>{
+      const sel=ic===cur;
+      html+=`<div class="icon-opt${sel?' selected':''}" onclick="setIcon('${p}','${ic}');updateTopicsHdrIcon()">${ic}</div>`;
+    });
+    html+=`</div>`;
+  });
+  body.innerHTML=html;
+  picker.style.display='block';
+}
+
+function updateTopicsHdrIcon(){
+  const el=document.getElementById('topics-hdr-icon');
+  if(el)el.textContent=getIcon(S.profile);
+  // close picker after selection
+  const picker=document.getElementById('topic-icon-picker');
+  if(picker)picker.style.display='none';
+}
+
 function showIconPicker(profile,evt){
   if(evt)evt.stopPropagation();
-  const pickerId='icon-picker-'+profile;
-  const other=profile==='alexander'?'icon-picker-estelle':'icon-picker-alexander';
-  document.getElementById(other).style.display='none';
-  const el=document.getElementById(pickerId);
-  const isOpen=el.style.display==='block';
-  el.style.display=isOpen?'none':'block';
-  if(!isOpen){
-    // Highlight current icon
-    const cur=getIcon(profile);
-    el.querySelectorAll('.icon-opt').forEach(b=>{
-      b.classList.toggle('selected',b.textContent===cur);
-    });
-    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // Redirect to topic icon picker if we're on the topics screen
+  if(document.getElementById('screen-topics').classList.contains('active')){
+    showTopicIconPicker();return;
   }
 }
 
@@ -3157,8 +3369,14 @@ window.addEventListener('load',async ()=>{
         showToast('⚠️ Cloud sync failed — working offline');
       }
     }
-    showScreen('screen-profile');
-    refreshProfileTags();
+    // Check if a child is remembered on this device → skip profile screen
+    const remembered=readCred('md_remembered_profile');
+    if(remembered&&(remembered==='alexander'||remembered==='estelle')){
+      selectProfile(remembered);
+    }else{
+      showScreen('screen-profile');
+      refreshProfileTags();
+    }
     setTimeout(()=>{ checkAutoSave(); },300);
     // Auto-pull every 60s
     if(isCloudEnabled()){
