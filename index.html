@@ -23,7 +23,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 @keyframes dotBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 
 /* ── HEADER ── */
-.hdr{display:flex;align-items:center;padding:14px 16px;background:#fff;border-bottom:1px solid #EDE9E0;flex-shrink:0;gap:10px}
+.hdr{display:flex;align-items:center;padding:16px 20px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);flex-shrink:0;gap:10px}
 .hdr-back{width:34px;height:34px;border-radius:10px;background:#F3F2EE;border:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .hdr-title{font-size:16px;font-weight:900;flex:1}
 .hdr-chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:#FEF3C7;color:#B45309;white-space:nowrap}
@@ -61,14 +61,14 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 /* ── TOPIC MAP ── */
 #screen-topics{overflow:hidden}
-.tm-body{padding:14px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tm-body{padding:12px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#F4F1EC}
 .tm-prog-row{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#78716C;margin-bottom:5px}
-.tm-prog-bg{background:#EDE9E0;border-radius:99px;height:7px;margin-bottom:14px}
-.tm-prog-fill{height:7px;border-radius:99px;transition:width .5s;min-width:4px}
+.tm-prog-bg{background:rgba(255,255,255,.2);border-radius:99px;height:6px}
+.tm-prog-fill{height:6px;border-radius:99px;transition:width .5s;min-width:4px;background:#FCD34D}
 .fill-blue{background:#3B82F6}
 .fill-purple{background:#8B5CF6}
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.tc{background:#fff;border-radius:14px;padding:12px 12px 10px;border:1.5px solid #EDE9E0;cursor:pointer;transition:transform .12s}
+.tc{background:#fff;border-radius:14px;padding:12px;border:1.5px solid #EDE9E0;cursor:pointer;transition:transform .12s}
 .tc.cur{border-color:#FCD34D;background:#FFFBEB}
 .tc.avail{border-color:#BFDBFE}
 .tc.done-t{border-color:#A7F3D0;background:#F0FDF9}
@@ -90,13 +90,13 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .pd.done{background:#10B981}
 .pd.cur{background:#F59E0B}
 
-.prob-row{padding:10px 14px;background:#fff;border-bottom:1px solid #EDE9E0;flex-shrink:0;display:flex;align-items:center;gap:10px}
+.prob-row{padding:10px 14px 16px;background:#fff;flex-shrink:0;display:flex;align-items:flex-center;gap:10px;border-radius:0 0 16px 16px;margin:0 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .prob-tag{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
-.prob-eq{font-size:30px;font-weight:900;color:#1C1917;letter-spacing:1px;flex:1;text-align:center;line-height:1.1}
+.prob-eq{font-size:34px;font-weight:900;color:#1C1917;letter-spacing:1px;flex:1;text-align:center;line-height:1.2}
 
 .instr-strip{padding:8px 16px;background:#FFFBEB;border-bottom:1px solid #FDE68A;font-size:11px;font-weight:800;color:#92400E;flex-shrink:0}
 
-.overview-strip{display:flex;align-items:center;gap:3px;padding:6px 11px;background:#FDFAF4;border-bottom:1px solid #EDE9E0;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.overview-strip{display:flex;align-items:center;gap:3px;padding:8px 12px;background:#F4F1EC;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .ov-boxes{display:flex;gap:3px;flex:1}
 .ov-box{width:22px;height:22px;border-radius:5px;border:1px solid #DDD9CE;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;cursor:pointer;flex-shrink:0;color:#A8A29E;background:#F5F3EE;transition:all .15s}
 .ov-box.ov-cur{background:#F59E0B;border-color:#F59E0B;color:#fff}
@@ -118,12 +118,12 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 /* Canvas inner — padded away from arrows */
 .canvas-inner{flex-shrink:0;padding:6px 52px 2px;display:flex;flex-direction:column;}
 .canvas-label{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;flex-shrink:0}
-.canvas-wrap{flex:1;border-radius:12px;border:1.5px solid #DDD9CE;overflow:hidden;position:relative;min-height:0;height:calc(100dvh - 470px);max-height:calc(100dvh - 470px);touch-action:none;overscroll-behavior:none}
+.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:0;height:calc(100dvh - 440px);max-height:calc(100dvh - 440px);touch-action:none;overscroll-behavior:none}
 #drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#C4C0B8;pointer-events:none;text-align:center;line-height:1.7;white-space:nowrap}
 
 /* Answer cell — bottom of section */
-.answer-inner{flex-shrink:0;padding:5px 52px 12px}
+.answer-inner{flex-shrink:0;padding:6px 12px 10px}
 .answer-label{font-size:9px;font-weight:900;color:#B45309;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
 .answer-wrap{height:72px;border-radius:12px;border:2px solid #FCD34D;overflow:hidden;position:relative;background:#FFFBEB}
 #answer-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
@@ -164,7 +164,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 #toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ── SEND BAR ── */
-.send-bar{padding:9px 14px;background:#1E3A8A;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.send-bar{padding:11px 20px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);display:flex;align-items:center;gap:10px;flex-shrink:0}
 .send-status{font-size:11px;font-weight:800;color:rgba(255,255,255,.65);flex:1}
 .send-btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;padding:8px 16px;border-radius:10px;border:none;background:#FCD34D;color:#1C1917;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .send-btn:disabled{background:rgba(255,255,255,.18);color:rgba(255,255,255,.35);cursor:default}
@@ -530,14 +530,25 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 <!-- ── TOPIC MAP ── -->
 <div class="screen" id="screen-topics">
-  <div class="hdr">
-    <button class="hdr-back" onclick="switchUser()">←</button>
-    <div id="topics-hdr-icon" style="font-size:22px;line-height:1;cursor:pointer" onclick="showTopicIconPicker()" title="Change your icon">🏌️</div>
-    <div class="hdr-title" id="topics-title" style="flex:1">Topics</div>
-    <div class="hdr-chip" id="streak-chip">🔥 0 days</div>
+  <div class="hdr" style="flex-direction:column;padding:12px 20px 10px;gap:6px">
+    <div style="display:flex;align-items:center;width:100%;gap:10px">
+      <button class="hdr-back" onclick="switchUser()">←</button>
+      <div id="topics-title" style="font-size:15px;font-weight:900;color:#fff;flex:1">Topics</div>
+      <div class="hdr-chip" id="streak-chip">🔥 0 days</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;width:100%">
+      <div id="topics-hdr-icon" style="font-size:28px;line-height:1;cursor:pointer" onclick="showTopicIconPicker()" title="Change your icon">🏌️</div>
+      <div style="flex:1">
+        <div class="tm-prog-bg" style="margin:0 0 3px"><div class="tm-prog-fill" id="prog-fill"></div></div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:10px;color:rgba(255,255,255,.55);font-weight:600">Overall progress</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.7);font-weight:800" id="prog-pct">0%</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <!-- Icon picker (hidden by default, shown inside topics screen) -->
-  <div id="topic-icon-picker" style="display:none;position:absolute;top:52px;left:0;right:0;z-index:500;background:#fff;border-bottom:1.5px solid #EDE9E0;padding:12px;max-height:50vh;overflow-y:auto">
+  <!-- Icon picker -->
+  <div id="topic-icon-picker" style="display:none;position:absolute;top:100px;left:0;right:0;z-index:500;background:#fff;border-bottom:1.5px solid #EDE9E0;padding:12px;max-height:50vh;overflow-y:auto">
     <div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px" id="tip-title">Choose your icon</div>
     <div id="tip-body"></div>
     <div style="text-align:center;margin-top:8px"><button onclick="document.getElementById('topic-icon-picker').style.display='none'" style="font-size:11px;font-weight:800;color:#A8A29E;background:transparent;border:none;cursor:pointer;padding:4px 12px">Done ✓</button></div>
@@ -547,8 +558,6 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     <div class="tm-tab" id="tm-tab-1" onclick="switchTopicsTab(1)">🗺 My Journey</div>
   </div>
   <div class="tm-body" id="tm-pane-topics">
-    <div class="tm-prog-row"><span>Overall progress</span><span id="prog-pct">0%</span></div>
-    <div class="tm-prog-bg"><div class="tm-prog-fill" id="prog-fill"></div></div>
     <div class="tgrid" id="topic-grid"></div>
   </div>
   <div class="pd-body" id="tm-pane-journey" style="display:none"></div>
