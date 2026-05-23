@@ -16,7 +16,11 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 /* ── SCREENS ── */
 .screen{display:none;height:100vh;flex-direction:column;background:#FDFAF4;overflow:hidden}
-.screen.active{display:flex}
+.screen.active{display:flex;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes popIn{from{opacity:0;transform:translateX(-50%) scale(.6)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+@keyframes dotBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 
 /* ── HEADER ── */
 .hdr{display:flex;align-items:center;padding:14px 16px;background:#fff;border-bottom:1px solid #EDE9E0;flex-shrink:0;gap:10px}
@@ -37,15 +41,15 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .api-note{font-size:11px;color:rgba(255,255,255,.4);font-weight:700;margin-top:12px;max-width:280px;line-height:1.6}
 
 /* ── PROFILE SELECT ── */
-#screen-profile{align-items:center;padding:28px 20px 40px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.ps-logo{font-size:28px;font-weight:900;margin-bottom:5px}
-.ps-logo span{color:#F59E0B}
-.ps-sub{font-size:13px;color:#78716C;font-weight:700;margin-bottom:24px}
-.profiles{display:flex;gap:14px;width:100%;max-width:420px}
-.p-card{flex:1;background:#fff;border-radius:22px;padding:24px 16px 20px;border:2px solid transparent;text-align:center;cursor:pointer;transition:transform .13s,box-shadow .13s}
+#screen-profile{align-items:stretch;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0F172A}
+.ps-logo{font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.45);text-align:center;padding-top:22px}
+
+.ps-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:600;text-align:center;margin-bottom:18px}
+.profiles{display:flex;gap:12px;width:100%;padding:0 16px 16px}
+.p-card{flex:1;border-radius:20px;padding:20px 14px 18px;text-align:center;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden}
 .p-card:active{transform:scale(.97)}
-.p-card.blue{border-color:#BFDBFE}
-.p-card.purple{border-color:#DDD6FE}
+.p-card.blue{background:linear-gradient(145deg,#1E40AF,#1E3A8A)}
+.p-card.purple{background:linear-gradient(145deg,#6D28D9,#4C1D95)}
 .p-av{width:68px;height:68px;border-radius:20px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#fff}
 .blue .p-av{background:#3B82F6}
 .purple .p-av{background:#8B5CF6}
@@ -64,7 +68,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .fill-blue{background:#3B82F6}
 .fill-purple{background:#8B5CF6}
 .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.tc{background:#fff;border-radius:13px;padding:12px;border:1.5px solid #EDE9E0;cursor:pointer}
+.tc{background:#fff;border-radius:14px;padding:12px 12px 10px;border:1.5px solid #EDE9E0;cursor:pointer;transition:transform .12s}
 .tc.cur{border-color:#FCD34D;background:#FFFBEB}
 .tc.avail{border-color:#BFDBFE}
 .tc.done-t{border-color:#A7F3D0;background:#F0FDF9}
@@ -148,10 +152,10 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 
 /* ── SESSION COMPLETE ── */
 #screen-complete{justify-content:center;align-items:center;text-align:center;padding:32px 24px}
-.sc-stars{font-size:44px;margin-bottom:14px;letter-spacing:4px}
-.sc-title{font-size:22px;font-weight:900;margin-bottom:4px}
-.sc-score{font-size:50px;font-weight:900;color:#F59E0B;line-height:1;margin-bottom:6px}
-.sc-sub{font-size:13px;color:#78716C;font-weight:700;margin-bottom:14px}
+
+
+
+
 .sc-unlock{background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:12px;padding:10px 18px;font-size:12px;font-weight:900;color:#B45309;margin-bottom:22px;line-height:1.5;display:none}
 .sc-btn{border:none;border-radius:13px;font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;padding:14px 36px;cursor:pointer;background:#3B82F6;color:#fff}
 
@@ -387,8 +391,9 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 <!-- ── PROFILE SELECT ── -->
 <div class="screen" id="screen-profile">
-  <div class="ps-logo">Math<span>Genius</span></div>
-  <div class="ps-sub">Who's practicing today?</div>
+  <div class="ps-logo">MATHGENIUS</div>
+  <div id="profile-greeting" style="text-align:center;padding:4px 0 6px"></div>
+  <div class="ps-sub">Who's practising today?</div>
   <div class="profiles">
     <div class="p-card blue" onclick="showChildPin('alexander')">
       <div class="p-av" id="p-av-alexander" style="font-size:38px;background:#DBEAFE">🏌️</div>
@@ -445,7 +450,19 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     </div>
   </div>
 
-  <button onclick="showParentPin()" style="margin-top:16px;background:transparent;border:1.5px solid #DDD9CE;border-radius:10px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#A8A29E;cursor:pointer">🔒 Parent Login</button>
+  <div style="display:flex;gap:10px;padding:0 16px;margin-top:4px">
+    <div style="flex:1;background:rgba(255,255,255,.07);border-radius:12px;padding:12px;text-align:center">
+      <div id="ps-sessions" style="font-size:20px;font-weight:900;color:#fff">0</div>
+      <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Sessions this week</div>
+    </div>
+    <div style="flex:1;background:rgba(255,255,255,.07);border-radius:12px;padding:12px;text-align:center">
+      <div id="ps-accuracy" style="font-size:20px;font-weight:900;color:#10B981">—</div>
+      <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Avg accuracy</div>
+    </div>
+  </div>
+  <div style="padding:14px 16px 28px">
+    <button onclick="showParentPin()" style="width:100%;padding:13px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:13px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:rgba(255,255,255,.5);cursor:pointer">🔒 Parent login</button>
+  </div>
 </div>
 
 <!-- ── TOPIC MAP ── -->
@@ -487,7 +504,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   <div class="overview-strip" id="overview-strip"></div>
 
   <div class="prob-row">
-    <div class="prob-tag">Calculate</div>
+    <div class="prob-tag" style="font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase">CALCULATE</div>
     <div class="prob-eq" id="prob-eq">–</div>
   </div>
   <div class="instr-strip" id="instr-strip">Write using column method — show your full working</div>
@@ -498,7 +515,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     <button class="btn-side" id="btn-prev" onclick="navigate(-1)" disabled>‹</button>
 
     <div class="canvas-inner">
-      <div class="canvas-label">Your working (column method)</div>
+
       <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="drawing-canvas"></canvas>
         <div class="canvas-hint" id="canvas-hint">Write your column method here<br><span style="font-size:11px;color:#D4D0C8">Stack the numbers and show carrying</span></div>
@@ -510,7 +527,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   </div>
 
   <div class="answer-inner">
-    <div class="answer-label">⭐ Answer</div>
+    <div class="answer-label" style="font-size:9px;font-weight:900;color:#B45309;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px">⭐ ANSWER</div>
     <div class="answer-wrap">
       <canvas id="answer-canvas"></canvas>
       <div class="answer-hint" id="answer-hint">Write your final answer here</div>
@@ -528,12 +545,25 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 <!-- ── SESSION COMPLETE ── -->
 <div class="screen" id="screen-complete">
-  <div class="sc-stars" id="sc-stars">🎉</div>
-  <div class="sc-title" id="sc-title">Session Done!</div>
-  <div class="sc-score" id="sc-score">10 / 10</div>
-  <div class="sc-sub" id="sc-sub">All problems completed. Dad will check your work.</div>
-  <div class="sc-unlock" id="sc-unlock"></div>
-  <button class="sc-btn" onclick="goToTopics()">Back to Topics</button>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:0">
+    <!-- Concentric circles -->
+    <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
+      <div style="position:absolute;inset:0;border-radius:50%;background:#EFF6FF;opacity:.6"></div>
+      <div style="position:absolute;inset:14px;border-radius:50%;background:#DBEAFE;opacity:.8"></div>
+      <div style="position:absolute;inset:28px;border-radius:50%;background:#1E3A8A;display:flex;align-items:center;justify-content:center">
+        <div id="sc-stars" style="font-size:34px">✉️</div>
+      </div>
+    </div>
+    <div id="sc-title" style="font-size:30px;font-weight:900;color:#1C1917;margin-bottom:6px">Sent!</div>
+    <div id="sc-score" style="font-size:14px;font-weight:600;color:#78716C;margin-bottom:16px">10 questions · Level A</div>
+    <div id="sc-unlock" style="margin-bottom:12px"></div>
+    <div id="sc-streak-pill" style="display:inline-flex;align-items:center;gap:6px;background:#FEF3C7;border-radius:20px;padding:8px 18px;margin-bottom:20px">
+      <span style="font-size:16px">🔥</span>
+      <span id="sc-streak-txt" style="font-size:13px;font-weight:800;color:#D97706">1 day streak!</span>
+    </div>
+    <div id="sc-sub" style="font-size:13px;font-weight:600;color:#A8A29E;margin-bottom:28px;text-align:center;line-height:1.5">Dad will review your work<br>and let you know 📬</div>
+    <button onclick="goToTopics()" style="background:#1E3A8A;color:#fff;border:none;border-radius:14px;padding:14px 48px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer">Back to Topics →</button>
+  </div>
 </div>
 
 <!-- ── CHILD PIN SCREEN ── -->
@@ -1220,7 +1250,11 @@ function showChildPin(profile){
 }
 function updateCpnDots(){
   const dots=document.getElementById('cpn-dots').querySelectorAll('.cpn-dot');
-  dots.forEach((d,i)=>{d.classList.toggle('filled',i<cpnEntry.length);});
+  dots.forEach((d,i)=>{
+    const filled=i<cpnEntry.length;
+    d.classList.toggle('filled',filled);
+    if(filled){d.style.animation='none';requestAnimationFrame(()=>{d.style.animation='dotBounce .2s ease';});}
+  });
 }
 function cpnPress(d){
   if(cpnEntry.length>=4)return;
@@ -1281,11 +1315,13 @@ function switchUser(){
         document.body.dataset.profile='';
         showScreen('screen-profile');
         refreshProfileTags();
+        buildProfileGreeting();
       }
     );
   }else{
     showScreen('screen-profile');
     refreshProfileTags();
+    buildProfileGreeting();
   }
 }
 
@@ -1428,23 +1464,53 @@ function buildTopicsScreen(){
     const isDone=tp.done;
     const isTopicTest=!isDone&&tp.topicTestNeeded;
     const hasLockedSess=locked_sess&&locked_sess.tid===t.id;
-    card.className='tc '+(isLocked?'locked':isDone?'done-t avail':isTopicTest?'cur avail':'cur avail');
+    const isActive=!isLocked;
+    const barColor=p==='alexander'?'#1E3A8A':'#764BA2';
     const lvlIdx=LEVELS.indexOf(tp.level||'A');
     const lvlPct=isDone?100:Math.round(lvlIdx/LEVELS.length*100);
-    const barColor=p==='alexander'?'#3B82F6':'#8B5CF6';
-    let badge=isLocked?`<div class="tc-b b-lock">🔒 Locked</div>`
-      :isDone?`<div class="tc-b b-done">✓ Complete</div>`
-      :isTopicTest?`<div class="tc-b" style="background:#FEF3C7;color:#92400E">⭐ Topic Test!</div>`
-      :hasLockedSess?`<div class="tc-b" style="background:#D1FAE5;color:#047857">📋 Ready</div>`
-      :`<div class="tc-b b-cur">▶ Level ${tp.level||'A'} / F</div>`;
-    const progressBar=!isLocked&&!isTopicTest?`<div style="margin-top:7px;background:#F3F2EE;border-radius:99px;height:4px"><div style="width:${lvlPct}%;height:4px;border-radius:99px;background:${isDone?'#10B981':barColor};transition:width .3s"></div></div><div style="display:flex;justify-content:space-between;font-size:8px;color:#A8A29E;font-weight:800;margin-top:2px"><span>${isDone?'All done':LEVELS.slice(0,lvlIdx).map(l=>`${l}✓`).join(' ')+' '+LEVELS[lvlIdx]+'▶'}</span><span>${lvlPct}%</span></div>`:'';
-    card.innerHTML=`<div class="tc-n">Topic ${t.id}</div>
-<div class="tc-nm${isLocked?' g':''}">${t.name}</div>${badge}${progressBar}${!isLocked?buildMiniTimeline(LEVELS.indexOf(tp.level||'A'),isDone,isTopicTest,barColor):''}`;
+    card.className='tc '+(isLocked?'locked':isDone?'done-t avail':isTopicTest?'cur avail':'cur avail');
+
+    if(isActive&&!isLocked){
+      // Active topic: full-width card with left border accent + play button
+      card.style.cssText='grid-column:1/-1;border-color:'+barColor+';border-left:4px solid '+barColor+';display:flex;align-items:flex-start;gap:0;position:relative;padding:12px 52px 12px 14px';
+      const lvlDots=LEVELS.map((lv,i)=>{
+        const filled=i<=lvlIdx||isDone;
+        const cur=i===lvlIdx&&!isDone;
+        const done_lv=i<lvlIdx||isDone;
+        return `<div style="display:flex;align-items:center">${i>0?`<div style="width:8px;height:2px;background:${done_lv?barColor:'#E5E7EB'}"></div>`:''}
+          <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:${done_lv?barColor:cur?'#fff':'#F3F4F6'};color:${done_lv?'#fff':cur?barColor:'#9CA3AF'};border:2px solid ${cur?barColor:done_lv?barColor:'#E5E7EB'}">${lv}</div></div>`;
+      }).join('');
+      let badge=isDone?'<div class="tc-b b-done">✓ Complete</div>'
+        :isTopicTest?'<div class="tc-b" style="background:#FEF3C7;color:#92400E">⭐ Topic Test!</div>'
+        :hasLockedSess?'<div class="tc-b" style="background:#D1FAE5;color:#047857">📋 Ready</div>'
+        :`<div class="tc-b b-cur">Level ${tp.level||'A'} / F</div>`;
+      card.innerHTML=`<div style="flex:1">
+        <div class="tc-n" style="color:${barColor}">TOPIC ${t.id}</div>
+        <div class="tc-nm" style="font-size:14px;margin-bottom:8px">${t.name}</div>
+        <div style="display:flex;align-items:center">${lvlDots}</div>
+      </div>
+      <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;background:${barColor};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">▶</div>`;
+    } else if(isLocked){
+      // Locked topics: subtle, half-width
+      card.innerHTML=`<div class="tc-n" style="color:#D1D5DB">TOPIC ${t.id}</div>
+        <div class="tc-nm g" style="font-size:12px">${t.name}</div>
+        <div style="margin-top:8px;font-size:18px">🔒</div>`;
+    } else if(isDone){
+      card.style.cssText='border-color:#D1FAE5;background:#F0FDF4';
+      card.innerHTML=`<div class="tc-n" style="color:#10B981">TOPIC ${t.id}</div>
+        <div class="tc-nm" style="font-size:12px">${t.name}</div>
+        <div class="tc-b b-done" style="margin-top:6px">✓ Done</div>`;
+    }
+
     if(!isLocked){
       if(isTopicTest){card.addEventListener('click',()=>startTopicTest(t.id));}
+      else if(isDone){card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
       else{card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
     }
     grid.appendChild(card);
+
+    // After the active topic, add the remaining locked topics back in 2-col grid
+    // (handled by CSS grid-column:1/-1 on the active card)
   });
 
   // Build journey tab
@@ -1924,38 +1990,31 @@ function nextProblem(){
 function showComplete(){
   const sess=S.sess;
   const streak=bumpStreak(S.profile);
-  // Save session with snapshots for parent review
-  // History written by clearSession (parent approval) — skip here to avoid score:0 duplicate
-  // const key='md_hist_'+S.profile; — intentionally disabled
+  const nq=S.sess?S.sess.problems.length:N_PROBLEMS;
+  const profile=S.profile;
 
-  document.getElementById('sc-stars').textContent='🎉';
-  document.getElementById('sc-title').textContent='Session Done!';
-  const nqFin=S.sess?S.sess.problems.length:N_PROBLEMS;
-  document.getElementById('sc-score').textContent=nqFin+' problems';
-  document.getElementById('sc-sub').textContent=`Great work! 🔥 ${streak} day streak`;
+  // Update new complete screen elements
+  document.getElementById('sc-title').textContent='Sent!';
+  document.getElementById('sc-score').textContent=nq+' questions · Level '+sess.level;
+  document.getElementById('sc-sub').innerHTML='Dad will review your work<br>and let you know 📬';
+  const streakEl=document.getElementById('sc-streak-txt');
+  if(streakEl)streakEl.textContent=streak+' day streak'+(streak>=3?' 🔥':'!');
 
-  // Check if level should unlock (parent can review and confirm)
-  const unlockEl=document.getElementById('sc-unlock');
-  unlockEl.style.display='none';
-  const d=initProgress(S.profile);
-  const key2='t'+sess.tid;
-  const li=LEVELS.indexOf(sess.level);
-  if(li<LEVELS.length-1){
-    d[key2].level=LEVELS[li+1];
-    unlockEl.textContent=`Next up: Level ${LEVELS[li+1]}`;
-    unlockEl.style.display='block';
-  } else {
-    d[key2].done=true;
-    const nextKey='t'+(sess.tid+1);
-    if(d[nextKey]){
-      d[nextKey].locked=false;d[nextKey].level='A';
-      const topics=S.profile==='alexander'?TOPICS_A:TOPICS_E;
-      const nt=topics.find(t=>t.id===sess.tid+1);
-      unlockEl.textContent=`Topic ${sess.tid+1} unlocked: ${nt?nt.name:''}!`;
-      unlockEl.style.display='block';
+  // Estelle theme on complete screen
+  const circles=document.querySelector('#screen-complete [style*="position:relative;width:140px"]');
+  if(circles){
+    const innerCircle=circles.querySelector('[style*="inset:28px"]');
+    if(innerCircle){
+      if(profile==='estelle'){innerCircle.style.background='linear-gradient(135deg,#667EEA,#764BA2)';}
+      else{innerCircle.style.background='#1E3A8A';}
     }
   }
-  setProgress(S.profile,d);
+  const backBtn=document.querySelector('#screen-complete button');
+  if(backBtn&&profile==='estelle')backBtn.style.background='linear-gradient(135deg,#667EEA,#764BA2)';
+  else if(backBtn)backBtn.style.background='#1E3A8A';
+
+  const unlockEl=document.getElementById('sc-unlock');
+  unlockEl.style.display='none';unlockEl.textContent='';
   showScreen('screen-complete');
 }
 
@@ -2136,17 +2195,31 @@ function buildOverviewTab(){
 
   // Pending
   if(allPend.length){
-    html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Pending (${allPend.length})</div>`;
+    html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px">Pending review (${allPend.length})</div>`;
     allPend.forEach(s=>{
-      const color=s.profile==='alexander'?'#3B82F6':'#8B5CF6';
+      const isAlex=s.profile==='alexander';
+      const accentColor=isAlex?'#1E3A8A':'#764BA2';
+      const bgColor=isAlex?'#EFF6FF':'#F5F3FF';
+      const borderColor=isAlex?'#BFDBFE':'#DDD6FE';
       const init=getIcon(s.profile);
-      const name=s.profile==='alexander'?'Alexander':'Estelle';
+      const name=isAlex?'Alexander':'Estelle';
       const reviewed=s.questions.filter(q=>q.parentMark!==null).length;
-      const squares=s.questions.map(q=>`<span style="width:10px;height:10px;border-radius:2px;background:${q.parentMark===true?'#D1FAE5':q.parentMark===false?'#FEE2E2':'#F3F2EE'};border:0.5px solid ${q.parentMark===true?'#A7F3D0':q.parentMark===false?'#FECACA':'#DDD9CE'};display:inline-block"></span>`).join('');
-      html+=`<div style="display:flex;align-items:center;padding:10px 12px;background:#fff;border:1.5px solid #EDE9E0;border-radius:12px;gap:8px;margin-bottom:7px;cursor:pointer" onclick="showParentReview('${s.profile}',${s.id})"><div style="width:32px;height:32px;border-radius:9px;background:${color};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0">${init}</div><div style="flex:1"><div style="font-size:12px;font-weight:900">${name}</div><div style="font-size:10px;color:#78716C;font-weight:700">${s.topicName}·L.${s.level}</div><div style="display:flex;gap:2px;margin-top:4px">${squares}</div></div><div style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;background:${reviewed===s.questions.length?'#D1FAE5':'#FEF3C7'};color:${reviewed===s.questions.length?'#047857':'#B45309'}">${reviewed===s.questions.length?'✓':''+reviewed+'/'+s.questions.length}</div></div>`;
+      const allReviewed=reviewed===s.questions.length;
+      const squares=s.questions.map(q=>`<div style="width:11px;height:11px;border-radius:3px;background:${q.parentMark===true?'#10B981':q.parentMark===false?'#EF4444':'#E5E7EB'}"></div>`).join('');
+      html+=`<div style="background:#fff;border:1.5px solid ${borderColor};border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="showParentReview('${s.profile}',${s.id})">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${accentColor};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${init}</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:900;color:#1C1917">${name}</div>
+            <div style="font-size:10px;font-weight:700;color:#78716C">${s.topicName} · Level ${s.level}</div>
+          </div>
+          <div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${allReviewed?'#D1FAE5':'#FEF3C7'};color:${allReviewed?'#047857':'#B45309'}">${allReviewed?'Ready to approve':'Review →'}</div>
+        </div>
+        <div style="display:flex;gap:3px;flex-wrap:wrap">${squares}</div>
+      </div>`;
     });
   }else{
-    html+=`<div style="text-align:center;padding:20px 0;font-size:12px;color:#A8A29E;font-weight:700">No pending sessions</div>`;
+    html+=`<div style="text-align:center;padding:20px 0;font-size:12px;color:#A8A29E;font-weight:700">No pending sessions ✓</div>`;
   }
 
   // Stats
@@ -2460,28 +2533,31 @@ async function aiCheckOne(profile,sessionId,qIdx){
   }
 }
 
-async function aiCheckQuestion(q){
-  const _key=S.apiKey||localStorage.getItem('md_apikey')||'';
+async function aiCheckQuestion(q,attempt=1){
+  const _key=S.apiKey||readCred('md_apikey')||'';
   if(!_key){return{correct:false,comment:'❌ No API key — enter key in settings'};}
   const content=[{type:'text',text:`Maths question: "${q.display}". Correct answer: ${q.answer}. Check the student's handwritten work and answer. Reply with ONLY: CORRECT or WRONG, then one brief reason (max 8 words).`}];
   if(q.workURL&&q.workURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
   if(q.answerURL&&q.answerURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':_key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({model:MODEL,max_tokens:80,messages:[{role:'user',content}]})
-  });
-  if(!resp.ok){const e=await resp.text();console.warn('AI check error:',resp.status,e);throw new Error('API error '+resp.status);}
-  const data=await resp.json();
-  const text=data.content?.[0]?.text||'WRONG';
-  const correct=text.toUpperCase().startsWith('CORRECT');
-  const comment=text.replace(/^(CORRECT|WRONG)[:\s-]*/i,'').trim()||'No detail';
-  return{correct,comment:(correct?'✅ ':'❌ ')+comment};
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':_key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:MODEL,max_tokens:80,messages:[{role:'user',content}]})
+    });
+    if(!resp.ok){
+      if(attempt<3){await new Promise(r=>setTimeout(r,1000*attempt));return aiCheckQuestion(q,attempt+1);}
+      return{correct:false,comment:'❌ AI unavailable — mark manually'};
+    }
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'WRONG';
+    const correct=text.toUpperCase().startsWith('CORRECT');
+    const comment=text.replace(/^(CORRECT|WRONG)[:\s-]*/i,'').trim()||'No detail';
+    return{correct,comment:(correct?'✅ ':'❌ ')+comment};
+  }catch(e){
+    if(attempt<3){await new Promise(r=>setTimeout(r,1000*attempt));return aiCheckQuestion(q,attempt+1);}
+    return{correct:false,comment:'❌ No internet — mark manually'};
+  }
 }
 
 function clearSession(profile,sessionId){
@@ -2511,7 +2587,23 @@ function clearSession(profile,sessionId){
   const idx=pending.findIndex(s=>s.id===sessionId);
   if(idx>=0)pending.splice(idx,1);
   localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
+  const isLevelUp=session.level!=='TEST'&&session.level!=='FINAL'&&pass;
+  const isTopicPass=session.level==='TEST'&&pass;
+  const isFinalPass=session.level==='FINAL'&&pass;
   const msg=session.level==='TEST'?(pass?'⭐ Topic test passed! Topic complete!':'↩ Topic test failed — more practice needed'):pass?(li===LEVELS.length-1?'⭐ Level F done! Topic test unlocked':'✓ Level cleared!'):'↩ Same level — needs more practice.';
+  // Celebration for child — shown as overlay
+  if(isLevelUp){
+    const nextLvl=LEVELS[li+1]||'F';
+    setTimeout(()=>{
+      launchConfetti(`<div style="font-size:36px">🎉</div><div style="font-size:16px;font-weight:900;color:#1C1917;margin:8px 0 4px">Level ${nextLvl} Unlocked!</div><div style="font-size:12px;color:#78716C;font-weight:700">${profile==='alexander'?'Alexander':'Estelle'} passed Level ${session.level}</div>`);
+      playLevelUpFanfare();
+    },400);
+  }else if(isTopicPass||isFinalPass){
+    setTimeout(()=>{
+      launchConfetti(`<div style="font-size:40px">🏆</div><div style="font-size:16px;font-weight:900;color:#1C1917;margin:8px 0 4px">${isFinalPass?'All done!':'Topic Complete!'}</div><div style="font-size:12px;color:#78716C;font-weight:700">Amazing work!</div>`);
+      playLevelUpFanfare();
+    },400);
+  }
   showToast(msg);showParentDash();
 }
 
@@ -2564,6 +2656,7 @@ function trackAnswer(qIdx){
   S.sess.answered=S.sess.answered||{};
   S.sess.answered[qIdx]=true;
   updateOverviewBox(qIdx,'ans');
+  playAnswerTone();
   updateSendBar();
 }
 
@@ -2798,8 +2891,11 @@ function importBackup(){
 
 async function cloudSet(key,value){
   if(!isCloudEnabled())return;
-  const result=await supaFetch('mathdrill_data','POST',{key,value,updated_at:new Date().toISOString()});
-  if(result!==null)showSyncBadge();
+  try{
+    const result=await supaFetch('mathdrill_data','POST',{key,value,updated_at:new Date().toISOString()});
+    if(result!==null)showSyncBadge();
+    else showToast('⚠️ Cloud save failed — check your connection');
+  }catch(e){showToast('⚠️ Cloud sync error — working offline');}
 }
 
 async function cloudDelete(key){
@@ -3347,6 +3443,103 @@ function setIcon(profile,icon){
 }
 
 function getProfileIcon(profile){return getIcon(profile);}
+
+// ════════════════════════════════════════════
+// SOUNDS — Web Audio API, no files needed
+// ════════════════════════════════════════════
+let audioCtx=null;
+function getAudioCtx(){
+  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+  return audioCtx;
+}
+function playTone(freq,dur=0.12,type='sine',vol=0.15){
+  try{
+    const ctx=getAudioCtx();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+dur);
+  }catch(e){}
+}
+function playAnswerTone(){playTone(880,0.1,'sine',0.12);}
+function playCorrectTone(){
+  playTone(523,0.1,'sine',0.15);
+  setTimeout(()=>playTone(659,0.1,'sine',0.15),110);
+  setTimeout(()=>playTone(784,0.15,'sine',0.15),220);
+}
+function playLevelUpFanfare(){
+  const notes=[523,659,784,1047];
+  notes.forEach((n,i)=>setTimeout(()=>playTone(n,0.18,'sine',0.2),i*130));
+  setTimeout(()=>playTone(1047,0.5,'sine',0.25),notes.length*130);
+}
+function playErrorTone(){playTone(220,0.2,'sawtooth',0.08);}
+
+// ════════════════════════════════════════════
+// CONFETTI — pure CSS/JS, no library
+// ════════════════════════════════════════════
+function launchConfetti(msg=''){
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden';
+  const colours=['#FCD34D','#3B82F6','#10B981','#F472B6','#A78BFA','#FB923C'];
+  let html='';
+  for(let i=0;i<60;i++){
+    const c=colours[i%colours.length];
+    const x=Math.random()*100;
+    const d=Math.random()*1.5+0.5;
+    const s=Math.random()*8+6;
+    const r=Math.random()*360;
+    html+=`<div style="position:absolute;left:${x}%;top:-10px;width:${s}px;height:${s}px;background:${c};border-radius:${Math.random()>0.5?'50%':'2px'};transform:rotate(${r}deg);animation:confettiFall ${d}s ease-in forwards ${Math.random()*0.6}s"></div>`;
+  }
+  if(msg)html+=`<div style="position:absolute;top:35%;left:50%;transform:translateX(-50%);background:#fff;border-radius:20px;padding:18px 28px;box-shadow:0 8px 32px rgba(0,0,0,.18);text-align:center;font-family:'Nunito',sans-serif;animation:popIn .3s cubic-bezier(.34,1.56,.64,1)">${msg}</div>`;
+  el.innerHTML=html;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2800);
+}
+
+// ════════════════════════════════════════════
+// PROFILE GREETING
+// ════════════════════════════════════════════
+function getGreeting(name){
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const date=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+  const lines=['Time to practise! 💪','Let\'s do some maths! 🧮','Ready to level up? 🚀','Another great session! ⭐','Keep the streak going! 🔥'];
+  const line=lines[Math.floor(Math.random()*lines.length)];
+  return{greeting:`${g}, ${name}!`,date,line};
+}
+function buildProfileGreeting(){
+  const el=document.getElementById('profile-greeting');
+  if(!el)return;
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  el.innerHTML=`<div style="font-size:13px;font-weight:900;color:#fff">${g}! 👋</div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.45);margin-top:2px">${days[now.getDay()]} · ${now.getDate()} ${months[now.getMonth()]}</div>`;
+  // Update stats
+  const allHist=[
+    ...JSON.parse(localStorage.getItem('md_hist_alexander')||'[]'),
+    ...JSON.parse(localStorage.getItem('md_hist_estelle')||'[]')
+  ];
+  const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+  const weekSess=allHist.filter(h=>new Date(h.date)>weekAgo);
+  const sEl=document.getElementById('ps-sessions');
+  if(sEl)sEl.textContent=weekSess.length||'0';
+  const aEl=document.getElementById('ps-accuracy');
+  if(aEl){
+    if(weekSess.length){
+      const avg=Math.round(weekSess.reduce((s,h)=>s+(h.score/h.total),0)/weekSess.length*100);
+      aEl.textContent=avg+'%';
+      aEl.style.color=avg>=80?'#10B981':avg>=60?'#F59E0B':'#EF4444';
+    }else{aEl.textContent='—';}
+  }
+}
 
 window.addEventListener('load',async ()=>{
   initCanvas();
