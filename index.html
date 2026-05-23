@@ -45,7 +45,7 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .ps-logo{font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.45);text-align:center;padding-top:22px}
 
 .ps-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:600;text-align:center;margin-bottom:18px}
-.profiles{display:flex;gap:12px;width:100%;padding:0 16px 16px}
+.profiles{display:flex;gap:12px;width:100%;padding:0 16px 16px;flex-wrap:wrap}
 .p-card{flex:1;border-radius:20px;padding:20px 14px 18px;text-align:center;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden}
 .p-card:active{transform:scale(.97)}
 .p-card.blue{background:linear-gradient(145deg,#1E40AF,#1E3A8A)}
@@ -362,9 +362,72 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 .cs-connected{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#D1FAE5;border-radius:10px;margin-bottom:10px}
 .cs-dot{width:8px;height:8px;border-radius:50%;background:#10B981;flex-shrink:0}
 
-@media (orientation:landscape){
-  .prob-eq{font-size:36px}
-  .p-av{width:56px;height:56px}
+/* ══════════════════════════════════════════
+   RESPONSIVE — desktop, tablet, small phone
+   ══════════════════════════════════════════ */
+
+/* ── DESKTOP & large tablet (≥768px): centred phone-frame ── */
+@media(min-width:768px){
+  html{background:#0A0F1E;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  body{width:420px;height:900px;max-height:100vh;border-radius:28px;overflow:hidden;
+    box-shadow:0 32px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08);position:relative}
+  .screen{height:900px;max-height:900px;border-radius:28px}
+  .canvas-wrap{height:360px;max-height:360px}
+  #screen-profile{border-radius:28px}
+}
+
+/* ── iPad portrait (768–1024px) ── */
+@media(min-width:768px)and(max-width:1024px)and(orientation:portrait){
+  body{width:480px;height:920px;border-radius:0;box-shadow:none}
+  .screen{height:920px;max-height:920px;border-radius:0}
+  .canvas-wrap{height:400px;max-height:400px}
+}
+
+/* ── Small phones (≤380px): tighten everything ── */
+@media(max-width:380px){
+  .ps-logo{font-size:9px;letter-spacing:.15em}
+  .p-name{font-size:13px}
+  .p-av{width:52px;height:52px;font-size:32px!important}
+  .profiles{gap:8px;padding:0 10px 10px}
+  .p-card{padding:14px 10px 12px;border-radius:16px}
+  .cpn-grid{gap:7px}
+  .cpn-key{height:50px;font-size:20px;border-radius:12px}
+  .prob-eq{font-size:24px}
+  .tc-nm{font-size:11px}
+  .send-bar{padding:7px 10px}
+  .pp-key{height:46px;font-size:20px}
+}
+
+/* ── Very small phones (≤340px) ── */
+@media(max-width:340px){
+  .prob-eq{font-size:20px}
+  .cpn-key{height:44px;font-size:18px}
+  .pp-key{height:42px;font-size:18px}
+  .profiles{gap:6px;padding:0 8px 8px}
+}
+
+/* ── Landscape phones ── */
+@media(orientation:landscape)and(max-height:500px){
+  .prob-eq{font-size:28px}
+  .p-av{width:48px;height:48px;font-size:28px!important}
+  .canvas-wrap{height:calc(100dvh - 320px);max-height:calc(100dvh - 320px)}
+  .send-bar{padding:6px 12px}
+  .overview-strip{padding:5px 10px}
+  .cpn-grid{gap:6px}
+  .cpn-key{height:44px}
+}
+
+/* ── Tall phones (≥900px height): more canvas space ── */
+@media(min-height:900px)and(max-width:767px){
+  .canvas-wrap{height:calc(100dvh - 440px);max-height:calc(100dvh - 440px)}
+}
+
+/* ── Android Chrome bottom bar fix ── */
+@supports(height:100dvh){
+  .screen{height:100dvh;max-height:100dvh}
+  @media(min-width:768px){
+    .screen{height:900px;max-height:900px}
+  }
 }
 </style>
 </head>
@@ -2253,12 +2316,18 @@ function buildOverviewTab(){
   html+=`</div></div>`;
   // Backup / Restore
   html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin:12px 0 7px">Data backup</div>`;
-  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:14px">`;
+  html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 12px;margin-bottom:10px">`;
   html+=`<div style="font-size:10px;font-weight:700;color:#78716C;margin-bottom:10px">Download a backup before updating the app or deleting the home screen icon.</div>`;
   html+=`<div style="display:flex;gap:8px">`;
   html+=`<button onclick="exportBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#1D4ED8;cursor:pointer">⬇ Download backup</button>`;
   html+=`<button onclick="importBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#78716C;cursor:pointer">⬆ Restore from file</button>`;
   html+=`</div></div>`;
+  // Total reset
+  html+=`<div style="background:#FEF2F2;border-radius:12px;border:1.5px solid #FECACA;padding:11px 12px;margin-bottom:14px">`;
+  html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">⚠️</div><div style="font-size:11px;font-weight:900;color:#991B1B">Total Reset</div></div>`;
+  html+=`<div style="font-size:10px;font-weight:700;color:#B91C1C;margin-bottom:10px">Wipes ALL data — both children and parent. Progress, history, sessions, keys. Cannot be undone. Use only during testing.</div>`;
+  html+=`<button onclick="totalReset()" style="width:100%;padding:11px;border-radius:10px;border:none;background:#DC2626;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:#fff;cursor:pointer">🗑 Reset everything</button>`;
+  html+=`</div>`;
   return html;
 }
 
@@ -2846,6 +2915,39 @@ function fixProgressFromHistory(profile){
   setProgress(profile,prog);
   showToast('✓ Progress fixed — '+changes+' level(s) updated from history');
   showParentDash();
+}
+
+function totalReset(){
+  showTypedConfirm(
+    '⚠️ This deletes EVERYTHING — all progress, history, sessions, keys for both children and parent. Type RESET to confirm.',
+    'RESET',
+    async ()=>{
+      // Clear all md_ keys from localStorage
+      const toRemove=[];
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('md_'))toRemove.push(k);
+      }
+      toRemove.forEach(k=>localStorage.removeItem(k));
+      // Clear all cookies with md_ prefix
+      document.cookie.split(';').forEach(c=>{
+        const k=c.trim().split('=')[0];
+        if(k.startsWith('md_'))document.cookie=k+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+      });
+      // Wipe Supabase table if connected
+      if(isCloudEnabled()){
+        try{
+          // Delete all rows by matching key not equal to impossible value
+          await supaFetch('mathdrill_data?key=neq.___none___','DELETE');
+        }catch(e){}
+      }
+      // Reset app state
+      S.apiKey='';S.profile='';S.sess=null;
+      document.body.dataset.profile='';
+      showScreen('screen-api');
+      showToast('✓ All data reset — fresh start');
+    }
+  );
 }
 
 function exportBackup(){
