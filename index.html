@@ -13,8 +13,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#1E3A8A;color:#1C1917;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-input,textarea{-webkit-user-select:text!important;user-select:text!important;}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#1E3A8A;color:#1C1917;-webkit-tap-highlight-color:transparent}
+.screen{-webkit-user-select:none;user-select:none}
+input,textarea,select{
+  -webkit-user-select:text!important;
+  user-select:text!important;
+  -webkit-touch-callout:default!important;
+  pointer-events:auto!important;
+  touch-action:auto!important;
+  cursor:text!important;
+  opacity:1!important;
+}
 
 /* ── SCREENS ── */
 .screen{display:none;height:100vh;flex-direction:column;background:#FDFAF4;overflow:hidden}
@@ -441,14 +450,14 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   <div class="api-sub">For Alexander &amp; Estelle</div>
   <div class="api-desc">Enter your Anthropic API key to enable AI handwriting recognition.</div>
   <div class="api-err" id="api-err"></div>
-  <input class="api-input" id="api-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off">
+  <input class="api-input" id="api-input" type="text" inputmode="text" placeholder="sk-ant-api03-…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   <button class="api-btn" onclick="saveKey()">Save &amp; Start →</button>
 
   <!-- Cloud restore for new devices -->
   <div style="width:100%;max-width:320px;margin-top:22px;border-top:1px solid rgba(255,255,255,.15);padding-top:18px">
     <div style="font-size:11px;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:10px">Already using MathGenius? Restore all data from cloud:</div>
-    <input class="api-input" id="restore-url" type="text" placeholder="Supabase URL (https://…)" autocomplete="off" style="margin-bottom:8px">
-    <input class="api-input" id="restore-key" type="password" placeholder="Supabase key (sb_pub…)" autocomplete="off">
+    <input class="api-input" id="restore-url" type="text" inputmode="url" placeholder="Supabase URL (https://…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="margin-bottom:8px">
+    <input class="api-input" id="restore-key" type="text" inputmode="text" placeholder="Supabase key (sb_pub…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <button onclick="restoreFromCloud()" style="width:100%;max-width:320px;padding:13px;border:1.5px solid rgba(255,255,255,.3);border-radius:12px;background:transparent;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px">☁ Restore from cloud</button>
   </div>
   <div class="api-note" style="margin-top:12px">API key: console.anthropic.com · Cloud: supabase.com</div>
@@ -735,10 +744,10 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     <div class="cs-card">
       <div class="cs-info">Paste your Supabase Project URL and Publishable key. Found in Supabase → Settings → API Keys.</div>
       <div class="cs-label">Project URL</div>
-      <input class="cs-input" id="cs-url-input" type="url" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <input class="cs-input" id="cs-url-input" type="text" inputmode="url" placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <div style="margin-top:12px"></div>
       <div class="cs-label">Publishable key</div>
-      <input class="cs-input" id="cs-key-input" type="password" placeholder="sb_publishable_..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <input class="cs-input" id="cs-key-input" type="text" inputmode="text" placeholder="sb_publishable_..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <button class="cs-btn cs-primary" onclick="saveCloudConfig()">Connect & Test</button>
       <div class="cs-status" id="cs-status"></div>
     </div>
@@ -1300,8 +1309,15 @@ async function restoreFromCloud(){
 // ════════════════════════════════════════════
 // PROFILE
 // ════════════════════════════════════════════
-// ════════════════════════════════════════════
-// XP SYSTEM
+// iOS Safari input focus fix — must be called after screen shown
+function fixInputs(){
+  document.querySelectorAll('input,textarea').forEach(el=>{
+    el.addEventListener('touchend',function(e){
+      e.stopPropagation();
+      this.focus();
+    },{passive:true});
+  });
+}
 // ════════════════════════════════════════════
 const XP_LEVELS=[
   {level:1,name:'Explorer',min:0,max:499},
@@ -1459,10 +1475,14 @@ async function checkPinHashed(profile,entered){
 // UNDO TOAST — 30 second window after destructive actions
 // ════════════════════════════════════════════
 function showUndoToast(msg,onUndo){
+  if(!msg)return;
+  // Remove any existing undo toast
+  if(window._undoEl){clearInterval(window._undoEl._interval);window._undoEl.remove();}
   const el=document.createElement('div');
-  el.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1C1917;color:#fff;border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:12px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:\'Nunito\',sans-serif;white-space:nowrap';
+  el.style.cssText='position:fixed;bottom:20px;left:16px;right:16px;background:#1C1917;color:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:8000;box-shadow:0 4px 16px rgba(0,0,0,.35);font-family:\'Nunito\',sans-serif;pointer-events:auto';
   let secs=30;
-  el.innerHTML=`<span style="font-size:12px;font-weight:700">${msg}</span><button style="padding:5px 12px;border-radius:8px;background:#EF4444;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer" onclick="undoAction()">Undo (${secs}s)</button>`;
+  const safeMsg=String(msg).replace(/[<>]/g,'');
+  el.innerHTML=`<span style="font-size:12px;font-weight:700;flex:1">${safeMsg}</span><button style="padding:5px 14px;border-radius:8px;background:#EF4444;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0" onclick="undoAction()">Undo (${secs}s)</button>`;
   document.body.appendChild(el);
   window._undoFn=onUndo;
   const interval=setInterval(()=>{
@@ -4114,6 +4134,7 @@ window.addEventListener('load',async ()=>{
     setTimeout(()=>{ checkAutoSave(); },300);
     checkAutoBackup();
     if(isCloudEnabled())setTimeout(()=>initRealtime(),2500);
+    setTimeout(()=>fixInputs(),500);
     // Auto-pull every 60s
     if(isCloudEnabled()){
       setInterval(async()=>{
@@ -4138,8 +4159,16 @@ window.addEventListener('load',async ()=>{
     // No API key — but check if we can recover cloud credentials first
     // (Safari may have cleared localStorage but Supabase still has data)
     showScreen('screen-api');
-    const saved=localStorage.getItem('md_apikey');
-    if(saved){const inp=document.getElementById('api-input');if(inp)inp.value=saved;}
+    const saved=readCred('md_apikey');
+    // Validate — only pre-fill if it looks like a real API key
+    if(saved && saved.startsWith('sk-') && saved.length>20){
+      const inp=document.getElementById('api-input');
+      if(inp)inp.value=saved;
+    } else if(saved){
+      // Corrupt value — clear it
+      clearCred('md_apikey');
+      localStorage.removeItem('md_apikey');
+    }
     const su=localStorage.getItem('md_supa_url');const sk=localStorage.getItem('md_supa_key');
     if(su){const i=document.getElementById('restore-url');if(i)i.value=su;}
     if(sk){const i=document.getElementById('restore-key');if(i)i.value=sk;}
