@@ -40,7 +40,7 @@ input,textarea,select{
 .hdr-chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:#FEF3C7;color:#B45309;white-space:nowrap}
 
 /* ── API SETUP ── */
-#screen-api{background:#1E3A8A;justify-content:center;align-items:center;text-align:center;padding:32px 24px}
+#screen-api{background:#1E3A8A;justify-content:center;align-items:center;text-align:center;padding:32px 24px;overflow-y:auto}
 .api-logo{font-size:30px;font-weight:900;color:#fff;margin-bottom:5px}
 .api-logo span{color:#FCD34D}
 .api-sub{font-size:13px;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:6px}
@@ -117,7 +117,7 @@ input,textarea,select{
 .tcell:active{background:#EDE9E0}
 
 /* Canvas section — flex column, arrows float inside */
-.canvas-section{position:relative;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.canvas-section{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* Side nav arrows — inside page, overlaying canvas edges */
 .btn-side{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:28px;height:60px;background:rgba(255,255,255,.88);border:1px solid #EDE9E0;border-radius:8px;font-size:22px;font-weight:900;color:#A8A29E;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -129,7 +129,7 @@ input,textarea,select{
 /* Canvas inner — padded away from arrows */
 .canvas-inner{flex-shrink:0;padding:6px 52px 2px;display:flex;flex-direction:column;}
 .canvas-label{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;flex-shrink:0}
-.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:0;height:calc(100dvh - 440px);max-height:calc(100dvh - 440px);touch-action:none;overscroll-behavior:none}
+.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:80px;touch-action:none;overscroll-behavior:none}
 #drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#C4C0B8;pointer-events:none;text-align:center;line-height:1.7;white-space:nowrap}
 
@@ -162,7 +162,7 @@ input,textarea,select{
 .fb-btn.no{background:#F59E0B}
 
 /* ── SESSION COMPLETE ── */
-#screen-complete{justify-content:center;align-items:center;text-align:center;padding:32px 24px}
+#screen-complete{justify-content:center;align-items:center;text-align:center;padding:32px 24px;overflow-y:auto}
 
 
 
@@ -182,7 +182,7 @@ input,textarea,select{
 .ov-box.ov-ans{border-color:#10B981;background:#ECFDF5;color:#059669}
 
 /* ── PARENT PIN ── */
-#screen-parent-pin{background:#1E3A8A;justify-content:center;align-items:center}
+#screen-parent-pin{background:#1E3A8A;justify-content:center;align-items:center;overflow-y:auto}
 .pp-logo{font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;text-align:center}
 .pp-logo span{color:#FCD34D}
 .pp-sub{font-size:12px;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:22px;text-align:center}
@@ -312,7 +312,7 @@ body[data-profile="estelle"] #screen-session .hdr-chip{
 }
 
 /* ── CHILD PIN SCREEN ── */
-#screen-child-pin{background:#F4F1EC}
+#screen-child-pin{background:#F4F1EC;overflow-y:auto}
 .cpn-dot{width:18px;height:18px;border-radius:50%;border:2px solid #D1D5DB;background:#fff;transition:all .15s}
 .cpn-dot.filled{background:#1E3A8A;border-color:#1E3A8A}
 body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#764BA2}
@@ -381,22 +381,44 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 @media(min-width:768px){
   html,body{width:100%;height:100%;background:#F4F1EC}
   .screen{height:100vh;max-height:100vh;border-radius:0}
-  .canvas-wrap{height:calc(100vh - 440px);max-height:calc(100vh - 440px)}
+  .canvas-wrap{min-height:80px}
 }
 
-/* ── iPad portrait ── */
-@media(min-width:768px)and(max-width:1024px)and(orientation:portrait){
-  body{width:100%;height:100%;border-radius:0;box-shadow:none}
-  .screen{height:100vh;max-height:100vh;border-radius:0}
-  .canvas-wrap{height:calc(100vh - 420px);max-height:calc(100vh - 420px)}
-  .profiles{gap:20px;padding:0 24px 24px}
-  .p-card{padding:28px 20px 24px}
-  .tgrid{grid-template-columns:1fr 1fr}
-  .prob-eq{font-size:42px}
-  .cpn-grid{gap:14px;width:280px}
-  .cpn-key{height:72px;font-size:28px;border-radius:16px}
-  .pp-pad{width:280px;gap:12px}
-  .pp-key{height:68px;font-size:26px;border-radius:16px}
+/* ── iPad full screen layout ── */
+@media(min-width:768px)and(max-width:1024px){
+  /* Profile */
+  .profiles{gap:24px;padding:0 32px 24px;max-width:680px;margin:0 auto;width:100%}
+  .p-card{padding:32px 24px 28px}
+  .p-av{width:80px!important;height:80px!important;font-size:52px!important}
+  .p-name{font-size:18px}
+
+  /* Child PIN — centred bigger numpad */
+  .cpn-grid{gap:16px;max-width:360px;width:360px}
+  .cpn-key{height:80px;font-size:30px;border-radius:18px}
+  #cpn-avatar{font-size:80px!important;line-height:1}
+
+  /* Parent PIN */
+  .pp-pad{width:360px;gap:14px}
+  .pp-key{height:78px;font-size:28px;border-radius:16px}
+
+  /* Session */
+  .prob-eq{font-size:44px}
+  .hdr{padding:16px 28px}
+  .send-bar{padding:14px 28px}
+  .overview-strip{padding:10px 16px;gap:5px}
+  .ov-box{min-width:44px;height:34px;font-size:12px}
+  .answer-wrap{height:80px}
+  .answer-inner{padding:8px 16px 12px}
+  .instr-strip{padding:10px 20px;font-size:12px}
+
+  /* Topics */
+  .tgrid{grid-template-columns:1fr 1fr;gap:12px}
+  .tm-body{padding:14px 16px}
+
+  /* Dashboard / Review / Builder */
+  .pd-body{padding:16px 20px}
+  .pr-body{padding:14px 20px}
+  .sb-body{padding:14px 20px}
 }
 
 /* ── Small phones (≤380px): tighten everything ── */
@@ -426,7 +448,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 @media(orientation:landscape)and(max-height:500px){
   .prob-eq{font-size:28px}
   .p-av{width:48px;height:48px;font-size:28px!important}
-  .canvas-wrap{height:calc(100dvh - 320px);max-height:calc(100dvh - 320px)}
+  .canvas-wrap{min-height:80px}
   .send-bar{padding:6px 12px}
   .overview-strip{padding:5px 10px}
   .cpn-grid{gap:6px}
@@ -435,7 +457,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 /* ── Tall phones (≥900px height): more canvas space ── */
 @media(min-height:900px)and(max-width:767px){
-  .canvas-wrap{height:calc(100dvh - 440px);max-height:calc(100dvh - 440px)}
+  .canvas-wrap{min-height:80px}
 }
 
 /* ── Android Chrome bottom bar fix ── */
@@ -1792,7 +1814,8 @@ function selectProfile(p){
   setTimeout(()=>{
     checkChildNotification(p);
     checkXPNotify(p);
-  },400);
+    checkCelebration(p);
+  },600);
 }
 
 // ════════════════════════════════════════════
@@ -2702,6 +2725,7 @@ function buildOverviewTab(){
       const name=isAlex?'Alexander':'Estelle';
       const reviewed=s.questions.filter(q=>q.parentMark!==null).length;
       const allReviewed=reviewed===s.questions.length;
+      const aiChecking=s.aiChecking;
       const squares=s.questions.map(q=>`<div style="width:11px;height:11px;border-radius:3px;background:${q.parentMark===true?'#10B981':q.parentMark===false?'#EF4444':'#E5E7EB'}"></div>`).join('');
       html+=`<div style="background:#fff;border:1.5px solid ${borderColor};border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="showParentReview('${s.profile}',${s.id})">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -2710,7 +2734,7 @@ function buildOverviewTab(){
             <div style="font-size:12px;font-weight:900;color:#1C1917">${name}</div>
             <div style="font-size:10px;font-weight:700;color:#78716C">${s.topicName} · Level ${s.level}</div>
           </div>
-          <div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${allReviewed?'#D1FAE5':'#FEF3C7'};color:${allReviewed?'#047857':'#B45309'}">${allReviewed?'Ready to approve':'Review →'}</div>
+          <div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${aiChecking?'#FEF3C7':allReviewed?'#D1FAE5':'#EFF6FF'};color:${aiChecking?'#D97706':allReviewed?'#047857':'#1D4ED8'}">${aiChecking?'⏳ AI checking…':allReviewed?'Ready to approve':'Review →'}</div>
         </div>
         <div style="display:flex;gap:3px;flex-wrap:wrap">${squares}</div>
       </div>`;
@@ -3117,18 +3141,21 @@ function clearSession(profile,sessionId){
   const isTopicPass=session.level==='TEST'&&pass;
   const isFinalPass=session.level==='FINAL'&&pass;
   const msg=session.level==='TEST'?(pass?'⭐ Topic test passed! Topic complete!':'↩ Topic test failed — more practice needed'):pass?(li===LEVELS.length-1?'⭐ Level F done! Topic test unlocked':'✓ Level cleared!'):'↩ Same level — needs more practice.';
-  // Celebration for child — shown as overlay
+  // Store celebration for child — they see it when they next log in
   if(isLevelUp){
     const nextLvl=LEVELS[li+1]||'F';
-    setTimeout(()=>{
-      launchConfetti(`<div style="font-size:36px">🎉</div><div style="font-size:16px;font-weight:900;color:#1C1917;margin:8px 0 4px">Level ${nextLvl} Unlocked!</div><div style="font-size:12px;color:#78716C;font-weight:700">${profile==='alexander'?'Alexander':'Estelle'} passed Level ${session.level}</div>`);
-      playLevelUpFanfare();
-    },400);
-  }else if(isTopicPass||isFinalPass){
-    setTimeout(()=>{
-      launchConfetti(`<div style="font-size:40px">🏆</div><div style="font-size:16px;font-weight:900;color:#1C1917;margin:8px 0 4px">${isFinalPass?'All done!':'Topic Complete!'}</div><div style="font-size:12px;color:#78716C;font-weight:700">Amazing work!</div>`);
-      playLevelUpFanfare();
-    },400);
+    const name=profile==='alexander'?'Alexander':'Estelle';
+    const celebration={type:'levelup',level:nextLvl,prevLevel:session.level,name};
+    localStorage.setItem('md_celebrate_'+profile,JSON.stringify(celebration));
+    cloudSet('md_celebrate_'+profile,celebration);
+  }else if(isTopicPass){
+    const celebration={type:'topicpass',topicName:session.topicName};
+    localStorage.setItem('md_celebrate_'+profile,JSON.stringify(celebration));
+    cloudSet('md_celebrate_'+profile,celebration);
+  }else if(isFinalPass){
+    const celebration={type:'finalpass'};
+    localStorage.setItem('md_celebrate_'+profile,JSON.stringify(celebration));
+    cloudSet('md_celebrate_'+profile,celebration);
   }
   showToast(msg);showParentDash();
 }
@@ -3206,7 +3233,7 @@ async function _doSend(){
   saveCanvasState(S.sess.cur);
   const btn=document.getElementById('send-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳';}
-  document.getElementById('send-status').textContent='Preparing...';
+  document.getElementById('send-status').textContent='Saving...';
 
   // Capture all canvas images
   const questions=S.sess.problems.map((prob,i)=>{
@@ -3227,51 +3254,55 @@ async function _doSend(){
     return{display:prob.display,answer:prob.answer,workURL,answerURL,aiMark:null,aiResult:null,parentMark:null};
   });
 
-  // AI check all if API key available
-  if(S.apiKey){
-    for(let i=0;i<questions.length;i++){
-      try{
-        const nqAI=S.sess?S.sess.problems.length:N_PROBLEMS;
-        document.getElementById('send-status').textContent=`AI checking ${i+1}/${nqAI}...`;
-        const result=await aiCheckQuestion(questions[i]);
-        questions[i].aiMark=result.correct;
-        questions[i].aiResult=result.comment;
-        questions[i].parentMark=result.correct;
-      }catch(e){/* skip */}
-    }
-  }
-
+  // Save session immediately — no waiting
   const sessionDuration=S.sess.startTime?Math.round((Date.now()-S.sess.startTime)/1000):0;
   const session={
     id:Date.now(),profile:S.profile,date:new Date().toISOString(),
     tid:S.sess.tid,level:S.sess.level,topicName:S.sess.topicName,
-    duration:sessionDuration,questions
+    duration:sessionDuration,questions,aiChecking:!!S.apiKey
   };
   const key='md_pending_'+S.profile;
   const pending=JSON.parse(localStorage.getItem(key)||'[]');
-  // Replace if same topic+level already pending — never duplicate
   const existIdx=pending.findIndex(p=>p.tid===session.tid&&p.level===session.level);
-  if(existIdx>=0){
-    pending.splice(existIdx,1,session);
-  }else{
-    pending.unshift(session);
-    if(pending.length>20)pending.pop();
-  }
-  localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
+  if(existIdx>=0){pending.splice(existIdx,1,session);}
+  else{pending.unshift(session);if(pending.length>20)pending.pop();}
+  localStorage.setItem(key,JSON.stringify(pending));
+  cloudSet(key,pending);
   clearAutoSave();
   if(S.sess&&S.sess.usingLocked){
     localStorage.removeItem('md_next_'+S.profile);
     cloudDelete('md_next_'+S.profile);
   }
-  bumpStreak(S.profile);
-  const streak=getStreak(S.profile);
-  document.getElementById('sc-stars').textContent='✉️';
-  document.getElementById('sc-title').textContent='Sent!';
-  const nqSent=S.sess?S.sess.problems.length:N_PROBLEMS;
-  document.getElementById('sc-score').textContent=nqSent+' questions sent';
-  document.getElementById('sc-sub').textContent=`🔥 ${streak} day streak · Dad will review your work`;
-  document.getElementById('sc-unlock').style.display='none';
-  showScreen('screen-complete');
+
+  // Show complete screen immediately
+  showComplete();
+
+  // AI check in background — no blocking
+  if(S.apiKey){
+    const sessionId=session.id;
+    const profileSnap=S.profile;
+    (async()=>{
+      const pend=JSON.parse(localStorage.getItem('md_pending_'+profileSnap)||'[]');
+      const sess=pend.find(s=>s.id===sessionId);
+      if(!sess)return;
+      let changed=false;
+      for(let i=0;i<sess.questions.length;i++){
+        try{
+          const result=await aiCheckQuestion(sess.questions[i]);
+          sess.questions[i].aiMark=result.correct;
+          sess.questions[i].aiResult=result.comment;
+          sess.questions[i].parentMark=result.correct;
+          changed=true;
+        }catch(e){}
+      }
+      sess.aiChecking=false;
+      if(changed){
+        const pend2=JSON.parse(localStorage.getItem('md_pending_'+profileSnap)||'[]');
+        const idx=pend2.findIndex(s=>s.id===sessionId);
+        if(idx>=0){pend2[idx]=sess;localStorage.setItem('md_pending_'+profileSnap,JSON.stringify(pend2));cloudSet('md_pending_'+profileSnap,pend2);}
+      }
+    })();
+  }
 }
 
 // ════════════════════════════════════════════
@@ -3392,6 +3423,7 @@ function totalReset(){
         'md_next_alexander','md_next_estelle',
         'md_xp_alexander','md_xp_estelle',
         'md_xp_notify_alexander','md_xp_notify_estelle',
+        'md_celebrate_alexander','md_celebrate_estelle',
         'md_lastprac_alexander','md_lastprac_estelle',
         'md_mistakes_alexander','md_mistakes_estelle',
         'md_autosave'
@@ -3945,6 +3977,28 @@ function saveChildNotification(profile,score,total,topicName){
   localStorage.setItem('md_notify_'+profile,JSON.stringify(data));
   cloudSet('md_notify_'+profile,data);
 }
+function checkCelebration(profile){
+  const raw=localStorage.getItem('md_celebrate_'+profile);
+  if(!raw)return;
+  localStorage.removeItem('md_celebrate_'+profile);
+  cloudDelete('md_celebrate_'+profile);
+  let data;
+  try{data=JSON.parse(raw);}catch(e){return;}
+  const col=profile==='alexander'?'#1E3A8A':'#764BA2';
+  setTimeout(()=>{
+    if(data.type==='levelup'){
+      launchConfetti(`<div style="font-size:52px">🎉</div><div style="font-size:20px;font-weight:900;color:#1C1917;margin:10px 0 6px">Level ${data.level} Unlocked!</div><div style="font-size:14px;font-weight:700;color:${col}">You passed Level ${data.prevLevel}!</div><div style="font-size:12px;color:#78716C;margin-top:4px">Keep going ${data.name}! 🚀</div>`);
+      playLevelUpFanfare();
+    }else if(data.type==='topicpass'){
+      launchConfetti(`<div style="font-size:52px">⭐</div><div style="font-size:20px;font-weight:900;color:#1C1917;margin:10px 0 6px">Topic Complete!</div><div style="font-size:14px;font-weight:700;color:${col}">${data.topicName}</div><div style="font-size:12px;color:#78716C;margin-top:4px">Amazing work! New topic unlocked 🔓</div>`);
+      playLevelUpFanfare();
+    }else if(data.type==='finalpass'){
+      launchConfetti(`<div style="font-size:52px">🏆</div><div style="font-size:20px;font-weight:900;color:#1C1917;margin:10px 0 6px">All Topics Done!</div><div style="font-size:12px;color:#78716C;margin-top:4px">You're a MathGenius! 🌟</div>`);
+      playLevelUpFanfare();
+    }
+  },600);
+}
+
 function checkChildNotification(profile){
   const raw=localStorage.getItem('md_notify_'+profile);
   if(!raw)return;
