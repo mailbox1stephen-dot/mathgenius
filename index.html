@@ -41,12 +41,12 @@ html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background
 .api-note{font-size:11px;color:rgba(255,255,255,.4);font-weight:700;margin-top:12px;max-width:280px;line-height:1.6}
 
 /* ── PROFILE SELECT ── */
-#screen-profile{align-items:stretch;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0F172A}
-.ps-logo{font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.45);text-align:center;padding-top:22px}
+#screen-profile{align-items:center;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0F172A}
+.ps-logo{font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.45);text-align:center;padding-top:22px;width:100%}
 
-.ps-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:600;text-align:center;margin-bottom:18px}
-.profiles{display:flex;gap:12px;width:100%;padding:0 16px 16px;flex-wrap:wrap}
-.p-card{flex:1;border-radius:20px;padding:20px 14px 18px;text-align:center;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden}
+.ps-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:600;text-align:center;margin-bottom:18px;width:100%}
+.profiles{display:flex;gap:12px;width:100%;padding:0 16px 16px;min-height:0}
+.p-card{flex:1;min-width:130px;border-radius:20px;padding:20px 14px 18px;text-align:center;cursor:pointer;transition:transform .15s;position:relative;overflow:hidden}
 .p-card:active{transform:scale(.97)}
 .p-card.blue{background:linear-gradient(145deg,#1E40AF,#1E3A8A)}
 .p-card.purple{background:linear-gradient(145deg,#6D28D9,#4C1D95)}
@@ -455,17 +455,17 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <!-- ── PROFILE SELECT ── -->
 <div class="screen" id="screen-profile">
   <div class="ps-logo">MATHGENIUS</div>
-  <div id="profile-greeting" style="text-align:center;padding:4px 0 6px"></div>
+  <div id="profile-greeting" style="text-align:center;padding:4px 0 6px;width:100%"></div>
   <div class="ps-sub">Who's practising today?</div>
   <div class="profiles">
     <div class="p-card blue" onclick="showChildPin('alexander')">
-      <div class="p-av" id="p-av-alexander" style="font-size:38px;background:#DBEAFE">🏌️</div>
+      <div class="p-av" id="p-av-alexander">🏌️</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
     </div>
     <div class="p-card purple" onclick="showChildPin('estelle')">
-      <div class="p-av" id="p-av-estelle" style="font-size:38px;background:#EDE9FE">🦄</div>
+      <div class="p-av" id="p-av-estelle">🦄</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
       <div class="p-tag" id="est-tag">Topic 1 · Level A</div>
@@ -513,7 +513,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     </div>
   </div>
 
-  <div style="display:flex;gap:10px;padding:0 16px;margin-top:4px">
+  <div style="display:flex;gap:10px;padding:0 16px;margin-top:4px;width:100%">
     <div style="flex:1;background:rgba(255,255,255,.07);border-radius:12px;padding:12px;text-align:center">
       <div id="ps-sessions" style="font-size:20px;font-weight:900;color:#fff">0</div>
       <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Sessions this week</div>
@@ -523,7 +523,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
       <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Avg accuracy</div>
     </div>
   </div>
-  <div style="padding:14px 16px 28px">
+  <div style="padding:14px 16px 28px;width:100%">
     <button onclick="showParentPin()" style="width:100%;padding:13px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:13px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:rgba(255,255,255,.5);cursor:pointer">🔒 Parent login</button>
   </div>
 </div>
@@ -2324,9 +2324,9 @@ function buildOverviewTab(){
   html+=`</div></div>`;
   // Total reset
   html+=`<div style="background:#FEF2F2;border-radius:12px;border:1.5px solid #FECACA;padding:11px 12px;margin-bottom:14px">`;
-  html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">⚠️</div><div style="font-size:11px;font-weight:900;color:#991B1B">Total Reset</div></div>`;
-  html+=`<div style="font-size:10px;font-weight:700;color:#B91C1C;margin-bottom:10px">Wipes ALL data — both children and parent. Progress, history, sessions, keys. Cannot be undone. Use only during testing.</div>`;
-  html+=`<button onclick="totalReset()" style="width:100%;padding:11px;border-radius:10px;border:none;background:#DC2626;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:#fff;cursor:pointer">🗑 Reset everything</button>`;
+  html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">⚠️</div><div style="font-size:11px;font-weight:900;color:#991B1B">Reset Kids Data</div></div>`;
+  html+=`<div style="font-size:10px;font-weight:700;color:#B91C1C;margin-bottom:10px">Resets progress, history, sessions and streaks for both children. Keeps API key, Supabase, PINs and icons intact.</div>`;
+  html+=`<button onclick="totalReset()" style="width:100%;padding:11px;border-radius:10px;border:none;background:#DC2626;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:#fff;cursor:pointer">🗑 Reset kids progress</button>`;
   html+=`</div>`;
   return html;
 }
@@ -2919,33 +2919,32 @@ function fixProgressFromHistory(profile){
 
 function totalReset(){
   showTypedConfirm(
-    '⚠️ This deletes EVERYTHING — all progress, history, sessions, keys for both children and parent. Type RESET to confirm.',
+    '⚠️ This resets ALL learning data for both children — progress, history, sessions, streaks. Keys, PINs and cloud settings are kept. Type RESET to confirm.',
     'RESET',
     async ()=>{
-      // Clear all md_ keys from localStorage
-      const toRemove=[];
-      for(let i=0;i<localStorage.length;i++){
-        const k=localStorage.key(i);
-        if(k&&k.startsWith('md_'))toRemove.push(k);
-      }
-      toRemove.forEach(k=>localStorage.removeItem(k));
-      // Clear all cookies with md_ prefix
-      document.cookie.split(';').forEach(c=>{
-        const k=c.trim().split('=')[0];
-        if(k.startsWith('md_'))document.cookie=k+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-      });
-      // Wipe Supabase table if connected
+      const kidsKeys=[
+        'md_prog_alexander','md_prog_estelle',
+        'md_hist_alexander','md_hist_estelle',
+        'md_pending_alexander','md_pending_estelle',
+        'md_corrections_alexander','md_corrections_estelle',
+        'md_streak_alexander','md_streak_estelle',
+        'md_lastday_alexander','md_lastday_estelle',
+        'md_notify_alexander','md_notify_estelle',
+        'md_next_alexander','md_next_estelle',
+        'md_autosave'
+      ];
+      // Clear from localStorage
+      kidsKeys.forEach(k=>localStorage.removeItem(k));
+      // Clear from Supabase
       if(isCloudEnabled()){
         try{
-          // Delete all rows by matching key not equal to impossible value
-          await supaFetch('mathdrill_data?key=neq.___none___','DELETE');
+          for(const k of kidsKeys){
+            await cloudDelete(k);
+          }
         }catch(e){}
       }
-      // Reset app state
-      S.apiKey='';S.profile='';S.sess=null;
-      document.body.dataset.profile='';
-      showScreen('screen-api');
-      showToast('✓ All data reset — fresh start');
+      showToast('✓ Kids data reset — progress cleared');
+      showParentDash();
     }
   );
 }
