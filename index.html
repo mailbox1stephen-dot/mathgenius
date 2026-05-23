@@ -196,7 +196,7 @@ input,textarea,select{
 .pp-back{font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:rgba(255,255,255,.45);background:transparent;border:none;cursor:pointer;display:block;width:100%;text-align:center;padding:8px}
 
 /* ── PARENT DASHBOARD ── */
-.pd-body{flex:1;overflow-y:auto;padding:13px;-webkit-overflow-scrolling:touch}
+.pd-body{flex:1;overflow-y:auto;padding:13px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
 .pd-section{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.08em;text-transform:uppercase;margin:10px 0 7px}
 .pd-card{background:#fff;border-radius:13px;border:1.5px solid #EDE9E0;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;padding:11px 13px;gap:9px}
 .pd-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0}
@@ -1626,9 +1626,9 @@ function generatePDFReport(profile){
   <h2>Last 10 Sessions</h2>
   <table><thead><tr><th>Date</th><th>Topic</th><th>Level</th><th>Score</th><th>Accuracy</th><th>Duration</th></tr></thead><tbody>${recentRows}</tbody></table>
   <div class="footer">MathGenius · Private family learning app · ${new Date().getFullYear()}</div>
-  `+'<script>window.onload=()=>{window.print();}<\/script></body></html>';
+  </body></html>`;
   const w=window.open('','_blank');
-  if(w){w.document.write(html);w.document.close();}
+  if(w){w.document.write(html);w.document.close();setTimeout(()=>w.print(),600);}
   else showToast('Allow popups to generate PDF');
 }
 
@@ -2554,15 +2554,20 @@ function checkPin(){
 // ════════════════════════════════════════════
 function switchDashTab(n){
   ['overview','alexander','estelle'].forEach((id,i)=>{
-    document.getElementById('pd-tab-'+id).style.display=i===n?'block':'none';
-    document.getElementById('pd-dtab-'+i).className='pd-tab'+(i===n?' on':'');
+    const el=document.getElementById('pd-tab-'+id);
+    if(el)el.style.display=i===n?'flex':'none';
+    const btn=document.getElementById('pd-dtab-'+i);
+    if(btn)btn.className='pd-tab'+(i===n?' on':'');
   });
 }
 
 function showParentDash(){
-  try{document.getElementById('pd-tab-overview').innerHTML=buildOverviewTab();}catch(e){console.error('buildOverviewTab:',e);document.getElementById('pd-tab-overview').innerHTML='<div style="padding:20px;color:#EF4444">Error loading overview</div>';}
-  try{document.getElementById('pd-tab-alexander').innerHTML=buildChildTab('alexander');}catch(e){console.error('buildChildTab alex:',e);}
-  try{document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');}catch(e){console.error('buildChildTab est:',e);}
+  try{document.getElementById('pd-tab-overview').innerHTML=buildOverviewTab();}
+  catch(e){console.error('buildOverviewTab:',e);document.getElementById('pd-tab-overview').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error loading overview: '+e.message+'</div>';}
+  try{document.getElementById('pd-tab-alexander').innerHTML=buildChildTab('alexander');}
+  catch(e){console.error('buildChildTab alex:',e);document.getElementById('pd-tab-alexander').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error: '+e.message+'</div>';}
+  try{document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');}
+  catch(e){console.error('buildChildTab est:',e);document.getElementById('pd-tab-estelle').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error: '+e.message+'</div>';}
   switchDashTab(0);
   if(isCloudEnabled()){const b=document.getElementById('cloud-btn');if(b)b.style.color='#10B981';}
   showScreen('screen-parent-dash');
@@ -2853,7 +2858,7 @@ function buildChildTab(profile){
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#F0FDF9;text-align:center;cursor:pointer" onclick="fixProgressFromHistory('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔧</div><div style="font-size:10px;font-weight:800;color:#065F46">Fix progress</div></div>`;
   html+=`</div>`;
   html+=`<div style="display:flex;gap:7px;margin-bottom:16px">`;
-  html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;text-align:center;cursor:pointer" onclick="changeChildPin('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔢</div><div style="font-size:10px;font-weight:800;color:#78716C">Change PIN<br><span style="font-size:9px;font-weight:700;color:#A8A29E">Current: ${getChildPin(profile)}</span></div></div>`;
+  html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;text-align:center;cursor:pointer" onclick="changeChildPin('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔢</div><div style="font-size:10px;font-weight:800;color:#78716C">Change PIN<br><span style="font-size:9px;font-weight:700;color:#A8A29E">Current PIN: ••••</span></div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #DDD6FE;background:#F5F3FF;text-align:center;cursor:pointer" onclick="generatePDFReport('${profile}')"><div style="font-size:16px;margin-bottom:3px">📄</div><div style="font-size:10px;font-weight:800;color:#7C3AED">PDF Report</div></div>`;
   html+=`</div>`;
   return html;
