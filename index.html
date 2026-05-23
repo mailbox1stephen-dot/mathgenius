@@ -13,8 +13,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#1E3A8A;color:#1C1917;-webkit-tap-highlight-color:transparent}
-.screen{-webkit-user-select:none;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Nunito',sans-serif;background:#1E3A8A;color:#1C1917;-webkit-tap-highlight-color:transparent}
+.screen{-webkit-user-select:none;user-select:none;width:100%}
 input,textarea,select{
   -webkit-user-select:text!important;
   user-select:text!important;
@@ -379,19 +379,24 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 /* ── DESKTOP & large tablet (≥768px): centred phone-frame ── */
 @media(min-width:768px){
-  html{background:#0A0F1E;display:flex;align-items:center;justify-content:center;min-height:100vh}
-  body{width:420px;height:900px;max-height:100vh;border-radius:28px;overflow:hidden;
-    box-shadow:0 32px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08);position:relative}
-  .screen{height:900px;max-height:900px;border-radius:28px}
-  .canvas-wrap{height:360px;max-height:360px}
-  #screen-profile{border-radius:28px}
+  html,body{width:100%;height:100%;background:#F4F1EC}
+  .screen{height:100vh;max-height:100vh;border-radius:0}
+  .canvas-wrap{height:calc(100vh - 440px);max-height:calc(100vh - 440px)}
 }
 
-/* ── iPad portrait (768–1024px) ── */
+/* ── iPad portrait ── */
 @media(min-width:768px)and(max-width:1024px)and(orientation:portrait){
-  body{width:480px;height:920px;border-radius:0;box-shadow:none}
-  .screen{height:920px;max-height:920px;border-radius:0}
-  .canvas-wrap{height:400px;max-height:400px}
+  body{width:100%;height:100%;border-radius:0;box-shadow:none}
+  .screen{height:100vh;max-height:100vh;border-radius:0}
+  .canvas-wrap{height:calc(100vh - 420px);max-height:calc(100vh - 420px)}
+  .profiles{gap:20px;padding:0 24px 24px}
+  .p-card{padding:28px 20px 24px}
+  .tgrid{grid-template-columns:1fr 1fr}
+  .prob-eq{font-size:42px}
+  .cpn-grid{gap:14px;width:280px}
+  .cpn-key{height:72px;font-size:28px;border-radius:16px}
+  .pp-pad{width:280px;gap:12px}
+  .pp-key{height:68px;font-size:26px;border-radius:16px}
 }
 
 /* ── Small phones (≤380px): tighten everything ── */
