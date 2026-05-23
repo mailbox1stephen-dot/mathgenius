@@ -1260,8 +1260,10 @@ function genSession(profile,tid,lvl){
 // SCREENS
 // ════════════════════════════════════════════
 function showScreen(id){
+  const target=document.getElementById(id);
+  if(!target){console.warn('showScreen: missing id',id);return;}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  target.classList.add('active');
 }
 
 // ════════════════════════════════════════════
@@ -1701,14 +1703,27 @@ function cpnDel(){
   if(cpnEntry.length>0){cpnEntry=cpnEntry.slice(0,-1);updateCpnDots();}
 }
 async function checkCpn(){
-  const isCorrect=await checkPinHashed(cpnProfile,cpnEntry);
-  if(isCorrect){
-    document.getElementById('cpn-err').textContent='';
-    saveCred('md_remembered_profile',cpnProfile);
-    selectProfile(cpnProfile);
-  }else{
-    document.getElementById('cpn-err').textContent='Wrong number — try again';
-    cpnEntry='';updateCpnDots();
+  try{
+    const isCorrect=await checkPinHashed(cpnProfile,cpnEntry);
+    if(isCorrect){
+      document.getElementById('cpn-err').textContent='';
+      saveCred('md_remembered_profile',cpnProfile);
+      selectProfile(cpnProfile);
+    }else{
+      document.getElementById('cpn-err').textContent='Wrong number — try again';
+      cpnEntry='';updateCpnDots();
+    }
+  }catch(e){
+    console.error('checkCpn error:',e);
+    // Fallback — compare plain text
+    const plain=localStorage.getItem('md_pin_'+cpnProfile)||DEFAULT_CHILD_PINS[cpnProfile];
+    if(cpnEntry===plain){
+      saveCred('md_remembered_profile',cpnProfile);
+      selectProfile(cpnProfile);
+    }else{
+      document.getElementById('cpn-err').textContent='Wrong number — try again';
+      cpnEntry='';updateCpnDots();
+    }
   }
 }
 
@@ -1717,27 +1732,29 @@ function changeChildPin(profile){
   const name=profile==='alexander'?'Alexander':'Estelle';
   const el=document.createElement('div');
   el.className='modal-overlay';
+  const profileStr=profile; // capture for use in event handler
   el.innerHTML=`<div class="modal-box">
     <div style="font-size:18px;margin-bottom:8px">${getIcon(profile)}</div>
     <div class="modal-msg">${name}'s PIN</div>
-    <div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:8px">Current PIN: ${getChildPin(profile)}</div>
-    <input id="new-pin-input" class="modal-typed-input" type="number" placeholder="Enter new 4-digit PIN" maxlength="4" style="letter-spacing:.3em;font-size:20px;font-weight:900;text-align:center">
+    <div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:8px">Enter a new 4-digit PIN</div>
+    <input id="new-pin-input" class="modal-typed-input" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="New PIN" autocomplete="off" style="letter-spacing:.3em;font-size:20px;font-weight:900;text-align:center">
     <div class="modal-btns" style="margin-top:10px">
       <button class="modal-cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-      <button class="modal-ok" onclick="
-        const v=document.getElementById('new-pin-input').value.trim();
-        if(v.length===4&&/^[0-9]{4}$/.test(v)){
-          setChildPinHashed('${profile}',v).then(()=>{
-            this.closest('.modal-overlay').remove();
-            showToast('${name} PIN changed ✓');
-          });
-        }else{
-          document.getElementById('new-pin-input').style.borderColor='#EF4444';
-        }
-      ">Save PIN</button>
+      <button class="modal-ok" id="save-pin-btn">Save PIN</button>
     </div>
   </div>`;
   document.body.appendChild(el);
+  el.querySelector('#save-pin-btn').addEventListener('click',function(){
+    const v=document.getElementById('new-pin-input').value.trim();
+    if(v.length===4&&/^[0-9]{4}$/.test(v)){
+      setChildPinHashed(profileStr,v).then(()=>{
+        el.remove();
+        showToast(name+' PIN changed ✓');
+      });
+    }else{
+      document.getElementById('new-pin-input').style.borderColor='#EF4444';
+    }
+  });
   setTimeout(()=>el.querySelector('#new-pin-input').focus(),100);
 }
 
@@ -2517,11 +2534,18 @@ function updatePinDots(){
   }
 }
 function checkPin(){
-  const stored=localStorage.getItem('md_parent_pin')||'1234';
-  if(pinEntry===stored){showParentDash();}
-  else{
-    document.getElementById('pp-err').textContent='Wrong PIN — try again';
-    pinEntry='';updatePinDots();
+  try{
+    const stored=localStorage.getItem('md_parent_pin')||'1234';
+    if(pinEntry===stored){
+      showParentDash();
+    }else{
+      document.getElementById('pp-err').textContent='Wrong PIN — try again';
+      pinEntry='';updatePinDots();
+    }
+  }catch(e){
+    console.error('checkPin/showParentDash error:',e);
+    // Force navigate even if dashboard build failed
+    showScreen('screen-parent-dash');
   }
 }
 
@@ -2536,9 +2560,9 @@ function switchDashTab(n){
 }
 
 function showParentDash(){
-  document.getElementById('pd-tab-overview').innerHTML=buildOverviewTab();
-  document.getElementById('pd-tab-alexander').innerHTML=buildChildTab('alexander');
-  document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');
+  try{document.getElementById('pd-tab-overview').innerHTML=buildOverviewTab();}catch(e){console.error('buildOverviewTab:',e);document.getElementById('pd-tab-overview').innerHTML='<div style="padding:20px;color:#EF4444">Error loading overview</div>';}
+  try{document.getElementById('pd-tab-alexander').innerHTML=buildChildTab('alexander');}catch(e){console.error('buildChildTab alex:',e);}
+  try{document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');}catch(e){console.error('buildChildTab est:',e);}
   switchDashTab(0);
   if(isCloudEnabled()){const b=document.getElementById('cloud-btn');if(b)b.style.color='#10B981';}
   showScreen('screen-parent-dash');
@@ -3794,7 +3818,9 @@ function showCorrectionsReview(onDone){
   const corrections=S.sess.problems.filter(p=>p.correction);
   if(!corrections.length){onDone();return;}
   const col=S.profile==='alexander'?'#1E3A8A':'#764BA2';
+  window._corrOnDone=onDone; // store callback safely
   const el=document.createElement('div');
+  el.id='corrections-overlay';
   el.style.cssText='position:fixed;inset:0;z-index:9000;background:#F4F1EC;overflow-y:auto;display:flex;flex-direction:column';
   let html=`<div style="background:${col};padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0">
     <div style="font-size:15px;font-weight:900;color:#fff;flex:1">📖 Review your mistakes</div>
@@ -3814,10 +3840,14 @@ function showCorrectionsReview(onDone){
   });
   html+=`</div>
   <div style="padding:12px;flex-shrink:0">
-    <button onclick="this.closest('[style*=z-index]').remove();(${onDone.toString()})()" style="width:100%;padding:14px;border:none;border-radius:14px;background:${col};color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer">Got it — start session →</button>
+    <button id="corr-start-btn" style="width:100%;padding:14px;border:none;border-radius:14px;background:${col};color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;cursor:pointer">Got it — start session →</button>
   </div>`;
   el.innerHTML=html;
   document.body.appendChild(el);
+  document.getElementById('corr-start-btn').addEventListener('click',()=>{
+    el.remove();
+    if(window._corrOnDone){window._corrOnDone();window._corrOnDone=null;}
+  });
 }
 
 function _setupSession(topic){
