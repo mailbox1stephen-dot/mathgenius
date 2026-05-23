@@ -1814,7 +1814,6 @@ function selectProfile(p){
   setTimeout(()=>{
     checkChildNotification(p);
     checkXPNotify(p);
-    checkCelebration(p);
   },600);
 }
 
@@ -2062,6 +2061,8 @@ function startSession(tid,level,method){
   if(hasCorrections&&S.sess.problems.some(p=>p.correction)){
     showCorrectionsReview(()=>{_setupSession(hasCorrections);});
   }else{
+    // No corrections — fire any pending celebration immediately
+    checkCelebration(S.profile);
     _setupSession(hasCorrections);
   }
   const wrapEl=document.getElementById('canvas-wrap');
@@ -3504,13 +3505,19 @@ async function pushToCloud(){
   showToast('Pushing to cloud...');
   const keys=['md_prog_alexander','md_prog_estelle','md_hist_alexander','md_hist_estelle',
     'md_streak_alexander','md_streak_estelle','md_lastday_alexander','md_lastday_estelle',
-    'md_pending_alexander','md_pending_estelle','md_parent_pin'];
+    'md_pending_alexander','md_pending_estelle','md_parent_pin',
+    'md_icon_alexander','md_icon_estelle','md_xp_alexander','md_xp_estelle'];
   let count=0;
   for(const k of keys){
     const v=localStorage.getItem(k);
     if(v){
-      try{await supaFetch('mathdrill_data','POST',{key:k,value:JSON.parse(v),updated_at:new Date().toISOString()});count++;}
-      catch(e){}
+      try{
+        // Try to parse as JSON first, fall back to raw string
+        let val;
+        try{val=JSON.parse(v);}catch(e){val=v;}
+        await supaFetch('mathdrill_data','POST',{key:k,value:val,updated_at:new Date().toISOString()});
+        count++;
+      }catch(e){}
     }
   }
   showToast('Pushed '+count+' items to cloud ☁');
@@ -3527,14 +3534,16 @@ async function pullFromCloud(){
       const cloudVal=typeof row.value==='string'?row.value:JSON.stringify(row.value);
       // Never overwrite pending sessions if local has more
       if(row.key.startsWith('md_pending_')){
-        const local=JSON.parse(localStorage.getItem(row.key)||'[]');
-        const cloud=JSON.parse(cloudVal||'[]');
+        let local=[],cloud=[];
+        try{local=JSON.parse(localStorage.getItem(row.key)||'[]');}catch(e){}
+        try{cloud=JSON.parse(cloudVal||'[]');}catch(e){}
         if(local.length>cloud.length){kept++;return;}
       }
-      // Never downgrade topic progress — keep whichever has higher levels
+      // Never downgrade topic progress
       if(row.key.startsWith('md_prog_')){
-        const local=JSON.parse(localStorage.getItem(row.key)||'null');
-        const cloud=JSON.parse(cloudVal||'null');
+        let local=null,cloud=null;
+        try{local=JSON.parse(localStorage.getItem(row.key)||'null');}catch(e){}
+        try{cloud=JSON.parse(cloudVal||'null');}catch(e){}
         if(local&&cloud){
           const merged=mergeProgress(local,cloud);
           localStorage.setItem(row.key,JSON.stringify(merged));
@@ -3889,7 +3898,11 @@ function showCorrectionsReview(onDone){
   document.body.appendChild(el);
   document.getElementById('corr-start-btn').addEventListener('click',()=>{
     el.remove();
-    if(window._corrOnDone){window._corrOnDone();window._corrOnDone=null;}
+    // Show celebration NOW — child has reviewed mistakes and is stepping into new level
+    checkCelebration(S.profile);
+    setTimeout(()=>{
+      if(window._corrOnDone){window._corrOnDone();window._corrOnDone=null;}
+    },300);
   });
 }
 
