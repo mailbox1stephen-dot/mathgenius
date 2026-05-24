@@ -3383,11 +3383,11 @@ async function _doSend(){
         const wc=document.createElement('canvas');
         wc.width=canvas.width;wc.height=canvas.height;
         wc.getContext('2d').putImageData(cache.img,0,0);
-        workURL=wc.toDataURL('image/jpeg',0.55);
+        workURL=wc.toDataURL('image/jpeg',0.4);
         const ac=document.createElement('canvas');
         ac.width=aCanvas.width;ac.height=aCanvas.height;
         ac.getContext('2d').putImageData(cache.aImg,0,0);
-        answerURL=ac.toDataURL('image/jpeg',0.55);
+        answerURL=ac.toDataURL('image/jpeg',0.4);
       }catch(e){}
     }
     return{display:prob.display,answer:prob.answer,workURL,answerURL,aiMark:null,aiResult:null,parentMark:null};
@@ -3641,18 +3641,29 @@ async function cloudDelete(key){
 async function pushToCloud(){
   if(!isCloudEnabled()){showToast('No cloud connected');return;}
   showToast('Pushing to cloud...');
-  const keys=['md_prog_alexander','md_prog_estelle','md_hist_alexander','md_hist_estelle',
-    'md_streak_alexander','md_streak_estelle','md_lastday_alexander','md_lastday_estelle',
-    'md_pending_alexander','md_pending_estelle','md_parent_pin',
-    'md_icon_alexander','md_icon_estelle','md_xp_alexander','md_xp_estelle'];
+  const keys=[
+    'md_prog_alexander','md_prog_estelle',
+    'md_hist_alexander','md_hist_estelle',
+    'md_streak_alexander','md_streak_estelle',
+    'md_lastday_alexander','md_lastday_estelle',
+    'md_pending_alexander','md_pending_estelle',
+    'md_corrections_alexander','md_corrections_estelle',
+    'md_next_alexander','md_next_estelle',
+    'md_celebrate_alexander','md_celebrate_estelle',
+    'md_notify_alexander','md_notify_estelle',
+    'md_icon_alexander','md_icon_estelle',
+    'md_xp_alexander','md_xp_estelle',
+    'md_pin_alexander','md_pin_estelle',
+    'md_parent_pin','md_onboarded',
+    'md_lastprac_alexander','md_lastprac_estelle',
+    'md_mistakes_alexander','md_mistakes_estelle',
+  ];
   let count=0;
   for(const k of keys){
     const v=localStorage.getItem(k);
     if(v){
       try{
-        // Try to parse as JSON first, fall back to raw string
-        let val;
-        try{val=JSON.parse(v);}catch(e){val=v;}
+        let val;try{val=JSON.parse(v);}catch(e){val=v;}
         await supaFetch('mathdrill_data','POST',{key:k,value:val,updated_at:new Date().toISOString()});
         count++;
       }catch(e){}
@@ -4074,6 +4085,7 @@ function _setupSession(topic){
 // SESSION TIMER
 // ════════════════════════════════════════════
 let timerInterval=null;
+let autoSaveInterval=null;
 let timerPaused=false;
 let timerPausedAt=0;
 let timerPausedTotal=0;
@@ -4092,10 +4104,16 @@ function startTimer(){
     const s=String(secs%60).padStart(2,'0');
     el.textContent=m+':'+s;
   },1000);
+  // Autosave every 30s so mid-drawing work is never lost
+  if(autoSaveInterval)clearInterval(autoSaveInterval);
+  autoSaveInterval=setInterval(()=>{
+    if(S.sess&&!timerPaused)autoSaveSession();
+  },30000);
 }
 
 function stopTimer(){
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  if(autoSaveInterval){clearInterval(autoSaveInterval);autoSaveInterval=null;}
   timerPaused=false;
   const overlay=document.getElementById('pause-overlay');
   if(overlay)overlay.classList.remove('active');
