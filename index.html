@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -40,7 +40,7 @@ input,textarea,select{
 .hdr-chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:#FEF3C7;color:#B45309;white-space:nowrap}
 
 /* ── API SETUP ── */
-#screen-api{background:#1E3A8A;justify-content:center;align-items:center;text-align:center;padding:32px 24px;overflow-y:auto}
+#screen-api{background:#1E3A8A;justify-content:center;align-items:center;text-align:center;padding:32px 24px;padding-bottom:max(32px,calc(env(safe-area-inset-bottom) + 24px));overflow-y:auto}
 .api-logo{font-size:30px;font-weight:900;color:#fff;margin-bottom:5px}
 .api-logo span{color:#FCD34D}
 .api-sub{font-size:13px;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:6px}
@@ -52,7 +52,7 @@ input,textarea,select{
 .api-note{font-size:11px;color:rgba(255,255,255,.4);font-weight:700;margin-top:12px;max-width:280px;line-height:1.6}
 
 /* ── PROFILE SELECT ── */
-#screen-profile{align-items:center;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0F172A}
+#screen-profile{align-items:center;padding:0 0 env(safe-area-inset-bottom,20px);overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0F172A}
 .ps-logo{font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.45);text-align:center;padding-top:22px;width:100%}
 
 .ps-sub{font-size:12px;color:rgba(255,255,255,.45);font-weight:600;text-align:center;margin-bottom:18px;width:100%}
@@ -72,13 +72,13 @@ input,textarea,select{
 
 /* ── TOPIC MAP ── */
 #screen-topics{overflow:hidden}
-.tm-body{padding:12px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#F4F1EC}
+.tm-body{padding:0;flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;background:#052e16;height:0;min-height:0;flex-direction:column}
 .tm-prog-row{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#78716C;margin-bottom:5px}
 .tm-prog-bg{background:rgba(255,255,255,.2);border-radius:99px;height:6px}
 .tm-prog-fill{height:6px;border-radius:99px;transition:width .5s;min-width:4px;background:#FCD34D}
 .fill-blue{background:#3B82F6}
 .fill-purple{background:#8B5CF6}
-.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tgrid{display:block;padding:0}
 .tc{background:#fff;border-radius:14px;padding:12px;border:1.5px solid #EDE9E0;cursor:pointer;transition:transform .12s}
 .tc.cur{border-color:#FCD34D;background:#FFFBEB}
 .tc.avail{border-color:#BFDBFE}
@@ -117,7 +117,7 @@ input,textarea,select{
 .tcell:active{background:#EDE9E0}
 
 /* Canvas section — flex column, arrows float inside */
-.canvas-section{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.canvas-section{position:relative;flex:1;min-height:240px;display:flex;flex-direction:column;overflow:hidden}
 
 /* Side nav arrows — inside page, overlaying canvas edges */
 .btn-side{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:28px;height:60px;background:rgba(255,255,255,.88);border:1px solid #EDE9E0;border-radius:8px;font-size:22px;font-weight:900;color:#A8A29E;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -129,14 +129,14 @@ input,textarea,select{
 /* Canvas inner — padded away from arrows */
 .canvas-inner{flex-shrink:0;padding:6px 52px 2px;display:flex;flex-direction:column;}
 .canvas-label{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;flex-shrink:0}
-.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:80px;touch-action:none;overscroll-behavior:none}
+.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:240px;touch-action:none;overscroll-behavior:none}
 #drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#C4C0B8;pointer-events:none;text-align:center;line-height:1.7;white-space:nowrap}
 
 /* Answer cell — bottom of section */
-.answer-inner{flex-shrink:0;padding:6px 12px 10px}
+.answer-inner{flex-shrink:0;padding:20px 12px 10px}
 .answer-label{font-size:9px;font-weight:900;color:#B45309;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
-.answer-wrap{height:72px;border-radius:12px;border:2px solid #FCD34D;overflow:hidden;position:relative;background:#FFFBEB}
+.answer-wrap{height:96px;border-radius:12px;border:2px solid #FCD34D;overflow:hidden;position:relative;background:#FFFBEB}
 #answer-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .answer-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#E5C06A;pointer-events:none;white-space:nowrap}
 
@@ -162,7 +162,7 @@ input,textarea,select{
 .fb-btn.no{background:#F59E0B}
 
 /* ── SESSION COMPLETE ── */
-#screen-complete{justify-content:center;align-items:center;text-align:center;padding:32px 24px;overflow-y:auto}
+#screen-complete{justify-content:center;align-items:center;text-align:center;padding:32px 24px 0;overflow-y:auto;padding-bottom:max(32px,calc(env(safe-area-inset-bottom) + 16px))}
 
 
 
@@ -175,14 +175,14 @@ input,textarea,select{
 #toast.show{transform:translateX(-50%) translateY(0)}
 
 /* ── SEND BAR ── */
-.send-bar{padding:11px 20px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));padding:11px 20px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);display:flex;align-items:center;gap:10px;flex-shrink:0}
 .send-status{font-size:11px;font-weight:800;color:rgba(255,255,255,.65);flex:1}
 .send-btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:12px;padding:8px 16px;border-radius:10px;border:none;background:#FCD34D;color:#1C1917;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .send-btn:disabled{background:rgba(255,255,255,.18);color:rgba(255,255,255,.35);cursor:default}
 .ov-box.ov-ans{border-color:#10B981;background:#ECFDF5;color:#059669}
 
 /* ── PARENT PIN ── */
-#screen-parent-pin{background:#1E3A8A;justify-content:center;align-items:center;overflow-y:auto}
+#screen-parent-pin{background:#1E3A8A;justify-content:center;align-items:center;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)}
 .pp-logo{font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;text-align:center}
 .pp-logo span{color:#FCD34D}
 .pp-sub{font-size:12px;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:22px;text-align:center}
@@ -196,7 +196,7 @@ input,textarea,select{
 .pp-back{font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:rgba(255,255,255,.45);background:transparent;border:none;cursor:pointer;display:block;width:100%;text-align:center;padding:8px}
 
 /* ── PARENT DASHBOARD ── */
-.pd-body{flex:1;overflow-y:auto;padding:13px;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
+.pd-body{flex:1;overflow-y:auto;padding:13px;padding-bottom:max(13px,calc(env(safe-area-inset-bottom) + 13px));-webkit-overflow-scrolling:touch;display:flex;flex-direction:column}
 .pd-section{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.08em;text-transform:uppercase;margin:10px 0 7px}
 .pd-card{background:#fff;border-radius:13px;border:1.5px solid #EDE9E0;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;padding:11px 13px;gap:9px}
 .pd-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0}
@@ -208,7 +208,7 @@ input,textarea,select{
 .pd-empty{text-align:center;padding:32px 16px;font-size:13px;color:#A8A29E;font-weight:700;line-height:1.7}
 
 /* ── PARENT REVIEW ── */
-.pr-body{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.pr-body{flex:1;overflow-y:auto;padding:12px;padding-bottom:max(80px,calc(env(safe-area-inset-bottom) + 80px));-webkit-overflow-scrolling:touch}
 .pr-summary{background:#fff;border-radius:13px;border:1.5px solid #EDE9E0;padding:12px;margin-bottom:11px}
 .pr-q-card{background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;margin-bottom:7px;overflow:hidden}
 .pr-q-card.ok{border-color:#A7F3D0;background:#F0FDF9}
@@ -227,8 +227,8 @@ input,textarea,select{
 .pr-clear-btn.ready{background:#1E3A8A}
 
 /* ── SESSION BUILDER ── */
-#screen-session-builder{background:#F4F1EC}
-.sb-body{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
+#screen-session-builder{background:#F4F1EC;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sb-body{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch;padding-bottom:max(12px,calc(env(safe-area-inset-bottom) + 80px))}
 .sb-q{background:#fff;border-radius:11px;border:1.5px solid #EDE9E0;margin-bottom:8px;overflow:hidden}
 .sb-q.edited{border-color:#FCD34D;background:#FFFBEB}
 .sb-q.custom-q{border-color:#A7F3D0;background:#F0FDF9}
@@ -261,7 +261,7 @@ input,textarea,select{
 .tl-cn{flex:1;height:2px;margin:0 1px}
 .tl-cn.dn{background:#10B981}
 .tl-cn.nx{background:#EDE9E0}
-.jn-hero{border-radius:12px;padding:13px;margin-bottom:12px;color:#fff}
+.jn-hero{border-radius:12px;padding:14px 14px 16px;margin-bottom:12px;color:#fff}.jn-hero ::-webkit-scrollbar{display:none}
 .jn-step{display:flex;align-items:flex-start;gap:10px;padding:9px 0;position:relative}
 .jn-step:not(:last-child)::after{content:'';position:absolute;left:15px;top:34px;width:2px;height:calc(100% - 16px);z-index:0}
 .jn-step.s-dn::after{background:#10B981}
@@ -286,16 +286,14 @@ body[data-profile="estelle"] #screen-complete .hdr{
   background:linear-gradient(135deg,#667EEA 0%,#764BA2 100%);
 }
 body[data-profile="estelle"] #tm-pane-topics,
-body[data-profile="estelle"] #tm-pane-journey{
-  background:#F8F7FF;
-}
+body[data-profile="estelle"] #tm-pane-journey{background:#F8F7FF;overflow-y:scroll!important;-webkit-overflow-scrolling:touch;height:0;min-height:0;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
 body[data-profile="estelle"] #screen-session{
   background:#F8F7FF;
 }
 body[data-profile="estelle"] #screen-complete{
   background:#F8F7FF;
 }
-body[data-profile="estelle"] .send-bar{
+body[data-profile="estelle"] .send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));
   background:linear-gradient(135deg,#667EEA 0%,#764BA2 100%);
 }
 body[data-profile="estelle"] .tm-tabs{
@@ -312,7 +310,7 @@ body[data-profile="estelle"] #screen-session .hdr-chip{
 }
 
 /* ── CHILD PIN SCREEN ── */
-#screen-child-pin{background:#F4F1EC;overflow-y:auto}
+#screen-child-pin{background:#F4F1EC;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)}
 .cpn-dot{width:18px;height:18px;border-radius:50%;border:2px solid #D1D5DB;background:#fff;transition:all .15s}
 .cpn-dot.filled{background:#1E3A8A;border-color:#1E3A8A}
 body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#764BA2}
@@ -356,7 +354,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 .pd-tab.on{color:#fff;border-bottom-color:#FCD34D}
 
 /* ── CLOUD SYNC ── */
-#screen-cloud-settings{background:#F4F1EC}
+#screen-cloud-settings{background:#F4F1EC;padding-bottom:env(safe-area-inset-bottom,0px)}
 .cs-body{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
 .cs-card{background:#fff;border-radius:13px;border:1.5px solid #EDE9E0;padding:14px;margin-bottom:12px}
 .cs-label{font-size:10px;font-weight:900;color:#78716C;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
@@ -381,7 +379,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 @media(min-width:768px){
   html,body{width:100%;height:100%;background:#F4F1EC}
   .screen{height:100vh;max-height:100vh;border-radius:0}
-  .canvas-wrap{min-height:80px}
+  .canvas-wrap{min-height:240px}
 }
 
 /* ── iPad full screen layout ── */
@@ -404,10 +402,10 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   /* Session */
   .prob-eq{font-size:44px}
   .hdr{padding:16px 28px}
-  .send-bar{padding:14px 28px}
+  .send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));padding:14px 28px}
   .overview-strip{padding:10px 16px;gap:5px}
   .ov-box{min-width:44px;height:34px;font-size:12px}
-  .answer-wrap{height:80px}
+  .answer-wrap{height:96px}
   .answer-inner{padding:8px 16px 12px}
   .instr-strip{padding:10px 20px;font-size:12px}
 
@@ -432,7 +430,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   .cpn-key{height:50px;font-size:20px;border-radius:12px}
   .prob-eq{font-size:24px}
   .tc-nm{font-size:11px}
-  .send-bar{padding:7px 10px}
+  .send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));padding:7px 10px}
   .pp-key{height:46px;font-size:20px}
 }
 
@@ -448,8 +446,8 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 @media(orientation:landscape)and(max-height:500px){
   .prob-eq{font-size:28px}
   .p-av{width:48px;height:48px;font-size:28px!important}
-  .canvas-wrap{min-height:80px}
-  .send-bar{padding:6px 12px}
+  .canvas-wrap{min-height:240px}
+  .send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));padding:6px 12px}
   .overview-strip{padding:5px 10px}
   .cpn-grid{gap:6px}
   .cpn-key{height:44px}
@@ -457,7 +455,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 /* ── Tall phones (≥900px height): more canvas space ── */
 @media(min-height:900px)and(max-width:767px){
-  .canvas-wrap{min-height:80px}
+  .canvas-wrap{min-height:240px}
 }
 
 /* ── Android Chrome bottom bar fix ── */
@@ -497,14 +495,14 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   <div class="ps-sub">Who's practising today?</div>
   <div class="profiles">
     <div class="p-card blue" onclick="showChildPin('alexander')">
-      <div class="p-av" id="p-av-alexander">🏌️</div>
+      <div class="p-av" id="p-av-alexander" onclick="event.stopPropagation();showProfileIconPicker('alexander')" style="cursor:pointer">🏌️</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
       <div id="xp-bar-alexander" style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:8px;text-align:left"></div>
     </div>
     <div class="p-card purple" onclick="showChildPin('estelle')">
-      <div class="p-av" id="p-av-estelle">🦄</div>
+      <div class="p-av" id="p-av-estelle" onclick="event.stopPropagation();showProfileIconPicker('estelle')" style="cursor:pointer">🦄</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
       <div class="p-tag" id="est-tag">Topic 1 · Level A</div>
@@ -826,6 +824,12 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <div id="toast"></div>
 
 <script>
+// ── SAFE JSON PARSE — never throws on emoji or corrupt data ──
+function sjp(str,fallback=null){
+  if(str===null||str===undefined)return fallback;
+  try{const r=JSON.parse(str);return r;}
+  catch(e){return fallback;}
+}
 // ════════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════════
@@ -874,7 +878,7 @@ let S = {
 // STORAGE
 // ════════════════════════════════════════════
 function getProgress(p){
-  return JSON.parse(localStorage.getItem('md_prog_'+p)||'null');
+  return sjp(localStorage.getItem('md_prog_'+p),null);
 }
 function setProgress(p,d){
   localStorage.setItem('md_prog_'+p, JSON.stringify(d));
@@ -910,7 +914,7 @@ function bumpStreak(p){
 }
 function saveHistory(p,tid,level,score,total,duration){
   const key='md_hist_'+p;
-  const h=JSON.parse(localStorage.getItem(key)||'[]');
+  const h=sjp(localStorage.getItem(key),[]);
   h.unshift({date:new Date().toISOString(),tid,level,score,total:total||N_PROBLEMS,duration:duration||0});
   if(h.length>60)h.pop();
   localStorage.setItem(key,JSON.stringify(h));
@@ -1269,7 +1273,7 @@ function genProblem(profile,tid,lvl,d=5){
 }
 
 function getAdaptiveFactor(profile,tid,lvl){
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   const recent=hist.filter(h=>h.tid===tid&&h.level===lvl).slice(0,3);
   if(recent.length<2)return 1.0;
   const avg=recent.reduce((s,h)=>s+(h.score/h.total),0)/recent.length;
@@ -1395,13 +1399,13 @@ function checkXPNotify(profile){
 // ════════════════════════════════════════════
 function saveLastPractised(profile,tid){
   const key='md_lastprac_'+profile;
-  const data=JSON.parse(localStorage.getItem(key)||'{}');
+  const data=sjp(localStorage.getItem(key),{});
   data['t'+tid]=new Date().toISOString().slice(0,10);
   localStorage.setItem(key,JSON.stringify(data));
   cloudSet(key,data);
 }
 function getLastPractised(profile,tid){
-  const data=JSON.parse(localStorage.getItem('md_lastprac_'+profile)||'{}');
+  const data=sjp(localStorage.getItem('md_lastprac_'+profile),{});
   return data['t'+tid]||null;
 }
 function isReviewDue(profile,tid){
@@ -1430,7 +1434,7 @@ function startReviewSession(tid){
 // ════════════════════════════════════════════
 function recordMistake(profile,tid,topicName,question){
   const key='md_mistakes_'+profile;
-  const data=JSON.parse(localStorage.getItem(key)||'[]');
+  const data=sjp(localStorage.getItem(key),[]);
   const existing=data.find(m=>m.tid===tid);
   if(existing){existing.count++;existing.example=question;}
   else{data.push({tid,topicName,count:1,example:question});}
@@ -1439,7 +1443,7 @@ function recordMistake(profile,tid,topicName,question){
   cloudSet(key,data.slice(0,10));
 }
 function getMistakes(profile){
-  return JSON.parse(localStorage.getItem('md_mistakes_'+profile)||'[]');
+  return sjp(localStorage.getItem('md_mistakes_'+profile),[]);
 }
 
 function refreshProfileTags(){
@@ -1604,7 +1608,7 @@ function checkBadgeUnlocks(profile,xp){
 // ════════════════════════════════════════════
 function generatePDFReport(profile){
   const name=profile==='alexander'?'Alexander':'Estelle';
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   const prog=initProgress(profile);
   const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
   const xp=getXP(profile);
@@ -1821,8 +1825,8 @@ function selectProfile(p){
 // TOPIC MAP
 // ════════════════════════════════════════════
 function switchTopicsTab(n){
-  document.getElementById('tm-pane-topics').style.display=n===0?'block':'none';
-  document.getElementById('tm-pane-journey').style.display=n===1?'block':'none';
+  document.getElementById('tm-pane-topics').style.display=n===0?'flex':'none';
+  document.getElementById('tm-pane-journey').style.display=n===1?'flex':'none';
   document.getElementById('tm-tab-0').className='tm-tab'+(n===0?' on':'');
   document.getElementById('tm-tab-1').className='tm-tab'+(n===1?' on':'');
 }
@@ -1846,75 +1850,276 @@ function buildMiniTimeline(lvlIdx,isDone,isTopicTest,color){
 
 function buildJourneyTab(profile){
   const prog=initProgress(profile);
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
   const color=profile==='alexander'?'#3B82F6':'#8B5CF6';
+  const darkColor=profile==='alexander'?'#1E3A8A':'#6D28D9';
   const icon=getIcon(profile);
   const name=profile==='alexander'?'Alexander':'Estelle';
-  // Find current topic
+  const streak=getStreak(profile);
   const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
   const curTid=cur?parseInt(cur[0].replace('t','')):-1;
   const curTopic=topics.find(t=>t.id===curTid);
   const doneCt=topics.filter(t=>prog['t'+t.id].done).length;
+  const hasPerfect=hist.some(h=>h.score===h.total&&h.total>=10);
 
-  let html=`<div class="jn-hero" style="background:${color}">
-    <div style="font-size:32px;margin-bottom:6px">${icon}</div>
-    <div style="font-size:17px;font-weight:900">${name}'s Journey</div>
-    <div style="font-size:11px;opacity:.75;margin:3px 0 8px">${curTopic?curTopic.name+' · Level '+(prog['t'+curTid].level||'A'):'All topics complete!'}</div>
-    <div style="background:rgba(255,255,255,.25);border-radius:99px;height:5px"><div style="width:${Math.max(doneCt/topics.length*100,2)}%;height:5px;border-radius:99px;background:#fff"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;margin-top:3px;opacity:.75;font-weight:800"><span>${doneCt} topics complete</span><span>${topics.length-doneCt} to go</span></div>
+  // Badges
+  const BADGES=[
+    ['🗺️','EXPLORER', doneCt>=1],
+    ['⭐','PERFECT',  hasPerfect],
+    ['🔥','ON FIRE',  streak>=3],
+    ['💪','SCHOLAR',  doneCt>=3],
+    ['🏆','CHAMPION', doneCt>=5],
+    ['🌟','GENIUS',   doneCt>=topics.length],
+  ];
+  const badgeHTML=BADGES.map(([em,lbl,earned])=>earned
+    ?`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px"><div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:20px">${em}</div><div style="font-size:7px;font-weight:900;color:rgba(255,255,255,.9);letter-spacing:.03em">${lbl}</div></div>`
+    :`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px"><div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.25">${em}</div><div style="font-size:7px;color:rgba(255,255,255,.2)">🔒</div></div>`
+  ).join('');
+
+  // Header
+  let html=`<div class="jn-hero" style="background:${darkColor}">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="font-size:28px;line-height:1">${icon}</div>
+      <div><div style="font-size:16px;font-weight:900">${name}'s Journey</div>
+      <div style="font-size:10px;opacity:.7">${curTopic?curTopic.name+' · Level '+(prog['t'+curTid].level||'A'):'All topics complete!'}</div></div>
+    </div>
+    <div style="background:rgba(255,255,255,.25);border-radius:99px;height:5px;margin-bottom:3px"><div style="width:${Math.max(doneCt/topics.length*100,2)}%;height:5px;border-radius:99px;background:#fff"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:12px;opacity:.75;font-weight:800"><span>${doneCt} topics complete</span><span>${topics.length-doneCt} to go</span></div>
+    <div style="font-size:8px;font-weight:900;color:rgba(255,255,255,.55);letter-spacing:.07em;margin-bottom:7px">🏅 BADGES</div>
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none">${badgeHTML}</div>
   </div>`;
 
-  html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px">Topic progress</div>`;
+  // Topic progress section — each topic shows A→F path
+  html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px">Topic Progress</div>`;
 
   topics.forEach((t,ti)=>{
     const tp=prog['t'+t.id];
-    const isLocked=tp.locked;const isDone=tp.done;
-    const lvlIdx=LEVELS.indexOf(tp.level||'A');
-    const isTest=tp.topicTestNeeded;
-    const isCur=!isLocked&&!isDone&&t.id===curTid;
-    // Get last session for this topic
+    const isLocked=tp.locked;
+    const isDone=tp.done;
+    const lvl=tp.level||'A';
+    const lvlIdx=LEVELS.indexOf(lvl);
+    const isCur=!isLocked&&!isDone;
     const lastSess=hist.find(h=>h.tid===t.id);
-    const stepCls=isDone?'s-dn':'s-nx';
-    const dotCls=isDone?'d':isCur?'c':'n';
-    const dotTxt=isDone?'✓':isLocked?'🔒':t.id;
-    const nameTxt=`<div class="jn-name">${t.name}</div>`;
-    let metaTxt='';
-    if(isLocked)metaTxt='<div class="jn-meta">Locked — keep going!</div>';
-    else if(isDone){const ds=lastSess?` · ${lastSess.score}/${lastSess.total}`:'';metaTxt=`<div class="jn-meta">Complete ✓${ds}</div>`;}
-    else if(isCur)metaTxt=`<div class="jn-meta" style="color:${color};font-weight:800">▶ In progress — Level ${tp.level||'A'}</div>`;
-    else metaTxt='<div class="jn-meta">Coming next</div>';
-    let scoreTxt='';
-    if(isDone&&lastSess)scoreTxt=`<div class="jn-score" style="color:#059669">${lastSess.score}/${lastSess.total}</div>`;
-    else if(isCur)scoreTxt=`<div class="jn-score" style="color:${color};font-size:10px">Now!</div>`;
 
-    html+=`<div class="jn-step ${stepCls}">
-      <div class="jn-dot ${dotTxt==='🔒'?'n':dotCls}">${dotTxt}</div>
-      <div class="jn-info">${nameTxt}${metaTxt}`;
-
-    if(!isLocked&&!isDone){
-      // Show mini level progress
-      html+=`<div style="display:flex;align-items:center;gap:3px;margin-top:5px">`;
+    // Build A→F level path dots
+    let levelPath='';
+    if(!isLocked){
+      levelPath=`<div style="display:flex;align-items:center;gap:0;margin-top:6px">`;
       LEVELS.forEach((lv,i)=>{
-        const done=i<lvlIdx;const active=i===lvlIdx&&!isTest;
-        html+=`<div style="width:18px;height:18px;border-radius:50%;background:${done?color:active?color:'#F3F2EE'};border:${active?'0':'1.5px solid #EDE9E0'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:${done||active?'#fff':'#C4C0B8'};${active?'box-shadow:0 0 0 3px '+color+'33':''}">${lv}</div>`;
+        const done=isDone||(i<lvlIdx);
+        const active=!isDone&&(i===lvlIdx);
+        const dotC=done?'#10B981':active?color:'rgba(0,0,0,.1)';
+        const textC=done||active?'#fff':'#C4BFB8';
+        const sz=active?20:16;
+        levelPath+=`<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${dotC};display:flex;align-items:center;justify-content:center;font-size:${active?9:7}px;font-weight:900;color:${textC};${active?`box-shadow:0 0 0 3px ${color}33;border:2px solid ${color};`:''}flex-shrink:0">${done?'✓':lv}</div>`;
+        // Connector line between dots
+        if(i<5){
+          const lineC=done?'#10B981':'rgba(0,0,0,.1)';
+          levelPath+=`<div style="flex:1;height:2px;background:${lineC};min-width:4px"></div>`;
+        }
       });
-      html+=`<div style="width:18px;height:18px;border-radius:50%;background:${isTest?'#F59E0B':'#F3F2EE'};border:1.5px solid ${isTest?'#F59E0B':'#EDE9E0'};display:flex;align-items:center;justify-content:center;font-size:9px;color:${isTest?'#fff':'#C4C0B8'}">⭐</div>`;
-      html+=`</div>`;
+      // Final star for topic test
+      const starC=isDone?'#F59E0B':tp.topicTestNeeded?'#F59E0B':'rgba(0,0,0,.1)';
+      levelPath+=`<div style="flex:1;height:2px;background:${isDone?'#F59E0B':'rgba(0,0,0,.1)'}"></div>`;
+      levelPath+=`<div style="width:${isDone?20:16}px;height:${isDone?20:16}px;border-radius:50%;background:${starC};display:flex;align-items:center;justify-content:center;font-size:${isDone?11:9}px;flex-shrink:0">⭐</div>`;
+      levelPath+=`</div>`;
     }
-    html+=`</div>${scoreTxt}</div>`;
+
+    const borderC=isDone?'#D1FAE5':isCur?color:'#EDE9E0';
+    const bgC=isDone?'#F0FDF4':isCur?'#EFF6FF':'#fff';
+    const numC=isDone?'#10B981':isCur?color:'#D1D5DB';
+
+    html+=`<div style="background:${bgC};border:1.5px solid ${borderC};border-radius:12px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${isLocked?0:2}px">
+        <div style="width:28px;height:28px;border-radius:50%;background:${numC};display:flex;align-items:center;justify-content:center;font-size:${isLocked?16:11}px;font-weight:900;color:#fff;flex-shrink:0">${isLocked?'🔒':isDone?'✓':t.id}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:${isCur?900:700};color:${isCur?'#1C1917':'#9CA3AF'}">${t.name}</div>
+          <div style="font-size:9px;color:${isCur?color:isDone?'#10B981':'#C4BFB8'};font-weight:700">${isLocked?'Locked — keep going!':isDone?`Complete ✓${lastSess?' · '+lastSess.score+'/'+lastSess.total:''}`:isCur?`Level ${lvl} in progress`:'Coming up next'}</div>
+        </div>
+        ${isCur?`<div style="font-size:9px;font-weight:900;color:${color}">Now! ▶</div>`:''}
+        ${isDone?`<div style="font-size:9px;font-weight:900;color:#10B981">✓</div>`:''}
+      </div>
+      ${levelPath}
+    </div>`;
   });
 
-  // Final test row
+  // Final test
   const allDone=topics.every(t=>prog['t'+t.id].done);
-  html+=`<div class="jn-step s-nx">
-    <div class="jn-dot ${allDone?'t':'n'}">🏆</div>
-    <div class="jn-info"><div class="jn-name">Final Test</div><div class="jn-meta">${allDone?'🎉 Unlocked — 20 questions, all topics':'Complete all topics to unlock'}</div></div>
+  html+=`<div style="background:${allDone?'#FFFBEB':'#fff'};border:1.5px solid ${allDone?'#FCD34D':'#EDE9E0'};border-radius:12px;padding:10px 12px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:50%;background:${allDone?'#F59E0B':'#D1D5DB'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏆</div>
+      <div><div style="font-size:12px;font-weight:700;color:${allDone?'#1C1917':'#9CA3AF'}">Final Test</div>
+      <div style="font-size:9px;font-weight:700;color:${allDone?'#D97706':'#C4BFB8'}">${allDone?'🎉 Unlocked — 20 questions!':'Complete all topics to unlock'}</div></div>
+    </div>
   </div>`;
 
-  html+=`<div style="height:24px"></div>`;
+  html+=`<div style="height:48px"></div>`;
   return html;
 }
+
+function buildTopicJourneyMap(topics,prog,color,profile){
+  // Find active (current) topic
+  const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
+  const curTid=cur?parseInt(cur[0].replace('t','')):-1;
+  const allDone=curTid===-1;
+  const curTopic=topics.find(t=>t.id===curTid)||topics[0];
+  const tp=prog['t'+(curTopic?curTopic.id:1)];
+  const lvl=tp?tp.level||'A':'A';
+  const lvlIdx=LEVELS.indexOf(lvl);
+  const isTest=tp&&tp.topicTestNeeded;
+  const isDone=tp&&tp.done;
+  const isAlex=profile==='alexander';
+  const glowC=isAlex?'#93C5FD':'#C4B5FD';
+  const doneC='#10B981';
+
+  // Winding path: stations snake left-right-left-right
+  // 8 stations: START, A, B, C, D, E, F, ⭐TEST
+  // Layout: 2 per row, alternating sides
+  const stations=[
+    {label:'A', idx:0},
+    {label:'B', idx:1},
+    {label:'C', idx:2},
+    {label:'D', idx:3},
+    {label:'E', idx:4},
+    {label:'F', idx:5},
+    {label:'⭐', idx:6, isTest:true},
+  ];
+
+  // Positions: snake left→right, right→left, left→right
+  // Row 1: A(left) B(right)
+  // Row 2: C(right→left so) D(left)  wait - snake means:
+  // Row 1 L→R: A(60), B(240)
+  // Curve down right side
+  // Row 2 R→L: C(240), D(60)
+  // Curve down left side
+  // Row 3 L→R: E(60), F(240)
+  // Curve down right side
+  // Single: ⭐ TEST(150)
+  const POS=[
+    {x:60,  y:110},  // A
+    {x:240, y:110},  // B
+    {x:240, y:250},  // C
+    {x:60,  y:250},  // D
+    {x:60,  y:390},  // E
+    {x:240, y:390},  // F
+    {x:150, y:530},  // ⭐ TEST
+  ];
+
+  let svg=`<div style="width:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;height:100%;scrollbar-width:none">
+  <svg viewBox="0 0 300 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;display:block;margin:0 auto">
+  <defs>
+    <linearGradient id="tmbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#052e16"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="700" fill="url(#tmbg)"/>
+  <!-- Jungle deco -->
+  <text x="2"   y="72"  font-size="22" opacity=".4">🌴</text>
+  <text x="268" y="100" font-size="18" opacity=".35">🌿</text>
+  <text x="2"   y="220" font-size="16" opacity=".3">🍃</text>
+  <text x="268" y="280" font-size="18" opacity=".35">🌴</text>
+  <text x="2"   y="400" font-size="14" opacity=".3">🦜</text>
+  <text x="268" y="430" font-size="12" opacity=".25">🐍</text>
+  <text x="2"   y="560" font-size="18" opacity=".32">🌴</text>
+  <rect width="300" height="700" fill="rgba(101,67,33,.06)"/>`;
+
+  // Topic name banner at top
+  const topicName=curTopic?curTopic.name:(allDone?'All Complete!':'');
+  svg+=`<text x="150" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.45)" letter-spacing=".08em">${allDone?'🏆 MATHGENIUS':'⚓ CURRENT QUEST'}</text>`;
+  svg+=`<text x="150" y="52" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#FCD34D">${topicName}</text>`;
+  svg+=`<line x1="150" y1="60" x2="150" y2="80" stroke="rgba(252,211,77,.3)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+
+  // START node
+  svg+=`<text x="150" y="94" text-anchor="middle" font-size="22">⛵</text>`;
+
+  // Path segments connecting stations
+  const PW=10;const PO='rgba(255,255,255,.15)';
+  // START → A
+  svg+=`<line x1="150" y1="94" x2="60" y2="110" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // A(60,110) → B(240,110) horizontal
+  svg+=`<line x1="60" y1="110" x2="240" y2="110" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // B(240,110) → curve down → C(240,250)
+  svg+=`<path d="M240,110 Q270,180 240,250" fill="none" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // C(240,250) → D(60,250) horizontal
+  svg+=`<line x1="240" y1="250" x2="60" y2="250" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // D(60,250) → curve down → E(60,390)
+  svg+=`<path d="M60,250 Q30,320 60,390" fill="none" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // E(60,390) → F(240,390) horizontal
+  svg+=`<line x1="60" y1="390" x2="240" y2="390" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // F(240,390) → TEST(150,530)
+  svg+=`<path d="M240,390 Q270,460 150,530" fill="none" stroke="${PO}" stroke-width="${PW}" stroke-linecap="round"/>`;
+  // TEST → END treasure
+  svg+=`<line x1="150" y1="564" x2="150" y2="606" stroke="rgba(252,211,77,.3)" stroke-width="3" stroke-dasharray="5 4"/>`;
+
+  // Draw completed path segments in green
+
+  if(lvlIdx>0||isDone){
+    svg+=`<line x1="150" y1="94" x2="60" y2="110" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+    svg+=`<line x1="60" y1="110" x2="240" y2="110" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+  }
+  if(lvlIdx>1||isDone){
+    svg+=`<path d="M240,110 Q270,180 240,250" fill="none" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+    svg+=`<line x1="240" y1="250" x2="60" y2="250" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+  }
+  if(lvlIdx>2||isDone){
+    svg+=`<path d="M60,250 Q30,320 60,390" fill="none" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+  }
+  if(lvlIdx>3||isDone){
+    svg+=`<line x1="60" y1="390" x2="240" y2="390" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+  }
+  if(isDone||isTest){
+    svg+=`<path d="M240,390 Q270,460 150,530" fill="none" stroke="${doneC}" stroke-width="6" stroke-linecap="round" opacity=".8"/>`;
+  }
+
+  // Render each level station
+  stations.forEach((st,i)=>{
+    const p=POS[i];
+    const x=p.x; const y=p.y;
+    const isCompleted=isDone||(st.isTest?(isDone||isTest):i<lvlIdx);
+    const isActive=!isDone&&(st.isTest?isTest:i===lvlIdx);
+    const isLocked=!isDone&&!isTest&&!st.isTest&&i>lvlIdx;
+    const R=isActive?28:22;
+
+    if(isCompleted){
+      svg+=`<circle cx="${x}" cy="${y}" r="${R+4}" fill="rgba(16,185,129,.2)"/>`;
+      svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="${doneC}" stroke="#34D399" stroke-width="2.5"/>`;
+      svg+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#fff">✓</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="rgba(255,255,255,.7)">Level ${st.label}</text>`;
+    } else if(isActive){
+      svg+=`<circle cx="${x}" cy="${y}" r="${R+10}" fill="${color}" opacity=".2"/>`;
+      svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="${color}" stroke="${glowC}" stroke-width="3"/>`;
+      svg+=`<text x="${x}" y="${y-5}" text-anchor="middle" font-size="18">${st.isTest?'⭐':'🧭'}</text>`;
+      svg+=`<text x="${x}" y="${y+11}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="${glowC}">▶ NOW</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="rgba(255,255,255,.9)">${st.isTest?'Topic Test':'Level '+st.label}</text>`;
+      svg+=`<text x="${x}" y="${y+R+30}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.5)">10 questions</text>`;
+      // PLAY button
+      const bx=x-40; const by=y+R+34;
+      svg+=`<rect x="${bx}" y="${by}" width="80" height="22" rx="11" fill="${color}" style="cursor:pointer" onclick="startSession('${profile}',${curTopic?curTopic.id:1})"/>`;
+      svg+=`<text x="${x}" y="${by+15}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="900" fill="#fff" style="pointer-events:none">▶ PLAY NOW</text>`;
+    } else {
+      svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="rgba(0,0,0,.45)" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/>`;
+      svg+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="${st.isTest?16:14}" fill="rgba(255,255,255,.35)">${st.isTest?'⭐':st.label}</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="rgba(255,255,255,.25)">${st.isTest?'Topic Test':'Level '+st.label}</text>`;
+    }
+  });
+
+  // END: TREASURE
+  svg+=`<circle cx="150" cy="640" r="38" fill="rgba(252,211,77,.12)"/>`;
+  svg+=`<circle cx="150" cy="640" r="26" fill="rgba(92,50,10,.7)" stroke="#FCD34D" stroke-width="2"/>`;
+  svg+=`<text x="150" y="635" text-anchor="middle" font-size="20">💰</text>`;
+  svg+=`<text x="150" y="653" text-anchor="middle" font-family="Nunito,sans-serif" font-size="7" font-weight="900" fill="#FCD34D">☠️ TOPIC COMPLETE ☠️</text>`;
+
+  // Other topics indicator at bottom
+  const doneCt=topics.filter(t=>prog['t'+t.id].done).length;
+  svg+=`<text x="150" y="685" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.35)">${doneCt}/${topics.length} topics done</text>`;
+
+  svg+=`</svg></div>`;
+  return svg;
+}
+
+
 function buildTopicsScreen(){
   const p=S.profile;
   const topics=p==='alexander'?TOPICS_A:TOPICS_E;
@@ -1939,81 +2144,10 @@ function buildTopicsScreen(){
   // Check if final test available
   const allTopicsDone=topics.every(t=>d['t'+t.id].done);
 
+  const color=p==='alexander'?'#1E3A8A':'#7C3AED';
   const grid=document.getElementById('topic-grid');
-  grid.innerHTML='';
-  topics.forEach(t=>{
-    const tp=d['t'+t.id];
-    const card=document.createElement('div');
-    const isLocked=tp.locked;
-    const isDone=tp.done;
-    const isTopicTest=!isDone&&tp.topicTestNeeded;
-    const hasLockedSess=locked_sess&&locked_sess.tid===t.id;
-    const isActive=!isLocked;
-    const barColor=p==='alexander'?'#1E3A8A':'#764BA2';
-    const lvlIdx=LEVELS.indexOf(tp.level||'A');
-    const lvlPct=isDone?100:Math.round(lvlIdx/LEVELS.length*100);
-    card.className='tc '+(isLocked?'locked':isDone?'done-t avail':isTopicTest?'cur avail':'cur avail');
+  grid.innerHTML=buildTopicJourneyMap(topics,d,color,p);
 
-    if(isActive&&!isLocked){
-      // Active topic: full-width card with left border accent + play button
-      card.style.cssText='grid-column:1/-1;border-color:'+barColor+';border-left:4px solid '+barColor+';display:flex;align-items:flex-start;gap:0;position:relative;padding:12px 52px 12px 14px';
-      const lvlDots=LEVELS.map((lv,i)=>{
-        const filled=i<=lvlIdx||isDone;
-        const cur=i===lvlIdx&&!isDone;
-        const done_lv=i<lvlIdx||isDone;
-        return `<div style="display:flex;align-items:center">${i>0?`<div style="width:8px;height:2px;background:${done_lv?barColor:'#E5E7EB'}"></div>`:''}
-          <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:${done_lv?barColor:cur?'#fff':'#F3F4F6'};color:${done_lv?'#fff':cur?barColor:'#9CA3AF'};border:2px solid ${cur?barColor:done_lv?barColor:'#E5E7EB'}">${lv}</div></div>`;
-      }).join('');
-      let badge=isDone?'<div class="tc-b b-done">✓ Complete</div>'
-        :isTopicTest?'<div class="tc-b" style="background:#FEF3C7;color:#92400E">⭐ Topic Test!</div>'
-        :hasLockedSess?'<div class="tc-b" style="background:#D1FAE5;color:#047857">📋 Ready</div>'
-        :`<div class="tc-b b-cur">Level ${tp.level||'A'} / F</div>`;
-      card.innerHTML=`<div style="flex:1">
-        <div class="tc-n" style="color:${barColor}">TOPIC ${t.id}</div>
-        <div class="tc-nm" style="font-size:14px;margin-bottom:8px">${t.name}</div>
-        <div style="display:flex;align-items:center">${lvlDots}</div>
-      </div>
-      <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;background:${barColor};display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">▶</div>`;
-    } else if(isLocked){
-      // Locked topics: subtle, half-width
-      card.innerHTML=`<div class="tc-n" style="color:#D1D5DB">TOPIC ${t.id}</div>
-        <div class="tc-nm g" style="font-size:12px">${t.name}</div>
-        <div style="margin-top:8px;font-size:18px">🔒</div>`;
-    } else if(isDone){
-      const reviewDue=isReviewDue(p,t.id);
-      if(reviewDue){
-        card.style.cssText='border-color:#FCD34D;background:#FFFBEB;border-left:4px solid #F59E0B;display:flex;align-items:flex-start;gap:0;position:relative;padding:12px 52px 12px 14px';
-        card.innerHTML=`<div style="flex:1">
-          <div class="tc-n" style="color:#D97706">TOPIC ${t.id} · COMPLETED</div>
-          <div class="tc-nm" style="font-size:14px;margin-bottom:8px">${t.name}</div>
-          <div style="display:inline-flex;align-items:center;gap:5px;background:#FEF3C7;border-radius:20px;padding:3px 10px">
-            <span style="font-size:11px">🔁</span><span style="font-size:11px;font-weight:800;color:#D97706">Review due!</span>
-            <span style="font-size:10px;color:#A8A29E">· ${getLastPractised(p,t.id)?Math.floor((Date.now()-new Date(getLastPractised(p,t.id)).getTime())/(1000*60*60*24)):14} days ago</span>
-          </div>
-        </div>
-        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff">▶</div>`;
-        card.addEventListener('click',()=>startReviewSession(t.id));
-      }else{
-        card.style.cssText='border-color:#D1FAE5;background:#F0FDF4';
-        card.innerHTML=`<div class="tc-n" style="color:#10B981">TOPIC ${t.id}</div>
-          <div class="tc-nm" style="font-size:12px">${t.name}</div>
-          <div class="tc-b b-done" style="margin-top:6px">✓ Done</div>`;
-        card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));
-      }
-    }
-
-    if(!isLocked){
-      if(isTopicTest){card.addEventListener('click',()=>startTopicTest(t.id));}
-      else if(isDone){card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
-      else{card.addEventListener('click',()=>startSession(t.id,tp.level||'A',t.method));}
-    }
-    grid.appendChild(card);
-
-    // After the active topic, add the remaining locked topics back in 2-col grid
-    // (handled by CSS grid-column:1/-1 on the active card)
-  });
-
-  // Build journey tab
   const journeyPane=document.getElementById('tm-pane-journey');
   if(journeyPane)journeyPane.innerHTML=buildJourneyTab(p);
   // Final test card
@@ -2086,6 +2220,7 @@ function startSession(tid,level,method){
   loadProblem(0);
   showScreen('screen-session');
   setTimeout(()=>{resizeCanvas();clearCanvas();startTimer();},80);
+  setTimeout(()=>resizeCanvas(),350);
   if(usingLocked)setTimeout(()=>showToast('📋 Using parent-approved session'),500);
 }
 
@@ -2214,17 +2349,20 @@ function fillAnswer(w,h,c){
 function resizeCanvas(){
   if(!canvas)return;
   const wrap=document.getElementById('canvas-wrap');
-  const w=wrap.clientWidth||300;
-  const h=wrap.clientHeight||200;
-  const dpr=window.devicePixelRatio||1;
+  if(!wrap)return;
+  // Use offsetHeight — more reliable on iOS Safari than clientHeight
+  const w=wrap.offsetWidth||wrap.clientWidth||window.innerWidth-24||600;
+  const h=wrap.offsetHeight||wrap.clientHeight||300;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
   canvas.width=w*dpr; canvas.height=h*dpr;
   canvas.style.width=w+'px'; canvas.style.height=h+'px';
   ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
   fillBg(w,h);
 
   if(aCanvas){
-    const aw=aCanvas.parentElement.clientWidth||300;
-    const ah=aCanvas.parentElement.clientHeight||86;
+    const awrap=aCanvas.parentElement;
+    const aw=awrap.offsetWidth||awrap.clientWidth||w||600;
+    const ah=awrap.offsetHeight||awrap.clientHeight||108;
     aCanvas.width=aw*dpr; aCanvas.height=ah*dpr;
     aCanvas.style.width=aw+'px'; aCanvas.style.height=ah+'px';
     aCtx=aCanvas.getContext('2d'); aCtx.scale(dpr,dpr);
@@ -2695,10 +2833,10 @@ function topicProgressHTML(profile,color){
 
 // ── OVERVIEW TAB ──
 function buildOverviewTab(){
-  const alexH=JSON.parse(localStorage.getItem('md_hist_alexander')||'[]');
-  const estH=JSON.parse(localStorage.getItem('md_hist_estelle')||'[]');
-  const alexP=JSON.parse(localStorage.getItem('md_pending_alexander')||'[]');
-  const estP=JSON.parse(localStorage.getItem('md_pending_estelle')||'[]');
+  const alexH=sjp(localStorage.getItem('md_hist_alexander'),[]);
+  const estH=sjp(localStorage.getItem('md_hist_estelle'),[]);
+  const alexP=sjp(localStorage.getItem('md_pending_alexander'),[]);
+  const estP=sjp(localStorage.getItem('md_pending_estelle'),[]);
   const weekAgo=Date.now()-7*24*60*60*1000;
   const prevAgo=Date.now()-14*24*60*60*1000;
   const wk=alexH.filter(h=>new Date(h.date)>weekAgo).length+estH.filter(h=>new Date(h.date)>weekAgo).length;
@@ -2792,7 +2930,7 @@ function buildOverviewTab(){
 
 // ── CHILD TAB ──
 function buildChildTab(profile){
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   const prog=initProgress(profile);
   const streak=getStreak(profile);
   const name=profile==='alexander'?'Alexander':'Estelle';
@@ -2931,7 +3069,7 @@ function resetCurrentLevel(profile){
   });
 }
 function showSessionHistory(profile){
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   if(!hist.length){showToast('No history yet');return;}
   showToast('Last: '+hist[0].score+'/'+hist[0].total+' · '+tn(profile,hist[0].tid)+' L.'+hist[0].level);
 }
@@ -2941,7 +3079,7 @@ function showSessionHistory(profile){
 // ════════════════════════════════════════════
 function showParentReview(profile,sessionId){
   S.reviewProfile=profile;S.reviewSessionId=sessionId;
-  const pending=JSON.parse(localStorage.getItem('md_pending_'+profile)||'[]');
+  const pending=sjp(localStorage.getItem('md_pending_'+profile),[]);
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   document.getElementById('pr-title').textContent=session.topicName;
@@ -3045,7 +3183,7 @@ function renderReview(session,profile){
 
 function markQ(profile,sessionId,qIdx,correct){
   const key='md_pending_'+profile;
-  const pending=JSON.parse(localStorage.getItem(key)||'[]');
+  const pending=sjp(localStorage.getItem(key),[]);
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   session.questions[qIdx].parentMark=correct;
@@ -3056,7 +3194,7 @@ function markQ(profile,sessionId,qIdx,correct){
 
 async function aiCheckOne(profile,sessionId,qIdx){
   const key='md_pending_'+profile;
-  const pending=JSON.parse(localStorage.getItem(key)||'[]');
+  const pending=sjp(localStorage.getItem(key),[]);
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   const btn=document.getElementById('ai-btn-'+qIdx);
@@ -3104,7 +3242,7 @@ async function aiCheckQuestion(q,attempt=1){
 
 function clearSession(profile,sessionId){
   const key='md_pending_'+profile;
-  const pending=JSON.parse(localStorage.getItem(key)||'[]');
+  const pending=sjp(localStorage.getItem(key),[]);
   const session=pending.find(s=>s.id===sessionId);
   if(!session)return;
   const correct=session.questions.filter(q=>q.parentMark===true).length;
@@ -3263,7 +3401,7 @@ async function _doSend(){
     duration:sessionDuration,questions,aiChecking:!!S.apiKey
   };
   const key='md_pending_'+S.profile;
-  const pending=JSON.parse(localStorage.getItem(key)||'[]');
+  const pending=sjp(localStorage.getItem(key),[]);
   const existIdx=pending.findIndex(p=>p.tid===session.tid&&p.level===session.level);
   if(existIdx>=0){pending.splice(existIdx,1,session);}
   else{pending.unshift(session);if(pending.length>20)pending.pop();}
@@ -3283,7 +3421,7 @@ async function _doSend(){
     const sessionId=session.id;
     const profileSnap=S.profile;
     (async()=>{
-      const pend=JSON.parse(localStorage.getItem('md_pending_'+profileSnap)||'[]');
+      const pend=sjp(localStorage.getItem('md_pending_'+profileSnap),[]);
       const sess=pend.find(s=>s.id===sessionId);
       if(!sess)return;
       let changed=false;
@@ -3298,7 +3436,7 @@ async function _doSend(){
       }
       sess.aiChecking=false;
       if(changed){
-        const pend2=JSON.parse(localStorage.getItem('md_pending_'+profileSnap)||'[]');
+        const pend2=sjp(localStorage.getItem('md_pending_'+profileSnap),[]);
         const idx=pend2.findIndex(s=>s.id===sessionId);
         if(idx>=0){pend2[idx]=sess;localStorage.setItem('md_pending_'+profileSnap,JSON.stringify(pend2));cloudSet('md_pending_'+profileSnap,pend2);}
       }
@@ -3378,7 +3516,7 @@ function mergeProgress(local,cloud){
 
 // Recalculate progress from session history (admin recovery tool)
 function fixProgressFromHistory(profile){
-  const hist=JSON.parse(localStorage.getItem('md_hist_'+profile)||'[]');
+  const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   if(!hist.length){showToast('No history found for '+profile);return;}
   const prog=initProgress(profile);
   const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
@@ -3451,7 +3589,7 @@ function exportBackup(){
     'md_pending_alexander','md_pending_estelle','md_corrections_alexander','md_corrections_estelle',
     'md_icon_alexander','md_icon_estelle','md_parent_pin','md_apikey'];
   const data={exported:new Date().toISOString(),version:'MathGenius-1.0',data:{}};
-  keys.forEach(k=>{const v=localStorage.getItem(k);if(v)data.data[k]=JSON.parse(v);});
+  keys.forEach(k=>{const v=localStorage.getItem(k);if(v)data.data[k]=sjp(v,v);});
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -3535,14 +3673,14 @@ async function pullFromCloud(){
       // Never overwrite pending sessions if local has more
       if(row.key.startsWith('md_pending_')){
         let local=[],cloud=[];
-        try{local=JSON.parse(localStorage.getItem(row.key)||'[]');}catch(e){}
+        try{local=sjp(localStorage.getItem(row.key),[]);}catch(e){}
         try{cloud=JSON.parse(cloudVal||'[]');}catch(e){}
         if(local.length>cloud.length){kept++;return;}
       }
       // Never downgrade topic progress
       if(row.key.startsWith('md_prog_')){
         let local=null,cloud=null;
-        try{local=JSON.parse(localStorage.getItem(row.key)||'null');}catch(e){}
+        try{local=sjp(localStorage.getItem(row.key),null);}catch(e){}
         try{cloud=JSON.parse(cloudVal||'null');}catch(e){}
         if(local&&cloud){
           const merged=mergeProgress(local,cloud);
@@ -3990,6 +4128,50 @@ function saveChildNotification(profile,score,total,topicName){
   localStorage.setItem('md_notify_'+profile,JSON.stringify(data));
   cloudSet('md_notify_'+profile,data);
 }
+function showProfileIconPicker(profile){
+  const isAlex=profile==='alexander';
+  const col=isAlex?'#1E3A8A':'#7C3AED';
+  const name=isAlex?'Alexander':'Estelle';
+  const icons=isAlex?ICONS_ALEX:ICONS_EST;
+  const current=getIcon(profile);
+
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:0';
+
+  let html=`<div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-height:75vh;overflow-y:auto;padding:20px 20px 40px;font-family:'Nunito',sans-serif">
+    <div style="width:40px;height:4px;background:#EDE9E0;border-radius:99px;margin:0 auto 20px"></div>
+    <div style="font-size:16px;font-weight:900;color:#1C1917;margin-bottom:4px">${name}'s icon</div>
+    <div style="font-size:12px;color:#A8A29E;font-weight:600;margin-bottom:20px">Tap to choose</div>`;
+
+  icons.forEach(cat=>{
+    html+=`<div style="font-size:10px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">${cat.cat}</div>`;
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px">`;
+    cat.icons.forEach(icon=>{
+      const sel=icon===current;
+      html+=`<div onclick="pickProfileIcon('${profile}','${icon}')" style="width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;background:${sel?col:'#F4F1EC'};border:2px solid ${sel?col:'transparent'};-webkit-tap-highlight-color:transparent">${icon}</div>`;
+    });
+    html+=`</div>`;
+  });
+
+  html+=`<button onclick="this.closest('[style*=position:fixed]').remove()" style="width:100%;padding:14px;border:none;border-radius:14px;background:#F4F1EC;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;color:#A8A29E;cursor:pointer">Cancel</button>
+  </div>`;
+
+  overlay.innerHTML=html;
+  // Tap backdrop to close
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+}
+
+function pickProfileIcon(profile,icon){
+  setIcon(profile,icon);
+  loadIcons();
+  refreshProfileTags();
+  // Close the picker
+  const overlay=document.querySelector('[style*="position:fixed"][style*="z-index:9999"]');
+  if(overlay)overlay.remove();
+  showToast('Icon updated ✓');
+}
+
 function checkCelebration(profile){
   const raw=localStorage.getItem('md_celebrate_'+profile);
   if(!raw)return;
@@ -4193,8 +4375,8 @@ function buildProfileGreeting(){
   el.innerHTML=`<div style="font-size:13px;font-weight:900;color:#fff">${g}! 👋</div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.45);margin-top:2px">${days[now.getDay()]} · ${now.getDate()} ${months[now.getMonth()]}</div>`;
   // Update stats
   const allHist=[
-    ...JSON.parse(localStorage.getItem('md_hist_alexander')||'[]'),
-    ...JSON.parse(localStorage.getItem('md_hist_estelle')||'[]')
+    ...sjp(localStorage.getItem('md_hist_alexander'),[]),
+    ...sjp(localStorage.getItem('md_hist_estelle'),[])
   ];
   const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
   const weekSess=allHist.filter(h=>new Date(h.date)>weekAgo);
