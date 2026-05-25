@@ -1667,6 +1667,24 @@ function generatePDFReport(profile){
 // SUPABASE REALTIME
 // ════════════════════════════════════════════
 let realtimeChannel=null;
+function _onCloudUpdate(k){
+  refreshProfileTags();
+  const profile=S.profile;
+  // If a notification/correction arrived for current child — show it immediately
+  if(profile&&k==='md_notify_'+profile){
+    checkChildNotification(profile);
+  }
+  if(profile&&k==='md_celebrate_'+profile){
+    checkCelebration(profile);
+  }
+  if(profile&&(k==='md_prog_'+profile||k==='md_corrections_'+profile)){
+    buildTopicsScreen();
+  }
+  // Refresh parent dash if open
+  const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
+  if(dashActive)showParentDash();
+}
+
 function initRealtime(){
   if(!isCloudEnabled())return;
   if(typeof supabase==='undefined')return;
@@ -1680,9 +1698,7 @@ function initRealtime(){
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
-        refreshProfileTags();
-        const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-        if(dashActive)showParentDash();
+        _onCloudUpdate(k);
       })
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'mathdrill_data'},payload=>{
         const{key:k,value:v}=payload.new||{};
@@ -1690,9 +1706,7 @@ function initRealtime(){
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
-        refreshProfileTags();
-        const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-        if(dashActive)showParentDash();
+        _onCloudUpdate(k);
       })
       .subscribe();
     console.log('Supabase Realtime connected');
@@ -1810,15 +1824,21 @@ function switchUser(){
   }
 }
 
-function selectProfile(p){
+async function selectProfile(p){
   S.profile=p;
   document.body.dataset.profile=p;
+  // Pull latest from cloud first — ensures approval/corrections/celebration
+  // are synced before child sees the journey map
+  if(isCloudEnabled()){
+    try{await pullFromCloud();}catch(e){}
+  }
   buildTopicsScreen();
   showScreen('screen-topics');
   setTimeout(()=>{
     checkChildNotification(p);
     checkXPNotify(p);
-  },600);
+    checkCelebration(p);
+  },400);
 }
 
 // ════════════════════════════════════════════
@@ -3259,7 +3279,7 @@ function clearSession(profile,sessionId){
   const pass=correct/total>=0.8;
   if(session.level!=='TEST'&&session.level!=='FINAL') saveCorrections(profile,session);
   saveHistory(profile,session.tid,session.level,correct,session.questions.length,session.duration||0);
-  saveChildNotification(profile,correct,total,session.topicName);
+  saveChildNotification(profile,correct,total,session.topicName,session);
   const prog=initProgress(profile);
   const tk='t'+session.tid;
   const li=LEVELS.indexOf(session.level);
@@ -4150,8 +4170,10 @@ function togglePause(){
 // ════════════════════════════════════════════
 // CHILD NOTIFICATION
 // ════════════════════════════════════════════
-function saveChildNotification(profile,score,total,topicName){
-  const data={score,total,topicName,date:new Date().toISOString()};
+function saveChildNotification(profile,score,total,topicName,session){
+  const wrong=(session&&session.questions?session.questions.filter(q=>q.parentMark===false):[]);
+  const mistakes=wrong.map(q=>({display:q.display,answer:q.answer}));
+  const data={score,total,topicName,mistakes,level:session?session.level:'',date:new Date().toISOString()};
   localStorage.setItem('md_notify_'+profile,JSON.stringify(data));
   cloudSet('md_notify_'+profile,data);
 }
@@ -4224,19 +4246,40 @@ function checkCelebration(profile){
 function checkChildNotification(profile){
   const raw=localStorage.getItem('md_notify_'+profile);
   if(!raw)return;
-  const d=JSON.parse(raw);
+  const d=sjp(raw,null);
+  if(!d)return;
   localStorage.removeItem('md_notify_'+profile);
   cloudDelete('md_notify_'+profile);
   const pass=d.score/d.total>=0.8;
+  const hasMistakes=d.mistakes&&d.mistakes.length>0;
+  const name=profile==='alexander'?'Dad':'Dad';
+
+  // Build mistake cards
+  let mistakeHTML='';
+  if(hasMistakes){
+    mistakeHTML=`<div style="margin:12px 0;text-align:left">
+      <div style="font-size:11px;font-weight:900;color:#DC2626;letter-spacing:.06em;margin-bottom:8px">❌ MISTAKES TO REVIEW</div>
+      ${d.mistakes.map(m=>`
+        <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:10px 14px;margin-bottom:8px">
+          <div style="font-size:18px;font-weight:900;color:#1C1917;margin-bottom:4px">${m.display}</div>
+          <div style="font-size:11px;color:#6B7280;margin-bottom:2px">Correct answer:</div>
+          <div style="font-size:22px;font-weight:900;color:#059669">${m.answer}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+
   const el=document.createElement('div');
   el.className='notif-overlay';
-  el.innerHTML=`<div class="notif-box">
-    <div style="font-size:40px;margin-bottom:10px">${pass?'🌟':'💪'}</div>
-    <div style="font-size:16px;font-weight:900;margin-bottom:6px">${pass?'Dad approved your work!':'Keep practising!'}</div>
-    <div style="font-size:13px;font-weight:700;color:#78716C;margin-bottom:6px">${d.topicName}</div>
-    <div style="font-size:28px;font-weight:900;color:${pass?'#059669':'#D97706'};margin-bottom:16px">${d.score}/${d.total}</div>
-    <div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:16px">${pass?'Great job! Next level unlocked 🔓':'Try again — you can do it!'}</div>
-    <button onclick="this.closest('.notif-overlay').remove()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer">OK, let's go!</button>
+  el.innerHTML=`<div class="notif-box" style="max-height:80vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
+    <div style="font-size:36px;margin-bottom:8px">${pass?'🌟':'💪'}</div>
+    <div style="font-size:17px;font-weight:900;margin-bottom:4px">${name} reviewed your work!</div>
+    <div style="font-size:12px;font-weight:700;color:#78716C;margin-bottom:4px">${d.topicName}${d.level?' · Level '+d.level:''}</div>
+    <div style="font-size:32px;font-weight:900;color:${pass?'#059669':'#D97706'};margin-bottom:4px">${d.score}/${d.total}</div>
+    <div style="font-size:12px;color:#78716C;font-weight:700;margin-bottom:14px">${pass?'Great job! 🔓 Next level unlocked':'Keep going — you can do it!'}</div>
+    ${mistakeHTML}
+    <button onclick="this.closest('.notif-overlay').remove();buildTopicsScreen();" style="width:100%;padding:14px;border:none;border-radius:12px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;touch-action:manipulation;margin-top:4px">
+      ${hasMistakes?'✏️ Got it — I\'ll practise these!':'✅ Got it — let\'s go!'}
+    </button>
   </div>`;
   document.body.appendChild(el);
 }
@@ -4452,13 +4495,20 @@ window.addEventListener('load',async ()=>{
     checkAutoBackup();
     if(isCloudEnabled())setTimeout(()=>initRealtime(),2500);
     setTimeout(()=>fixInputs(),500);
-    // Auto-pull every 60s
+    // Auto-pull every 10s (fast enough for family realtime feel)
     if(isCloudEnabled()){
       setInterval(async()=>{
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
-        try{await pullFromCloud();refreshProfileTags();}catch(e){}
-      },60000);
+        try{
+          await pullFromCloud();
+          refreshProfileTags();
+          if(S.profile){
+            checkChildNotification(S.profile);
+            checkCelebration(S.profile);
+          }
+        }catch(e){}
+      },10000);
     }
     // Pull on tab focus
     document.addEventListener('visibilitychange',async()=>{
