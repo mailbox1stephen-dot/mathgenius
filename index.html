@@ -1673,7 +1673,7 @@ let lastSyncTime=0;
 let realtimeConnected=false;
 
 // Centralised sync metadata — single source of truth
-const APP_STATE={sync:{isSyncing:false,realtimeConnected:false,lastSyncAt:0,pendingChanges:[]}};
+const APP_STATE={sync:{isSyncing:false,realtimeConnected:false,lastSyncAt:0,pendingChanges:[],debounceTimer:null}};
 
 async function refreshAppStateFromCloud(){
   if(isSyncing)return;
@@ -1736,10 +1736,10 @@ function initRealtime(){
       })
       .subscribe((status)=>{
         if(status==='SUBSCRIBED'){
-          realtimeConnected=true;
+          realtimeConnected=true;APP_STATE.sync.realtimeConnected=true;
           console.log('[SYNC] Realtime connected ✓');
         } else if(status==='CLOSED'||status==='CHANNEL_ERROR'){
-          realtimeConnected=false;
+          realtimeConnected=false;APP_STATE.sync.realtimeConnected=false;
           console.warn('[SYNC] Realtime disconnected — falling back to poll');
         }
       });
