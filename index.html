@@ -1698,14 +1698,18 @@ function renderAllUI(){
   const inSession=document.getElementById('screen-session')?.classList.contains('active');
   if(inSession){console.log('[SYNC] In session — skipping UI rebuild');return;}
   const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
+  const pinActive=document.getElementById('screen-parent-pin')?.classList.contains('active');
   const topicsActive=document.getElementById('screen-topics')?.classList.contains('active');
+  // Only fire child notifications when kid is on THEIR topics screen
+  // NOT on parent dashboard, PIN, or profile screen
+  const kidScreenActive=topicsActive&&S.profile&&!dashActive&&!pinActive;
   if(dashActive){showParentDash();console.log('[SYNC] Dashboard rerendered');}
   if(topicsActive&&S.profile){buildTopicsScreen();console.log('[SYNC] Topics rebuilt for',S.profile);}
-  // Only fire child notifications/celebrations when a kid screen is actually active
-  // (not on parent dashboard — prevents celebration popping on wrong device/user)
-  const kidScreenActive=topicsActive||
-    document.getElementById('screen-complete')?.classList.contains('active');
-  if(S.profile&&kidScreenActive){checkChildNotification(S.profile);checkCelebration(S.profile);}
+  if(kidScreenActive){
+    checkChildNotification(S.profile);
+    checkCelebration(S.profile);
+    console.log('[SYNC] Child notifications checked for',S.profile);
+  }
 }
 
 function _onCloudUpdate(k){
@@ -4118,12 +4122,12 @@ function showCorrectionsReview(onDone){
   document.body.appendChild(el);
   document.getElementById('corr-start-btn').addEventListener('click',()=>{
     el.remove();
-    // Do NOT call checkCelebration here — it fires buildTopicsScreen() which
-    // navigates away before the redo session starts. Celebration is handled
-    // by selectProfile on login, or after the session completes.
+    // Do NOT fire celebration here — it would show before the redo session starts
+    // and navigating through it would interrupt _corrOnDone.
+    // Celebration is shown correctly in selectProfile when kid first logs in.
     setTimeout(()=>{
       if(window._corrOnDone){window._corrOnDone();window._corrOnDone=null;}
-    },300);
+    },100);
   });
 }
 
@@ -4297,16 +4301,15 @@ function checkChildNotification(profile){
   const hasMistakes=d.mistakes&&d.mistakes.length>0;
   const name=profile==='alexander'?'Dad':'Dad';
 
-  // Build mistake cards
+  // Build mistake cards — show question only, NOT the answer (child must work it out on canvas)
   let mistakeHTML='';
   if(hasMistakes){
     mistakeHTML=`<div style="margin:12px 0;text-align:left">
-      <div style="font-size:11px;font-weight:900;color:#DC2626;letter-spacing:.06em;margin-bottom:8px">❌ MISTAKES TO REVIEW</div>
+      <div style="font-size:11px;font-weight:900;color:#DC2626;letter-spacing:.06em;margin-bottom:8px">❌ QUESTIONS TO REDO</div>
       ${d.mistakes.map(m=>`
         <div style="background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:10px 14px;margin-bottom:8px">
-          <div style="font-size:18px;font-weight:900;color:#1C1917;margin-bottom:4px">${m.display}</div>
-          <div style="font-size:11px;color:#6B7280;margin-bottom:2px">Correct answer:</div>
-          <div style="font-size:22px;font-weight:900;color:#059669">${m.answer}</div>
+          <div style="font-size:22px;font-weight:900;color:#1C1917;font-family:monospace">${m.display}</div>
+          <div style="font-size:10px;color:#9CA3AF;margin-top:4px">You'll redo this on canvas</div>
         </div>`).join('')}
     </div>`;
   }
