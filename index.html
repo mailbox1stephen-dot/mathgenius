@@ -2006,7 +2006,8 @@ function buildTopicJourneyMap(topics,prog,color,profile){
     {x:150, y:530},  // ⭐ TEST
   ];
 
-  let svg=`<div style="width:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;height:100%;scrollbar-width:none">
+  // Build after playTid/playLevel are known — add to end
+  let svg=`<div style="width:100%">
   <svg viewBox="0 0 300 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:480px;display:block;margin:0 auto">
   <defs>
     <linearGradient id="tmbg" x1="0" y1="0" x2="0" y2="1">
@@ -2091,13 +2092,9 @@ function buildTopicJourneyMap(topics,prog,color,profile){
       svg+=`<circle cx="${x}" cy="${y}" r="${R+10}" fill="${color}" opacity=".2"/>`;
       svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="${color}" stroke="${glowC}" stroke-width="3"/>`;
       svg+=`<text x="${x}" y="${y-5}" text-anchor="middle" font-size="18">${st.isTest?'⭐':'🧭'}</text>`;
-      svg+=`<text x="${x}" y="${y+11}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="${glowC}">▶ NOW</text>`;
+      svg+=`<text x="${x}" y="${y+11}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="${glowC}">PLAY</text>`;
       svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="rgba(255,255,255,.9)">${st.isTest?'Topic Test':'Level '+st.label}</text>`;
       svg+=`<text x="${x}" y="${y+R+30}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.5)">10 questions</text>`;
-      // PLAY button
-      const bx=x-40; const by=y+R+34;
-      svg+=`<rect x="${bx}" y="${by}" width="80" height="22" rx="11" fill="${color}" style="cursor:pointer" onclick="startSession('${profile}',${curTopic?curTopic.id:1})"/>`;
-      svg+=`<text x="${x}" y="${by+15}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" font-weight="900" fill="#fff" style="pointer-events:none">▶ PLAY NOW</text>`;
     } else {
       svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="rgba(0,0,0,.45)" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/>`;
       svg+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="${st.isTest?16:14}" fill="rgba(255,255,255,.35)">${st.isTest?'⭐':st.label}</text>`;
@@ -2116,6 +2113,18 @@ function buildTopicJourneyMap(topics,prog,color,profile){
   svg+=`<text x="150" y="685" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.35)">${doneCt}/${topics.length} topics done</text>`;
 
   svg+=`</svg></div>`;
+
+  // PLAY NOW — real HTML button + make whole SVG area tappable
+  const playLabel=isTest?'⭐ Start Topic Test':'▶ Play Level '+lvl;
+  const playTid=curTopic?curTopic.id:1;
+  const playLevel=isTest?'TEST':lvl;
+
+  // Wrap everything in a tappable div — tap the map OR the button to start
+  svg=`<div onclick="startSession(${playTid},'${playLevel}')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">`+svg;
+
+  svg+=`<div style="padding:0 32px 32px">
+    <button style="width:100%;padding:18px;border:none;border-radius:16px;background:${color};color:#fff;font-family:'Nunito',sans-serif;font-size:17px;font-weight:900;pointer-events:none;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 20px ${color}88">${playLabel}</button>
+  </div></div>`;
   return svg;
 }
 
