@@ -492,16 +492,16 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <div class="screen" id="screen-profile">
   <div class="ps-logo">MATHGENIUS</div>
   <div id="profile-greeting" style="text-align:center;padding:4px 0 6px;width:100%"></div>
-  <div class="ps-sub">Who's practising today?</div>
+  <div class="ps-sub" id="ps-sub">Who's practising today?</div>
   <div class="profiles">
-    <div class="p-card blue" onclick="showChildPin('alexander')">
+    <div class="p-card blue" id="card-alexander" onclick="showChildPin('alexander')">
       <div class="p-av" id="p-av-alexander" onclick="event.stopPropagation();showProfileIconPicker('alexander')" style="cursor:pointer">🏌️</div>
       <div class="p-name">Alexander</div>
       <div class="p-info">Age 9 · Year 3</div>
       <div class="p-tag" id="alex-tag">Topic 1 · Level A</div>
       <div id="xp-bar-alexander" style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.2);border-radius:8px;text-align:left"></div>
     </div>
-    <div class="p-card purple" onclick="showChildPin('estelle')">
+    <div class="p-card purple" id="card-estelle" onclick="showChildPin('estelle')">
       <div class="p-av" id="p-av-estelle" onclick="event.stopPropagation();showProfileIconPicker('estelle')" style="cursor:pointer">🦄</div>
       <div class="p-name">Estelle</div>
       <div class="p-info">Age 11 · Year 6</div>
@@ -672,7 +672,8 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
       <span id="sc-streak-txt" style="font-size:13px;font-weight:800;color:#D97706">1 day streak!</span>
     </div>
     <div id="sc-sub" style="font-size:13px;font-weight:600;color:#A8A29E;margin-bottom:28px;text-align:center;line-height:1.5">Dad will review your work<br>and let you know 📬</div>
-    <button onclick="goToTopics()" style="background:#1E3A8A;color:#fff;border:none;border-radius:14px;padding:14px 48px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer">Back to Topics →</button>
+    <button onclick="goToTopics()" style="background:#1E3A8A;color:#fff;border:none;border-radius:14px;padding:14px 48px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;width:100%;max-width:280px">Back to Topics →</button>
+    <button onclick="showScreen('screen-parent-pin')" style="background:transparent;color:#A8A29E;border:1.5px solid #E5E7EB;border-radius:14px;padding:12px 48px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;max-width:280px;margin-top:10px">📋 Review now (hand to Dad)</button>
   </div>
 </div>
 
@@ -1446,8 +1447,43 @@ function getMistakes(profile){
   return sjp(localStorage.getItem('md_mistakes_'+profile),[]);
 }
 
+function getDeviceProfile(){return localStorage.getItem('md_device_profile');}
+
+function setDeviceProfile(p){
+  if(p){
+    localStorage.setItem('md_device_profile',p);
+    showToast(`✅ Device locked to ${p==='alexander'?'Alexander':'Estelle'}`);
+  } else {
+    localStorage.removeItem('md_device_profile');
+    showToast('Device unlocked — showing both profiles');
+  }
+  applyDeviceProfile();
+}
+
+function applyDeviceProfile(){
+  const locked=getDeviceProfile();
+  const cardA=document.getElementById('card-alexander');
+  const cardE=document.getElementById('card-estelle');
+  const sub=document.getElementById('ps-sub');
+  if(!cardA||!cardE) return;
+  if(locked==='alexander'){
+    cardA.style.display='';
+    cardE.style.display='none';
+    if(sub) sub.textContent="Alexander's Maths!";
+  } else if(locked==='estelle'){
+    cardA.style.display='none';
+    cardE.style.display='';
+    if(sub) sub.textContent="Estelle's Maths!";
+  } else {
+    cardA.style.display='';
+    cardE.style.display='';
+    if(sub) sub.textContent="Who's practising today?";
+  }
+}
+
 function refreshProfileTags(){
   loadIcons();
+  applyDeviceProfile();
   ['alexander','estelle'].forEach(p=>{
     const d=initProgress(p);
     let tid=1;
@@ -2804,13 +2840,35 @@ function switchDashTab(n){
 }
 
 function showParentDash(){
+  const locked=getDeviceProfile();
+  // Build only relevant tabs
   try{document.getElementById('pd-tab-overview').innerHTML=buildOverviewTab();}
-  catch(e){console.error('buildOverviewTab:',e);document.getElementById('pd-tab-overview').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error loading overview: '+e.message+'</div>';}
+  catch(e){console.error('buildOverviewTab:',e);document.getElementById('pd-tab-overview').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error: '+e.message+'</div>';}
   try{document.getElementById('pd-tab-alexander').innerHTML=buildChildTab('alexander');}
-  catch(e){console.error('buildChildTab alex:',e);document.getElementById('pd-tab-alexander').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error: '+e.message+'</div>';}
+  catch(e){console.error('buildChildTab alex:',e);}
   try{document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');}
-  catch(e){console.error('buildChildTab est:',e);document.getElementById('pd-tab-estelle').innerHTML='<div style="padding:20px;color:#EF4444;font-weight:700">⚠️ Error: '+e.message+'</div>';}
-  switchDashTab(0);
+  catch(e){console.error('buildChildTab est:',e);}
+  // Hide/show child tabs based on device lock
+  const tabA=document.getElementById('pd-dtab-1');
+  const tabE=document.getElementById('pd-dtab-2');
+  const tabOv=document.getElementById('pd-dtab-0');
+  if(tabA&&tabE){
+    if(locked==='alexander'){
+      tabA.style.display='';tabE.style.display='none';
+      if(tabOv)tabOv.style.display='none';
+      switchDashTab(1); // go straight to Alexander's data
+    } else if(locked==='estelle'){
+      tabA.style.display='none';tabE.style.display='';
+      if(tabOv)tabOv.style.display='none';
+      switchDashTab(2); // go straight to Estelle's data
+    } else {
+      tabA.style.display='';tabE.style.display='';
+      if(tabOv)tabOv.style.display='';
+      switchDashTab(0);
+    }
+  } else {
+    switchDashTab(0);
+  }
   if(isCloudEnabled()){const b=document.getElementById('cloud-btn');if(b)b.style.color='#10B981';}
   showScreen('screen-parent-dash');
 }
@@ -2953,7 +3011,14 @@ function buildOverviewTab(){
       </div>`;
     });
   }else{
-    html+=`<div style="text-align:center;padding:20px 0;font-size:12px;color:#A8A29E;font-weight:700">No pending sessions ✓</div>`;
+    html+=`<div style="text-align:center;padding:16px 0 4px;font-size:12px;color:#A8A29E;font-weight:700">No pending sessions ✓</div>`;
+  // Hand-back button — for same-device review workflow
+  const childName=p==='alexander'?'Alexander':'Estelle';
+  html+=`<div style="padding:4px 0 16px">
+    <button onclick="showScreen('screen-profile')" style="width:100%;padding:13px;border:none;border-radius:12px;background:#EEF2FF;color:#1E3A8A;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer;touch-action:manipulation">
+      ✅ Done — hand back to ${childName}
+    </button>
+  </div>`;
   }
 
   // Stats
@@ -2993,6 +3058,21 @@ function buildOverviewTab(){
   html+=`<button onclick="exportBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#1D4ED8;cursor:pointer">⬇ Download backup</button>`;
   html+=`<button onclick="importBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#78716C;cursor:pointer">⬆ Restore from file</button>`;
   html+=`</div></div>`;
+  // Device profile lock
+  const lockedTo=getDeviceProfile();
+  html+=`<div style="background:#F0F9FF;border-radius:12px;border:1.5px solid #BAE6FD;padding:11px 12px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">📱</div><div style="font-size:11px;font-weight:900;color:#0369A1">This Device</div></div>
+    <div style="font-size:10px;font-weight:700;color:#0284C7;margin-bottom:10px">Lock this device to one child — they'll only see their own profile.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="setDeviceProfile('alexander')" style="padding:10px;border-radius:10px;border:2px solid ${lockedTo==='alexander'?'#1E3A8A':'#BFDBFE'};background:${lockedTo==='alexander'?'#1E3A8A':'#EFF6FF'};font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:${lockedTo==='alexander'?'#fff':'#1E3A8A'};cursor:pointer">
+        🏌️ Alexander's iPad
+      </button>
+      <button onclick="setDeviceProfile('estelle')" style="padding:10px;border-radius:10px;border:2px solid ${lockedTo==='estelle'?'#7C3AED':'#DDD6FE'};background:${lockedTo==='estelle'?'#7C3AED':'#F5F3FF'};font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:${lockedTo==='estelle'?'#fff':'#7C3AED'};cursor:pointer">
+        🦄 Estelle's iPad
+      </button>
+    </div>
+    ${lockedTo?`<button onclick="setDeviceProfile(null)" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1.5px solid #BAE6FD;background:transparent;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#0284C7;cursor:pointer">Show both profiles (family device)</button>`:''}
+  </div>`;
   // Total reset
   html+=`<div style="background:#FEF2F2;border-radius:12px;border:1.5px solid #FECACA;padding:11px 12px;margin-bottom:14px">`;
   html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">⚠️</div><div style="font-size:11px;font-weight:900;color:#991B1B">Reset Kids Data</div></div>`;
