@@ -1701,7 +1701,11 @@ function renderAllUI(){
   const topicsActive=document.getElementById('screen-topics')?.classList.contains('active');
   if(dashActive){showParentDash();console.log('[SYNC] Dashboard rerendered');}
   if(topicsActive&&S.profile){buildTopicsScreen();console.log('[SYNC] Topics rebuilt for',S.profile);}
-  if(S.profile){checkChildNotification(S.profile);checkCelebration(S.profile);}
+  // Only fire child notifications/celebrations when a kid screen is actually active
+  // (not on parent dashboard — prevents celebration popping on wrong device/user)
+  const kidScreenActive=topicsActive||
+    document.getElementById('screen-complete')?.classList.contains('active');
+  if(S.profile&&kidScreenActive){checkChildNotification(S.profile);checkCelebration(S.profile);}
 }
 
 function _onCloudUpdate(k){
@@ -4114,7 +4118,9 @@ function showCorrectionsReview(onDone){
   document.body.appendChild(el);
   document.getElementById('corr-start-btn').addEventListener('click',()=>{
     el.remove();
-    checkCelebration(S.profile);
+    // Do NOT call checkCelebration here — it fires buildTopicsScreen() which
+    // navigates away before the redo session starts. Celebration is handled
+    // by selectProfile on login, or after the session completes.
     setTimeout(()=>{
       if(window._corrOnDone){window._corrOnDone();window._corrOnDone=null;}
     },300);
