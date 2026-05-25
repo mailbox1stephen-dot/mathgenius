@@ -1309,7 +1309,7 @@ function saveKey(){
   err.textContent='';
   S.apiKey=k;
   saveCred('md_apikey',k);
-  cloudSet('md_apikey',k); // sync API key to cloud too
+  // API key kept local-only for security
   showScreen('screen-profile');
   refreshProfileTags();
 }
@@ -1667,29 +1667,55 @@ function generatePDFReport(profile){
 // SUPABASE REALTIME
 // ════════════════════════════════════════════
 let realtimeChannel=null;
-function _onCloudUpdate(k){
-  refreshProfileTags();
-  const profile=S.profile;
-  // If a notification/correction arrived for current child — show it immediately
-  if(profile&&k==='md_notify_'+profile){
-    checkChildNotification(profile);
-  }
-  if(profile&&k==='md_celebrate_'+profile){
-    checkCelebration(profile);
-  }
-  if(profile&&(k==='md_prog_'+profile||k==='md_corrections_'+profile)){
-    buildTopicsScreen();
-  }
-  // Refresh parent dash if open
-  const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-  if(dashActive)showParentDash();
+// ── SYNC INFRASTRUCTURE ──────────────────────────────────────────
+let isSyncing=false;
+let lastSyncTime=0;
+let realtimeConnected=false;
+
+// Centralised sync metadata — single source of truth
+const APP_STATE={sync:{isSyncing:false,realtimeConnected:false,lastSyncAt:0,pendingChanges:[]}};
+
+async function refreshAppStateFromCloud(){
+  if(isSyncing)return;
+  const now=Date.now();
+  if(now-lastSyncTime<2000)return; // 2s debounce prevents loops
+  isSyncing=true;APP_STATE.sync.isSyncing=true;
+  lastSyncTime=now;
+  console.log('[SYNC] Refreshing app state from cloud...');
+  try{
+    await pullFromCloud();
+    APP_STATE.sync.lastSyncAt=Date.now();
+    refreshProfileTags();
+    renderAllUI();
+    console.log('[SYNC] Cloud merge complete at',new Date().toLocaleTimeString());
+  }catch(e){console.warn('[SYNC] Failed:',e);}
+  finally{isSyncing=false;APP_STATE.sync.isSyncing=false;}
 }
+
+// renderAllUI — single entry point for all UI rebuilds after sync
+// Never patch UI fragments directly — always call this
+function renderAllUI(){
+  const inSession=document.getElementById('screen-session')?.classList.contains('active');
+  if(inSession){console.log('[SYNC] In session — skipping UI rebuild');return;}
+  const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
+  const topicsActive=document.getElementById('screen-topics')?.classList.contains('active');
+  if(dashActive){showParentDash();console.log('[SYNC] Dashboard rerendered');}
+  if(topicsActive&&S.profile){buildTopicsScreen();console.log('[SYNC] Topics rebuilt for',S.profile);}
+  if(S.profile){checkChildNotification(S.profile);checkCelebration(S.profile);}
+}
+
+function _onCloudUpdate(k){
+  console.log('[SYNC] Realtime update received — key:',k);
+  refreshAppStateFromCloud();
+}
+// ── END SYNC INFRASTRUCTURE ───────────────────────────────────────
 
 function initRealtime(){
   if(!isCloudEnabled())return;
   if(typeof supabase==='undefined')return;
   const{url,key}=getSupaCfg();
   try{
+    if(realtimeChannel){try{realtimeChannel.unsubscribe();}catch(e){}realtimeChannel=null;}
     const client=supabase.createClient(url,key);
     realtimeChannel=client.channel('mathdrill_changes')
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'mathdrill_data'},payload=>{
@@ -1708,8 +1734,16 @@ function initRealtime(){
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
         _onCloudUpdate(k);
       })
-      .subscribe();
-    console.log('Supabase Realtime connected');
+      .subscribe((status)=>{
+        if(status==='SUBSCRIBED'){
+          realtimeConnected=true;
+          console.log('[SYNC] Realtime connected ✓');
+        } else if(status==='CLOSED'||status==='CHANNEL_ERROR'){
+          realtimeConnected=false;
+          console.warn('[SYNC] Realtime disconnected — falling back to poll');
+        }
+      });
+    console.log('Supabase Realtime subscribing...');
   }catch(e){console.warn('Realtime init failed:',e);}
 }
 const DEFAULT_CHILD_PINS={alexander:'1111',estelle:'2222'};
@@ -3664,7 +3698,7 @@ async function cloudSet(key,value){
 
 async function cloudDelete(key){
   if(!isCloudEnabled())return;
-  supaFetch('mathdrill_data?key=eq.'+encodeURIComponent(key),'DELETE');
+  await supaFetch('mathdrill_data?key=eq.'+encodeURIComponent(key),'DELETE');
 }
 
 async function pushToCloud(){
@@ -3772,9 +3806,9 @@ async function saveCloudConfig(){
     status.textContent='Connection failed — check URL and key';
     status.classList.add('cs-err');return;
   }
-  // Store credentials IN Supabase so they self-restore if localStorage is cleared
+  // Store Supabase URL only (key never stored in DB — security risk)
   await supaFetch('mathdrill_data','POST',{key:'md_supa_url',value:url,updated_at:new Date().toISOString()});
-  await supaFetch('mathdrill_data','POST',{key:'md_supa_key',value:key,updated_at:new Date().toISOString()});
+  // API key and Supabase key kept local-only
   status.textContent='Connected! Syncing data...';status.classList.add('cs-ok');
   const btn=document.getElementById('cloud-btn');
   if(btn)btn.style.color='#10B981';
@@ -4495,37 +4529,22 @@ window.addEventListener('load',async ()=>{
     checkAutoBackup();
     if(isCloudEnabled())setTimeout(()=>initRealtime(),2500);
     setTimeout(()=>fixInputs(),500);
-    // Auto-pull every 10s (fast enough for family realtime feel)
+    // Fallback poll — fully skipped when realtime healthy, 10s when disconnected
     if(isCloudEnabled()){
       setInterval(async()=>{
+        if(realtimeConnected){return;} // realtime is primary — no poll needed
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
-        try{
-          await pullFromCloud();
-          refreshProfileTags();
-          if(S.profile){
-            checkChildNotification(S.profile);
-            checkCelebration(S.profile);
-          }
-          // Refresh parent dash if open
-          const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-          if(dashActive)showParentDash();
-        }catch(e){}
+        console.log('[SYNC] Falling back to polling — realtime disconnected');
+        await refreshAppStateFromCloud();
       },10000);
     }
-    // Pull on tab focus
     document.addEventListener('visibilitychange',async()=>{
       if(document.visibilityState==='visible'&&isCloudEnabled()){
-        const inSession=document.getElementById('screen-session')?.classList.contains('active');
-        if(inSession)return;
-        try{
-          await pullFromCloud();refreshProfileTags();
-          const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-          if(dashActive)showParentDash();
-        }catch(e){}
+        console.log('[SYNC] App foregrounded — refreshing state');
+        await refreshAppStateFromCloud();
       }
     });
-  } else {
     // No API key — but check if we can recover cloud credentials first
     // (Safari may have cleared localStorage but Supabase still has data)
     showScreen('screen-api');
