@@ -1705,6 +1705,10 @@ function renderAllUI(){
 }
 
 function _onCloudUpdate(k){
+  if(!realtimeConnected){
+    realtimeConnected=true;APP_STATE.sync.realtimeConnected=true;
+    console.log('[SYNC] Realtime is live — first event received ✓');
+  }
   console.log('[SYNC] Realtime update received — key:',k);
   refreshAppStateFromCloud();
 }
@@ -1734,13 +1738,12 @@ function initRealtime(){
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
         _onCloudUpdate(k);
       })
-      .subscribe((status)=>{
+       .subscribe((status)=>{
         if(status==='SUBSCRIBED'){
-          realtimeConnected=true;APP_STATE.sync.realtimeConnected=true;
-          console.log('[SYNC] Realtime connected ✓');
+          console.log('[SYNC] Realtime WebSocket connected (events pending table replication setup)');
         } else if(status==='CLOSED'||status==='CHANNEL_ERROR'){
           realtimeConnected=false;APP_STATE.sync.realtimeConnected=false;
-          console.warn('[SYNC] Realtime disconnected — falling back to poll');
+          console.warn('[SYNC] Realtime disconnected — poll is active fallback');
         }
       });
     console.log('Supabase Realtime subscribing...');
@@ -4529,13 +4532,17 @@ window.addEventListener('load',async ()=>{
     checkAutoBackup();
     if(isCloudEnabled())setTimeout(()=>initRealtime(),2500);
     setTimeout(()=>fixInputs(),500);
-    // Fallback poll — fully skipped when realtime healthy, 10s when disconnected
+    // Always poll every 10s — realtime is a speed bonus, NOT a replacement
+    // Supabase realtime requires table replication enabled; polling is the reliable fallback
     if(isCloudEnabled()){
       setInterval(async()=>{
-        if(realtimeConnected){return;} // realtime is primary — no poll needed
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
-        console.log('[SYNC] Falling back to polling — realtime disconnected');
+        if(realtimeConnected){
+          console.log('[SYNC] Poll running (realtime also active — belt+braces)');
+        } else {
+          console.log('[SYNC] Poll running (realtime disconnected — fallback mode)');
+        }
         await refreshAppStateFromCloud();
       },10000);
     }
