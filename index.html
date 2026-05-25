@@ -101,11 +101,11 @@ input,textarea,select{
 .pd.done{background:#10B981}
 .pd.cur{background:#F59E0B}
 
-.prob-row{padding:10px 14px 16px;background:#fff;flex-shrink:0;display:flex;align-items:flex-center;gap:10px;border-radius:0 0 16px 16px;margin:0 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.prob-row{padding:6px 14px 8px;background:#fff;flex-shrink:0;display:flex;align-items:flex-center;gap:10px;border-radius:0 0 16px 16px;margin:0 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .prob-tag{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
 .prob-eq{font-size:34px;font-weight:900;color:#1C1917;letter-spacing:1px;flex:1;text-align:center;line-height:1.2}
 
-.instr-strip{padding:8px 16px;background:#FFFBEB;border-bottom:1px solid #FDE68A;font-size:11px;font-weight:800;color:#92400E;flex-shrink:0}
+.instr-strip{padding:4px 16px;background:#FFFBEB;border-bottom:1px solid #FDE68A;font-size:11px;font-weight:800;color:#92400E;flex-shrink:0}
 
 .overview-strip{display:flex;align-items:center;gap:3px;padding:8px 12px;background:#F4F1EC;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .ov-boxes{display:flex;gap:3px;flex:1}
@@ -117,7 +117,7 @@ input,textarea,select{
 .tcell:active{background:#EDE9E0}
 
 /* Canvas section — flex column, arrows float inside */
-.canvas-section{position:relative;flex:1;min-height:240px;display:flex;flex-direction:column;overflow:hidden}
+.canvas-section{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 
 /* Side nav arrows — inside page, overlaying canvas edges */
 .btn-side{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:28px;height:60px;background:rgba(255,255,255,.88);border:1px solid #EDE9E0;border-radius:8px;font-size:22px;font-weight:900;color:#A8A29E;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -127,14 +127,14 @@ input,textarea,select{
 .btn-side-right{right:16px}
 
 /* Canvas inner — padded away from arrows */
-.canvas-inner{flex-shrink:0;padding:6px 52px 2px;display:flex;flex-direction:column;}
+.canvas-inner{flex:1;padding:4px 52px 2px;display:flex;flex-direction:column;min-height:0}
 .canvas-label{font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px;flex-shrink:0}
-.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:240px;touch-action:none;overscroll-behavior:none}
+.canvas-wrap{flex:1;border-radius:0;border:none;border-top:1px solid #EDE9E0;overflow:hidden;position:relative;min-height:0;min-height:240px;touch-action:none;overscroll-behavior:none}
 #drawing-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
 .canvas-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:#C4C0B8;pointer-events:none;text-align:center;line-height:1.7;white-space:nowrap}
 
 /* Answer cell — bottom of section */
-.answer-inner{flex-shrink:0;padding:20px 12px 10px}
+.answer-inner{flex-shrink:0;padding:8px 12px 8px}
 .answer-label{font-size:9px;font-weight:900;color:#B45309;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
 .answer-wrap{height:96px;border-radius:12px;border:2px solid #FCD34D;overflow:hidden;position:relative;background:#FFFBEB}
 #answer-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none;overscroll-behavior:none}
@@ -400,10 +400,10 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
   .pp-key{height:78px;font-size:28px;border-radius:16px}
 
   /* Session */
-  .prob-eq{font-size:44px}
+  .prob-eq{font-size:38px}
   .hdr{padding:16px 28px}
   .send-bar{padding-bottom:max(14px,env(safe-area-inset-bottom));padding:14px 28px}
-  .overview-strip{padding:10px 16px;gap:5px}
+  .overview-strip{padding:5px 12px;gap:4px}
   .ov-box{min-width:44px;height:34px;font-size:12px}
   .answer-wrap{height:96px}
   .answer-inner{padding:8px 16px 12px}
