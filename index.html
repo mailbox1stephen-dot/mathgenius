@@ -824,7 +824,33 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <div id="sync-indicator">Synced ☁</div>
 <div id="toast"></div>
 
-<script>
+<script>// ── SWEDISH CURRICULUM ──────────────────────────────────────────
+const TOPICS_SV=[
+  {id:1,name:'Kolumnaddition',         method:true, curriculum:'Lgr22 Åk 3: Addition med uppställning'},
+  {id:2,name:'Kolumnsubtraktion',      method:true, curriculum:'Lgr22 Åk 3: Subtraktion med uppställning'},
+  {id:3,name:'Huvudräkning',           method:false,curriculum:'Lgr22 Åk 3: Räkna i huvudet — strategier'},
+  {id:4,name:'Multiplikationstabellen',method:false,curriculum:'Lgr22 Åk 3: Multiplikationstabellen 1–10'},
+  {id:5,name:'Division',               method:true, curriculum:'Lgr22 Åk 4: Division med rest'},
+  {id:6,name:'Bråk',                   method:false,curriculum:'Lgr22 Åk 4: Enkla bråk — halvor, tredjedelar'},
+  {id:7,name:'Klockan',                method:false,curriculum:'Lgr22 Åk 3: Tid — analog och digital klocka'},
+  {id:8,name:'Längd och vikt',         method:false,curriculum:'Lgr22 Åk 3: Mätning — längd, massa, enheter'},
+  {id:9,name:'Geometri',               method:false,curriculum:'Lgr22 Åk 4: Geometri — former, area, omkrets'},
+  {id:10,name:'Statistik',             method:false,curriculum:'Lgr22 Åk 5: Statistik — diagram och tabeller'},
+];
+function getLang(){return localStorage.getItem('md_lang')||'en';}
+function setLang(l){
+  localStorage.setItem('md_lang',l);
+  if(typeof isCloudEnabled==='function'&&isCloudEnabled())cloudSet('md_lang',l);
+  if(typeof refreshProfileTags==='function')refreshProfileTags();
+  if(typeof S!=='undefined'&&S.profile&&typeof buildTopicsScreen==='function')buildTopicsScreen();
+  if(typeof showToast==='function')showToast(l==='sv'?'🇸🇪 Svenska aktiverat':'🇬🇧 English activated');
+}
+function getTopics(profile){
+  return getLang()==='sv'?TOPICS_SV:(getTopics(profile));
+}
+// ── END SWEDISH CURRICULUM ───────────────────────────────────────
+
+
 // ── SAFE JSON PARSE — never throws on emoji or corrupt data ──
 function sjp(str,fallback=null){
   if(str===null||str===undefined)return fallback;
@@ -4766,31 +4792,6 @@ function T(key){
   var tr=(TR[lang]||TR.en);
   var val=tr[key]!==undefined?tr[key]:TR.en[key];
 
-// ── SWEDISH CURRICULUM ──────────────────────────────────────────
-const TOPICS_SV=[
-  {id:1,name:'Kolumnaddition',         method:true, curriculum:'Lgr22 Åk 3: Addition med uppställning'},
-  {id:2,name:'Kolumnsubtraktion',      method:true, curriculum:'Lgr22 Åk 3: Subtraktion med uppställning'},
-  {id:3,name:'Huvudräkning',           method:false,curriculum:'Lgr22 Åk 3: Räkna i huvudet — strategier'},
-  {id:4,name:'Multiplikationstabellen',method:false,curriculum:'Lgr22 Åk 3: Multiplikationstabellen 1–10'},
-  {id:5,name:'Division',               method:true, curriculum:'Lgr22 Åk 4: Division med rest'},
-  {id:6,name:'Bråk',                   method:false,curriculum:'Lgr22 Åk 4: Enkla bråk — halvor, tredjedelar'},
-  {id:7,name:'Klockan',                method:false,curriculum:'Lgr22 Åk 3: Tid — analog och digital klocka'},
-  {id:8,name:'Längd och vikt',         method:false,curriculum:'Lgr22 Åk 3: Mätning — längd, massa, enheter'},
-  {id:9,name:'Geometri',               method:false,curriculum:'Lgr22 Åk 4: Geometri — former, area, omkrets'},
-  {id:10,name:'Statistik',             method:false,curriculum:'Lgr22 Åk 5: Statistik — diagram och tabeller'},
-];
-function getLang(){return localStorage.getItem('md_lang')||'en';}
-function setLang(l){
-  localStorage.setItem('md_lang',l);
-  if(typeof isCloudEnabled==='function'&&isCloudEnabled())cloudSet('md_lang',l);
-  if(typeof refreshProfileTags==='function')refreshProfileTags();
-  if(typeof S!=='undefined'&&S.profile&&typeof buildTopicsScreen==='function')buildTopicsScreen();
-  if(typeof showToast==='function')showToast(l==='sv'?'🇸🇪 Svenska aktiverat':'🇬🇧 English activated');
-}
-function getTopics(profile){
-  return getLang()==='sv'?TOPICS_SV:(getTopics(profile));
-}
-// ── END SWEDISH CURRICULUM ───────────────────────────────────────
 
   if(val===undefined)return key;
   return val;
