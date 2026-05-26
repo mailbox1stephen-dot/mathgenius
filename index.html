@@ -2855,22 +2855,20 @@ function showParentDash(){
   catch(e){console.error('buildChildTab alex:',e);}
   try{document.getElementById('pd-tab-estelle').innerHTML=buildChildTab('estelle');}
   catch(e){console.error('buildChildTab est:',e);}
-  // Hide/show child tabs based on device lock
+  // Hide/show child tabs based on device lock — Overview ALWAYS visible
   const tabA=document.getElementById('pd-dtab-1');
   const tabE=document.getElementById('pd-dtab-2');
   const tabOv=document.getElementById('pd-dtab-0');
+  if(tabOv)tabOv.style.display=''; // Overview always shown — pending reviews live here
   if(tabA&&tabE){
     if(locked==='alexander'){
       tabA.style.display='';tabE.style.display='none';
-      if(tabOv)tabOv.style.display='none';
-      switchDashTab(1); // go straight to Alexander's data
+      switchDashTab(0); // start on Overview (pending reviews) not child tab
     } else if(locked==='estelle'){
       tabA.style.display='none';tabE.style.display='';
-      if(tabOv)tabOv.style.display='none';
-      switchDashTab(2); // go straight to Estelle's data
+      switchDashTab(0); // start on Overview
     } else {
       tabA.style.display='';tabE.style.display='';
-      if(tabOv)tabOv.style.display='';
       switchDashTab(0);
     }
   } else {
