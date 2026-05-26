@@ -3017,15 +3017,13 @@ function buildOverviewTab(){
     });
   }else{
     html+=`<div style="text-align:center;padding:16px 0 4px;font-size:12px;color:#A8A29E;font-weight:700">No pending sessions ✓</div>`;
-  // Hand-back button — for same-device review workflow
-  const childName=p==='alexander'?'Alexander':'Estelle';
-  html+=`<div style="padding:4px 0 16px">
-    <button onclick="showScreen('screen-profile')" style="width:100%;padding:13px;border:none;border-radius:12px;background:#EEF2FF;color:#1E3A8A;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer;touch-action:manipulation">
-      ✅ Done — hand back to ${childName}
-    </button>
-  </div>`;
+    // Hand-back button — only on locked device, uses getDeviceProfile() not p
+    const _locked=getDeviceProfile();
+    if(_locked){
+      const _name=_locked==='alexander'?'Alexander':'Estelle';
+      html+=`<div style="padding:4px 0 16px"><button onclick="showScreen('screen-profile')" style="width:100%;padding:13px;border:none;border-radius:12px;background:#EEF2FF;color:#1E3A8A;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;cursor:pointer;touch-action:manipulation">✅ Done — hand back to ${_name}</button></div>`;
+    }
   }
-
   // Stats
   html+=`<div style="font-size:9px;font-weight:900;color:#A8A29E;letter-spacing:.07em;text-transform:uppercase;margin:12px 0 7px">This week</div>`;
   html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px">`;
