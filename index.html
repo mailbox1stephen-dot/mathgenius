@@ -840,9 +840,7 @@ const TOPICS_SV=[
 
 
 
-function getTopics(profile){
-  return getLang()==='sv'?TOPICS_SV:(getTopics(profile));
-}
+function getTopics(profile){return TOPICS_SV;}
 // ── END SWEDISH CURRICULUM ───────────────────────────────────────
 
 
@@ -2155,7 +2153,7 @@ function buildTopicJourneyMap(topics,prog,color,profile){
 
   // Topic name banner at top
   const topicName=curTopic?curTopic.name:(allDone?'Allt klart!':'');
-  svg+=`<text x="150" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.45)" letter-spacing=".08em">${T(allDone?'start':'quest')}</text>`;
+  svg+=`<text x="150" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.45)" letter-spacing=".08em">${allDone?'⚓ BÖRJA DITT UPPDRAG':'⚓ AKTUELLT UPPDRAG'}</text>`;
   svg+=`<text x="150" y="52" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#FCD34D">${topicName}</text>`;
   svg+=`<line x1="150" y1="60" x2="150" y2="80" stroke="rgba(252,211,77,.3)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
 
