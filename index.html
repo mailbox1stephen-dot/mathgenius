@@ -1965,17 +1965,13 @@ async function selectProfile(p){
   S.profile=p;
   document.body.dataset.profile=p;
   // Auto-lock this device to this child on first login
-  // Next time they open the app, only their profile shows
   if(!getDeviceProfile()){
     localStorage.setItem('md_device_profile',p);
     applyDeviceProfile();
     console.log('[DEVICE] Auto-locked to',p);
   }
-  // Pull latest from cloud first — ensures approval/corrections/celebration
-  // are synced before child sees the journey map
-  if(isCloudEnabled()){
-    try{await pullFromCloud();}catch(e){}
-  }
+  // Show topics screen IMMEDIATELY — don't await cloud
+  // Cloud pull happens in background via polling; child never waits
   buildTopicsScreen();
   showScreen('screen-topics');
   setTimeout(()=>{
@@ -1983,6 +1979,14 @@ async function selectProfile(p){
     checkXPNotify(p);
     checkCelebration(p);
   },400);
+  // Pull from cloud in background — updates UI when done
+  if(isCloudEnabled()){
+    pullFromCloud().then(()=>{
+      buildTopicsScreen();
+      checkChildNotification(p);
+      checkCelebration(p);
+    }).catch(()=>{});
+  }
 }
 
 // ════════════════════════════════════════════
