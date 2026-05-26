@@ -4662,7 +4662,7 @@ function buildProfileGreeting(){
 
 window.addEventListener('load',async ()=>{
   initCanvas();
-  translateStaticUI(); // Apply language to all static strings immediately
+  translateStaticUI();
   window.addEventListener('resize',()=>{
     if(document.getElementById('screen-session').classList.contains('active')) resizeCanvas();
   });
@@ -4670,19 +4670,17 @@ window.addEventListener('load',async ()=>{
   const k=readCred('md_apikey');
   if(k){
     S.apiKey=k;
+    // Pull from cloud with 4s timeout — never block startup
     if(isCloudEnabled()){
       try{
-        await pullFromCloud();
-        // Show clear auto-connect confirmation
+        await Promise.race([pullFromCloud(),new Promise(r=>setTimeout(r,4000))]);
         const btn=document.getElementById('cloud-btn');
         if(btn){btn.style.color='#10B981';btn.title='Cloud connected ✓';}
-        showToast('☁ Cloud connected — data up to date');
       }catch(e){
         console.warn('Startup cloud pull failed:',e);
-        showToast('⚠️ Cloud sync failed — working offline');
       }
     }
-    // Check if a child is remembered on this device → skip profile screen
+    // Navigate to correct screen
     const remembered=readCred('md_remembered_profile');
     if(remembered&&(remembered==='alexander'||remembered==='estelle')){
       selectProfile(remembered);
@@ -4694,48 +4692,38 @@ window.addEventListener('load',async ()=>{
     checkAutoBackup();
     if(isCloudEnabled())setTimeout(()=>initRealtime(),2500);
     setTimeout(()=>fixInputs(),500);
-    // Always poll every 10s — realtime is a speed bonus, NOT a replacement
-    // Supabase realtime requires table replication enabled; polling is the reliable fallback
     if(isCloudEnabled()){
       setInterval(async()=>{
         const inSession=document.getElementById('screen-session')?.classList.contains('active');
         if(inSession)return;
-        if(realtimeConnected){
-          console.log('[SYNC] Poll running (realtime also active — belt+braces)');
-        } else {
-          console.log('[SYNC] Poll running (realtime disconnected — fallback mode)');
-        }
         await refreshAppStateFromCloud();
       },10000);
     }
     document.addEventListener('visibilitychange',async()=>{
       if(document.visibilityState==='visible'&&isCloudEnabled()){
-        console.log('[SYNC] App foregrounded — refreshing state');
         await refreshAppStateFromCloud();
       }
     });
-    // No API key — but check if we can recover cloud credentials first
-    // (Safari may have cleared localStorage but Supabase still has data)
+  }else{
+    // No API key — show setup screen
     showScreen('screen-api');
     const saved=readCred('md_apikey');
-    // Validate — only pre-fill if it looks like a real API key
-    if(saved && saved.startsWith('sk-') && saved.length>20){
+    if(saved&&saved.startsWith('sk-')&&saved.length>20){
       const inp=document.getElementById('api-input');
       if(inp)inp.value=saved;
-    } else if(saved){
-      // Corrupt value — clear it
+    }else if(saved){
       clearCred('md_apikey');
       localStorage.removeItem('md_apikey');
     }
     const su=localStorage.getItem('md_supa_url');const sk=localStorage.getItem('md_supa_key');
     if(su){const i=document.getElementById('restore-url');if(i)i.value=su;}
     if(sk){const i=document.getElementById('restore-key');if(i)i.value=sk;}
-    // If cloud credentials exist in localStorage, show a hint
     if(su&&sk){
       setTimeout(()=>showToast('Tap "Restore from cloud" to recover all your data'),800);
     }
   }
-});var TR={
+});
+var TR={
   en:{
     calculate:'CALCULATE',write_here:'Write your answer here ✏️',
     write_final:'Write your final answer here',
