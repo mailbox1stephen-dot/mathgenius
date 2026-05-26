@@ -1417,7 +1417,7 @@ function isReviewDue(profile,tid){
 }
 function startReviewSession(tid){
   const p=S.profile;
-  const topics=p==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(p);
   const topic=topics.find(t=>t.id===tid);
   // 5 questions mixed from all levels
   const problems=LEVELS.slice(0,4).flatMap(lvl=>
@@ -1646,7 +1646,7 @@ function generatePDFReport(profile){
   const name=profile==='alexander'?'Alexander':'Estelle';
   const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   const prog=initProgress(profile);
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   const xp=getXP(profile);
   const lvl=getXPLevel(xp);
   const streak=getStreak(profile);
@@ -1959,7 +1959,7 @@ function buildMiniTimeline(lvlIdx,isDone,isTopicTest,color){
 function buildJourneyTab(profile){
   const prog=initProgress(profile);
   const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   const color=profile==='alexander'?'#3B82F6':'#8B5CF6';
   const darkColor=profile==='alexander'?'#1E3A8A':'#6D28D9';
   const icon=getIcon(profile);
@@ -2239,7 +2239,7 @@ function buildTopicJourneyMap(topics,prog,color,profile){
 
 function buildTopicsScreen(){
   const p=S.profile;
-  const topics=p==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(p);
   const d=initProgress(p);
   const streak=getStreak(p);
   const colorClass=p==='alexander'?'fill-blue':'fill-purple';
@@ -2290,7 +2290,7 @@ function goToTopics(){
 // SESSION
 // ════════════════════════════════════════════
 function startSession(tid,level,method){
-  const topics=S.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(S.profile);
   const topic=topics.find(t=>t.id===tid);
   // Check for parent-locked session
   const locked=getLocked(S.profile);
@@ -2881,7 +2881,7 @@ function showParentDash(){
 // ── Shared helpers ──
 function barColor(p){return p>=90?'#10B981':p>=75?'#3B82F6':p>=60?'#F59E0B':'#EF4444';}
 function barTextColor(p){return p>=90?'#065F46':p>=75?'#1D4ED8':p>=60?'#92400E':'#991B1B';}
-function tn(profile,tid){const t=(profile==='alexander'?TOPICS_A:TOPICS_E).find(x=>x.id===tid);return t?t.name:'Topic '+tid;}
+function tn(profile,tid){const t=(getTopics(profile)).find(x=>x.id===tid);return t?t.name:'Topic '+tid;}
 
 function trendBarsHTML(hist,color){
   const s=hist.slice(0,10).map(h=>Math.round(h.score/h.total*100));
@@ -2943,7 +2943,7 @@ function mistakesHTML(profile){
 
 function topicProgressHTML(profile,color){
   const prog=initProgress(profile);
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   return topics.map(t=>{
     const tp=prog['t'+t.id];
     const locked=tp.locked;const done=tp.done;
@@ -3061,6 +3061,17 @@ function buildOverviewTab(){
   html+=`<button onclick="exportBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#1D4ED8;cursor:pointer">⬇ Download backup</button>`;
   html+=`<button onclick="importBackup()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;color:#78716C;cursor:pointer">⬆ Restore from file</button>`;
   html+=`</div></div>`;
+
+  // Language toggle
+  const curLang=getLang();
+  html+=`<div style="background:#F0FDF4;border-radius:12px;border:1.5px solid #BBF7D0;padding:11px 12px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">🌍</div><div style="font-size:11px;font-weight:900;color:#15803D">Language / Språk</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button onclick="setLang('en')" style="padding:11px;border-radius:10px;border:2px solid ${curLang==='en'?'#1E3A8A':'#BFDBFE'};background:${curLang==='en'?'#1E3A8A':'#EFF6FF'};font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;color:${curLang==='en'?'#fff':'#1E3A8A'};cursor:pointer;touch-action:manipulation">🇬🇧 English</button>
+      <button onclick="setLang('sv')" style="padding:11px;border-radius:10px;border:2px solid ${curLang==='sv'?'#006AA7':'#BAE6FD'};background:${curLang==='sv'?'#006AA7':'#F0F9FF'};font-family:'Nunito',sans-serif;font-size:13px;font-weight:900;color:${curLang==='sv'?'#fff':'#006AA7'};cursor:pointer;touch-action:manipulation">🇸🇪 Svenska</button>
+    </div>
+    <div style="font-size:10px;font-weight:600;color:#16A34A;margin-top:8px">${curLang==='sv'?'Barnen ser svenska ämnen och instruktioner':'Children see English topics and instructions'}</div>
+  </div>`;
   // Device profile lock
   const lockedTo=getDeviceProfile();
   if(lockedTo){
@@ -3088,7 +3099,7 @@ function buildChildTab(profile){
   const name=profile==='alexander'?'Alexander':'Estelle';
   const yr=profile==='alexander'?'Yr 3':'Yr 6';
   const color=profile==='alexander'?'#3B82F6':'#8B5CF6';
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   const weekAgo=Date.now()-7*24*60*60*1000;
   const weekSess=hist.filter(h=>new Date(h.date)>weekAgo).length;
   const avgAcc=hist.length?Math.round(hist.slice(0,10).reduce((s,h)=>s+h.score/h.total,0)/Math.min(hist.length,10)*100):0;
@@ -3207,7 +3218,7 @@ function resetCurrentLevel(profile){
   const prog=initProgress(profile);
   const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
   if(!cur){showToast('No active topic found');return;}
-  const nm=(profile==='alexander'?TOPICS_A:TOPICS_E).find(t=>t.id===parseInt(cur[0].replace('t',''))).name;
+  const nm=(getTopics(profile)).find(t=>t.id===parseInt(cur[0].replace('t',''))).name;
   const prevLevel=cur[1].level;
   showConfirm('Reset Level '+prevLevel+' of "'+nm+'"?',()=>{
     const prog2=initProgress(profile);
@@ -3671,7 +3682,7 @@ function fixProgressFromHistory(profile){
   const hist=sjp(localStorage.getItem('md_hist_'+profile),[]);
   if(!hist.length){showToast('No history found for '+profile);return;}
   const prog=initProgress(profile);
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   let changes=0;
   topics.forEach(t=>{
     const tk='t'+t.id;
@@ -3934,7 +3945,7 @@ function getLocked(profile){
 function showSessionBuilder(profile,overrideTid,overrideLvl){
   SB.profile=profile;SB.editingIdx=null;
   const prog=initProgress(profile);
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
   SB.tid=overrideTid||(cur?parseInt(cur[0].replace('t','')):1);
   SB.level=overrideLvl||(prog['t'+SB.tid]?.level||'A');
@@ -3953,7 +3964,7 @@ function sbChangeTopic(){
   const tid=parseInt(sel.value);
   const prog=initProgress(SB.profile);
   SB.tid=tid;
-  const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=SB.getTopics(profile);
   const topic=topics.find(t=>t.id===tid);
   SB.topicName=topic?topic.name:'Topic '+tid;
   // Default to A for locked topics — parent builds a preview session
@@ -3973,7 +3984,7 @@ function sbChangeLevel(lvl){
 function renderSB(){
   const body=document.getElementById('sb-body');
   const prog=initProgress(SB.profile);
-  const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=SB.getTopics(profile);
   const locked=getLocked(SB.profile);
   let html='';
 
@@ -4142,7 +4153,7 @@ function genTopicTest(profile,tid){
 }
 
 function genFinalTest(profile){
-  const topics=profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(profile);
   const qs=[];
   topics.forEach(t=>{
     for(let j=0;j<2;j++){
@@ -4153,7 +4164,7 @@ function genFinalTest(profile){
 }
 
 function startTopicTest(tid){
-  const topics=S.profile==='alexander'?TOPICS_A:TOPICS_E;
+  const topics=getTopics(S.profile);
   const topic=topics.find(t=>t.id===tid);
   if(!topic)return;
   S.sess={tid,level:'TEST',method:topic.method,topicName:topic.name,type:'topicTest',
@@ -4661,7 +4672,131 @@ window.addEventListener('load',async ()=>{
       setTimeout(()=>showToast('Tap "Restore from cloud" to recover all your data'),800);
     }
   }
-});
+});var TR={
+  en:{
+    calculate:'CALCULATE',write_here:'Write your answer here ✏️',
+    write_final:'Write your final answer here',
+    write_column:'Write your column method here',
+    stack_numbers:'Stack the numbers and show carrying',
+    answer_label:'ANSWER',
+    answer_all:function(n){return 'Answer all '+n+' to send';},
+    ready:'Done — ready to send! ✓',
+    send_confirm:function(n){return 'Send all '+n+' questions to Dad for review?';},
+    cancel:'Cancel',confirm:'Confirm',back_topics:'Back to Topics →',
+    sent:'Sent!',streak:function(n){return n+' day streak!';},
+    dad_review:'Dad will review your work and let you know 📬',
+    review_now:'📋 Review now (hand to Dad)',synced:'Synced ☁',
+    paused:'Session Paused',erase:'erase',undo:'undo',
+    quest:'⚓ CURRENT QUEST',start:'⚓ START YOUR QUEST',
+    levelWord:'Level',questionsN:'10 questions',play_circle:'PLAY',
+    play:function(l){return '▶ Play Level '+l;},
+    topic_test:'⭐ Start Topic Test',done_level:'DONE',locked:'🔒',
+    treasure:'☠️ TOPIC COMPLETE ☠️',
+    topics_done:function(d,t){return d+'/'+t+' topics done';},
+    journey_name:function(n){return n+"'s Journey";},
+    topics_complete:function(d){return d+' topics complete';},
+    to_go:function(n){return n+' to go';},
+    badges:'BADGES',badge:'badge',topic_progress:'TOPIC PROGRESS',
+    recent_sessions:'RECENT SESSIONS',
+    done_label:'Done ✓',now_label:'Now ▶',locked_label:'Locked',
+    final_test:'Final Test',unlock_all:'Complete all topics to unlock',
+    explorer:'EXPLORER',perfect:'PERFECT',onfire:'ON FIRE',
+    scholar:'SCHOLAR',champion:'CHAMPION',genius:'GENIUS',
+    try_again:'✏️ Try again',
+    dad_wrong:'Dad marked this wrong last time.\nHave another go — you can do it!',
+    redo:'✏️ Redo on canvas →',question:'QUESTION',
+    canvas_note:"You'll write your answer on the canvas",
+    enter_pin:'Enter your secret number',who_today:"Who's practising today?",
+    choose_icon:'Choose your icon',
+    level_unlocked:function(l){return 'Level '+l+' Unlocked!';},
+    passed_level:function(l){return 'You passed Level '+l+'!';},
+    keep_going:function(n){return 'Keep going '+n+'! 🚀';},
+    great_job:'Great job! 🔓 Next level unlocked',
+    dad_reviewed:'Dad reviewed your work!',redo_questions:'QUESTIONS TO REDO',
+    got_it_corrections:"✏️ Got it — I'll practise these!",
+    got_it_clean:"✅ Got it — let's go!",
+  },
+  sv:{
+    calculate:'BERÄKNA',write_here:'Skriv ditt svar här ✏️',
+    write_final:'Skriv ditt slutliga svar här',
+    write_column:'Skriv din uppställning här',
+    stack_numbers:'Ställ upp talen och visa minnessiffror',
+    answer_label:'SVAR',
+    answer_all:function(n){return 'Svara på alla '+n+' för att skicka';},
+    ready:'Klart — redo att skicka! ✓',
+    send_confirm:function(n){return 'Skicka alla '+n+' frågor till pappa för granskning?';},
+    cancel:'Avbryt',confirm:'Bekräfta',back_topics:'Tillbaka till ämnen →',
+    sent:'Skickat!',streak:function(n){return n+' dags svit!';},
+    dad_review:'Pappa granskar ditt arbete och meddelar dig 📬',
+    review_now:'📋 Granska nu (visa för pappa)',synced:'Synkroniserad ☁',
+    paused:'Session pausad',erase:'sudda',undo:'ångra',
+    quest:'⚓ AKTUELLT UPPDRAG',start:'⚓ BÖRJA DITT UPPDRAG',
+    levelWord:'Nivå',questionsN:'10 frågor',play_circle:'SPELA',
+    play:function(l){return '▶ Spela Nivå '+l;},
+    topic_test:'⭐ Starta ämnesprov',done_level:'KLART',locked:'🔒',
+    treasure:'☠️ ÄMNE KLART ☠️',
+    topics_done:function(d,t){return d+'/'+t+' ämnen klara';},
+    journey_name:function(n){return n+'s resa';},
+    topics_complete:function(d){return d+' ämnen klara';},
+    to_go:function(n){return n+' kvar';},
+    badges:'MÄRKEN',badge:'märke',topic_progress:'ÄMNESFRAMSTEG',
+    recent_sessions:'SENASTE SESSIONER',
+    done_label:'Klar ✓',now_label:'Nu ▶',locked_label:'Låst',
+    final_test:'Ämnesprov',unlock_all:'Slutför alla ämnen för att låsa upp',
+    explorer:'UTFORSKARE',perfect:'PERFEKT',onfire:'PÅ ALERTEN',
+    scholar:'LÄRJUNGE',champion:'MÄSTARE',genius:'GENI',
+    try_again:'✏️ Försök igen',
+    dad_wrong:'Pappa markerade detta som fel.\nFörsök igen — du klarar det!',
+    redo:'✏️ Gör om på arbetsytan →',question:'FRÅGA',
+    canvas_note:'Du skriver ditt svar på arbetsytan',
+    enter_pin:'Ange ditt hemliga nummer',who_today:'Vem tränar idag?',
+    choose_icon:'Välj din ikon',
+    level_unlocked:function(l){return 'Nivå '+l+' upplåst!';},
+    passed_level:function(l){return 'Du klarade Nivå '+l+'!';},
+    keep_going:function(n){return 'Fortsätt så, '+n+'! 🚀';},
+    great_job:'Bra jobbat! 🔓 Nästa nivå upplåst',
+    dad_reviewed:'Pappa har granskat ditt arbete!',
+    redo_questions:'FRÅGOR ATT GÖRA OM',
+    got_it_corrections:'✏️ Jag förstår — jag ska träna på dessa!',
+    got_it_clean:'✅ Jag förstår — nu kör vi!',
+  }
+};
+function T(key){
+  var lang=getLang();
+  var tr=(TR[lang]||TR.en);
+  var val=tr[key]!==undefined?tr[key]:TR.en[key];
+
+// ── SWEDISH CURRICULUM ──────────────────────────────────────────
+const TOPICS_SV=[
+  {id:1,name:'Kolumnaddition',         method:true, curriculum:'Lgr22 Åk 3: Addition med uppställning'},
+  {id:2,name:'Kolumnsubtraktion',      method:true, curriculum:'Lgr22 Åk 3: Subtraktion med uppställning'},
+  {id:3,name:'Huvudräkning',           method:false,curriculum:'Lgr22 Åk 3: Räkna i huvudet — strategier'},
+  {id:4,name:'Multiplikationstabellen',method:false,curriculum:'Lgr22 Åk 3: Multiplikationstabellen 1–10'},
+  {id:5,name:'Division',               method:true, curriculum:'Lgr22 Åk 4: Division med rest'},
+  {id:6,name:'Bråk',                   method:false,curriculum:'Lgr22 Åk 4: Enkla bråk — halvor, tredjedelar'},
+  {id:7,name:'Klockan',                method:false,curriculum:'Lgr22 Åk 3: Tid — analog och digital klocka'},
+  {id:8,name:'Längd och vikt',         method:false,curriculum:'Lgr22 Åk 3: Mätning — längd, massa, enheter'},
+  {id:9,name:'Geometri',               method:false,curriculum:'Lgr22 Åk 4: Geometri — former, area, omkrets'},
+  {id:10,name:'Statistik',             method:false,curriculum:'Lgr22 Åk 5: Statistik — diagram och tabeller'},
+];
+function getLang(){return localStorage.getItem('md_lang')||'en';}
+function setLang(l){
+  localStorage.setItem('md_lang',l);
+  if(typeof isCloudEnabled==='function'&&isCloudEnabled())cloudSet('md_lang',l);
+  if(typeof refreshProfileTags==='function')refreshProfileTags();
+  if(typeof S!=='undefined'&&S.profile&&typeof buildTopicsScreen==='function')buildTopicsScreen();
+  if(typeof showToast==='function')showToast(l==='sv'?'🇸🇪 Svenska aktiverat':'🇬🇧 English activated');
+}
+function getTopics(profile){
+  return getLang()==='sv'?TOPICS_SV:(getTopics(profile));
+}
+// ── END SWEDISH CURRICULUM ───────────────────────────────────────
+
+  if(val===undefined)return key;
+  return val;
+}
+
+
 </script>
 </body>
 </html>
