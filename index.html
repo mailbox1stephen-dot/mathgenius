@@ -1908,6 +1908,13 @@ function switchUser(){
 async function selectProfile(p){
   S.profile=p;
   document.body.dataset.profile=p;
+  // Auto-lock this device to this child on first login
+  // Next time they open the app, only their profile shows
+  if(!getDeviceProfile()){
+    localStorage.setItem('md_device_profile',p);
+    applyDeviceProfile();
+    console.log('[DEVICE] Auto-locked to',p);
+  }
   // Pull latest from cloud first — ensures approval/corrections/celebration
   // are synced before child sees the journey map
   if(isCloudEnabled()){
@@ -3060,19 +3067,14 @@ function buildOverviewTab(){
   html+=`</div></div>`;
   // Device profile lock
   const lockedTo=getDeviceProfile();
-  html+=`<div style="background:#F0F9FF;border-radius:12px;border:1.5px solid #BAE6FD;padding:11px 12px;margin-bottom:14px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">📱</div><div style="font-size:11px;font-weight:900;color:#0369A1">This Device</div></div>
-    <div style="font-size:10px;font-weight:700;color:#0284C7;margin-bottom:10px">Lock this device to one child — they'll only see their own profile.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button onclick="setDeviceProfile('alexander')" style="padding:10px;border-radius:10px;border:2px solid ${lockedTo==='alexander'?'#1E3A8A':'#BFDBFE'};background:${lockedTo==='alexander'?'#1E3A8A':'#EFF6FF'};font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:${lockedTo==='alexander'?'#fff':'#1E3A8A'};cursor:pointer">
-        🏌️ Alexander's iPad
-      </button>
-      <button onclick="setDeviceProfile('estelle')" style="padding:10px;border-radius:10px;border:2px solid ${lockedTo==='estelle'?'#7C3AED':'#DDD6FE'};background:${lockedTo==='estelle'?'#7C3AED':'#F5F3FF'};font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;color:${lockedTo==='estelle'?'#fff':'#7C3AED'};cursor:pointer">
-        🦄 Estelle's iPad
-      </button>
-    </div>
-    ${lockedTo?`<button onclick="setDeviceProfile(null)" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1.5px solid #BAE6FD;background:transparent;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#0284C7;cursor:pointer">Show both profiles (family device)</button>`:''}
-  </div>`;
+  if(lockedTo){
+    const lockedName=lockedTo==='alexander'?'Alexander':'Estelle';
+    html+=`<div style="background:#F0F9FF;border-radius:12px;border:1.5px solid #BAE6FD;padding:11px 12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="font-size:16px">📱</div><div style="font-size:11px;font-weight:900;color:#0369A1">This Device</div></div>
+      <div style="font-size:11px;font-weight:700;color:#0284C7;margin-bottom:10px">Locked to <strong>${lockedName}</strong> — only their profile shows on this device.</div>
+      <button onclick="setDeviceProfile(null)" style="width:100%;padding:9px;border-radius:8px;border:1.5px solid #BAE6FD;background:transparent;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;color:#0284C7;cursor:pointer">🔓 Unlock — show both profiles</button>
+    </div>`; 
+  }
   // Total reset
   html+=`<div style="background:#FEF2F2;border-radius:12px;border:1.5px solid #FECACA;padding:11px 12px;margin-bottom:14px">`;
   html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:16px">⚠️</div><div style="font-size:11px;font-weight:900;color:#991B1B">Reset Kids Data</div></div>`;
