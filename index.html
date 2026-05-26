@@ -3956,6 +3956,7 @@ function sbChangeTopic(){
   const topics=SB.profile==='alexander'?TOPICS_A:TOPICS_E;
   const topic=topics.find(t=>t.id===tid);
   SB.topicName=topic?topic.name:'Topic '+tid;
+  // Default to A for locked topics — parent builds a preview session
   SB.level=prog['t'+tid]?.level||'A';
   SB.editingIdx=null;
   SB.questions=genSession(SB.profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
@@ -3988,7 +3989,7 @@ function renderSB(){
   topics.forEach(t=>{
     const tp=prog['t'+t.id];
     const locked_t=tp.locked;
-    html+=`<option value="${t.id}" ${t.id===SB.tid?'selected':''} ${locked_t?'disabled':''}>T${t.id}: ${t.name}${locked_t?' 🔒':''}</option>`;
+    html+=`<option value="${t.id}" ${t.id===SB.tid?'selected':''}>${locked_t?'🔒 ':''}T${t.id}: ${t.name}${tp.done?' ✓':''}</option>`;
   });
   html+=`</select></div>`;
 
