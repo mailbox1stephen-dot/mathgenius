@@ -579,7 +579,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
       <div style="flex:1">
         <div class="tm-prog-bg" style="margin:0 0 3px"><div class="tm-prog-fill" id="prog-fill"></div></div>
         <div style="display:flex;justify-content:space-between">
-          <span style="font-size:10px;color:rgba(255,255,255,.55);font-weight:600">Overall progress</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.55);font-weight:600" id="tm-overall-label">Overall progress</span>
           <span style="font-size:10px;color:rgba(255,255,255,.7);font-weight:800" id="prog-pct">0%</span>
         </div>
       </div>
@@ -672,7 +672,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
       <span id="sc-streak-txt" style="font-size:13px;font-weight:800;color:#D97706">1 day streak!</span>
     </div>
     <div id="sc-sub" style="font-size:13px;font-weight:600;color:#A8A29E;margin-bottom:28px;text-align:center;line-height:1.5">Dad will review your work<br>and let you know 📬</div>
-    <button onclick="goToTopics()" style="background:#1E3A8A;color:#fff;border:none;border-radius:14px;padding:14px 48px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;width:100%;max-width:280px">Back to Topics →</button>
+    <button onclick="goToTopics()" style="background:#1E3A8A;color:#fff;border:none;border-radius:14px;padding:14px 48px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;width:100%;max-width:280px" id="sc-back-btn">Back to Topics →</button>
     <button onclick="showScreen('screen-parent-pin')" style="background:transparent;color:#A8A29E;border:1.5px solid #E5E7EB;border-radius:14px;padding:12px 48px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;max-width:280px;margin-top:10px">📋 Review now (hand to Dad)</button>
   </div>
 </div>
@@ -841,9 +841,39 @@ function getLang(){return localStorage.getItem('md_lang')||'en';}
 function setLang(l){
   localStorage.setItem('md_lang',l);
   if(typeof isCloudEnabled==='function'&&isCloudEnabled())cloudSet('md_lang',l);
+  translateStaticUI();
   if(typeof refreshProfileTags==='function')refreshProfileTags();
   if(typeof S!=='undefined'&&S.profile&&typeof buildTopicsScreen==='function')buildTopicsScreen();
   if(typeof showToast==='function')showToast(l==='sv'?'🇸🇪 Svenska aktiverat':'🇬🇧 English activated');
+}
+
+// Update all static child-facing strings when language changes
+function translateStaticUI(){
+  const set=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};
+  const setHTML=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+  const setPlaceholder=(id,text)=>{const el=document.getElementById(id);if(el)el.placeholder=text;};
+  // Session screen
+  set('instr-strip',T('calculate'));
+  set('canvas-hint',T('write_here'));
+  set('answer-hint',T('write_final'));
+  setHTML('answer-hint',T('write_final'));
+  set('send-status',T('answer_all',10));
+  // Complete screen
+  set('sc-title',T('sent'));
+  set('sc-back-btn',T('back_topics'));
+  setHTML('sc-sub',T('dad_review').replace('\n','<br>'));
+  // Topics screen tabs
+  setHTML('tm-tab-0','📚 '+(getLang()==='sv'?'Ämnen':'Topics'));
+  setHTML('tm-tab-1','🗺 '+(getLang()==='sv'?'Min resa':'My Journey'));
+  // Topics header labels
+  set('tm-overall-label',getLang()==='sv'?'Framsteg':'Overall progress');
+  // PIN screen
+  set('cpn-subtitle',T('enter_pin'));
+  // Profile screen
+  set('ps-sess-label',getLang()==='sv'?'Sessioner denna vecka':'Sessions this week');
+  set('ps-acc-label',getLang()==='sv'?'Snittresultat':'Avg accuracy');
+  // erase/undo in toolbar (rebuilt per session but set defaults)
+  set('erase-btn',T('erase'));
 }
 function getTopics(profile){
   return getLang()==='sv'?TOPICS_SV:(getTopics(profile));
@@ -1999,12 +2029,12 @@ function buildJourneyTab(profile){
 
   // Badges
   const BADGES=[
-    ['🗺️','EXPLORER', doneCt>=1],
-    ['⭐','PERFECT',  hasPerfect],
-    ['🔥','ON FIRE',  streak>=3],
-    ['💪','SCHOLAR',  doneCt>=3],
-    ['🏆','CHAMPION', doneCt>=5],
-    ['🌟','GENIUS',   doneCt>=topics.length],
+    ['🗺️',T('explorer'), doneCt>=1],
+    ['⭐',T('perfect'),  hasPerfect],
+    ['🔥',T('onfire'),  streak>=3],
+    ['💪',T('scholar'),  doneCt>=3],
+    ['🏆',T('champion'), doneCt>=5],
+    ['🌟',T('genius'),   doneCt>=topics.length],
   ];
   const badgeHTML=BADGES.map(([em,lbl,earned])=>earned
     ?`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;min-width:44px"><div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:20px">${em}</div><div style="font-size:7px;font-weight:900;color:rgba(255,255,255,.9);letter-spacing:.03em">${lbl}</div></div>`
@@ -2016,7 +2046,7 @@ function buildJourneyTab(profile){
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
       <div style="font-size:28px;line-height:1">${icon}</div>
       <div><div style="font-size:16px;font-weight:900">${name}'s Journey</div>
-      <div style="font-size:10px;opacity:.7">${curTopic?curTopic.name+' · Level '+(prog['t'+curTid].level||'A'):'All topics complete!'}</div></div>
+      <div style="font-size:10px;opacity:.7">${curTopic?curTopic.name+' · Level '+(prog['t'+curTid].level||'A'):T('all_done')}</div></div>
     </div>
     <div style="background:rgba(255,255,255,.25);border-radius:99px;height:5px;margin-bottom:3px"><div style="width:${Math.max(doneCt/topics.length*100,2)}%;height:5px;border-radius:99px;background:#fff"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:12px;opacity:.75;font-weight:800"><span>${doneCt} topics complete</span><span>${topics.length-doneCt} to go</span></div>
@@ -2069,7 +2099,7 @@ function buildJourneyTab(profile){
         <div style="width:28px;height:28px;border-radius:50%;background:${numC};display:flex;align-items:center;justify-content:center;font-size:${isLocked?16:11}px;font-weight:900;color:#fff;flex-shrink:0">${isLocked?'🔒':isDone?'✓':t.id}</div>
         <div style="flex:1">
           <div style="font-size:12px;font-weight:${isCur?900:700};color:${isCur?'#1C1917':'#9CA3AF'}">${t.name}</div>
-          <div style="font-size:9px;color:${isCur?color:isDone?'#10B981':'#C4BFB8'};font-weight:700">${isLocked?'Locked — keep going!':isDone?`Complete ✓${lastSess?' · '+lastSess.score+'/'+lastSess.total:''}`:isCur?`Level ${lvl} in progress`:'Coming up next'}</div>
+          <div style="font-size:9px;color:${isCur?color:isDone?'#10B981':'#C4BFB8'};font-weight:700">${isLocked?T('locked_keep'):isDone?`Complete ✓${lastSess?' · '+lastSess.score+'/'+lastSess.total:''}`:isCur?`Level ${lvl} in progress`:T('coming_next')}</div>
         </div>
         ${isCur?`<div style="font-size:9px;font-weight:900;color:${color}">Now! ▶</div>`:''}
         ${isDone?`<div style="font-size:9px;font-weight:900;color:#10B981">✓</div>`:''}
@@ -2084,7 +2114,7 @@ function buildJourneyTab(profile){
     <div style="display:flex;align-items:center;gap:10px">
       <div style="width:28px;height:28px;border-radius:50%;background:${allDone?'#F59E0B':'#D1D5DB'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏆</div>
       <div><div style="font-size:12px;font-weight:700;color:${allDone?'#1C1917':'#9CA3AF'}">Final Test</div>
-      <div style="font-size:9px;font-weight:700;color:${allDone?'#D97706':'#C4BFB8'}">${allDone?'🎉 Unlocked — 20 questions!':'Complete all topics to unlock'}</div></div>
+      <div style="font-size:9px;font-weight:700;color:${allDone?'#D97706':'#C4BFB8'}">${allDone?'🎉 Unlocked — 20 questions!':T('unlock_all')}</div></div>
     </div>
   </div>`;
 
@@ -2161,8 +2191,8 @@ function buildTopicJourneyMap(topics,prog,color,profile){
   <rect width="300" height="700" fill="rgba(101,67,33,.06)"/>`;
 
   // Topic name banner at top
-  const topicName=curTopic?curTopic.name:(allDone?'All Complete!':'');
-  svg+=`<text x="150" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.45)" letter-spacing=".08em">${allDone?'🏆 MATHGENIUS':'⚓ CURRENT QUEST'}</text>`;
+  const topicName=curTopic?curTopic.name:(allDone?T('all_complete'):'');
+  svg+=`<text x="150" y="30" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="700" fill="rgba(255,255,255,.45)" letter-spacing=".08em">${T(allDone?'start':'quest')}</text>`;
   svg+=`<text x="150" y="52" text-anchor="middle" font-family="Nunito,sans-serif" font-size="15" font-weight="900" fill="#FCD34D">${topicName}</text>`;
   svg+=`<line x1="150" y1="60" x2="150" y2="80" stroke="rgba(252,211,77,.3)" stroke-width="2.5" stroke-dasharray="5 4"/>`;
 
@@ -2221,18 +2251,18 @@ function buildTopicJourneyMap(topics,prog,color,profile){
       svg+=`<circle cx="${x}" cy="${y}" r="${R+4}" fill="rgba(16,185,129,.2)"/>`;
       svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="${doneC}" stroke="#34D399" stroke-width="2.5"/>`;
       svg+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="900" fill="#fff">✓</text>`;
-      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="rgba(255,255,255,.7)">Level ${st.label}</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="11" font-weight="900" fill="rgba(255,255,255,.7)">${T('levelWord')} ${st.label}</text>`;
     } else if(isActive){
       svg+=`<circle cx="${x}" cy="${y}" r="${R+10}" fill="${color}" opacity=".2"/>`;
       svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="${color}" stroke="${glowC}" stroke-width="3"/>`;
       svg+=`<text x="${x}" y="${y-5}" text-anchor="middle" font-size="18">${st.isTest?'⭐':'🧭'}</text>`;
       svg+=`<text x="${x}" y="${y+11}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" font-weight="900" fill="${glowC}">PLAY</text>`;
-      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="rgba(255,255,255,.9)">${st.isTest?'Topic Test':'Level '+st.label}</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="12" font-weight="900" fill="rgba(255,255,255,.9)">${st.isTest?T('topic_test_chip'):T('levelWord')+' '+st.label}</text>`;
       svg+=`<text x="${x}" y="${y+R+30}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.5)">10 questions</text>`;
     } else {
       svg+=`<circle cx="${x}" cy="${y}" r="${R}" fill="rgba(0,0,0,.45)" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/>`;
       svg+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="${st.isTest?16:14}" fill="rgba(255,255,255,.35)">${st.isTest?'⭐':st.label}</text>`;
-      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="rgba(255,255,255,.25)">${st.isTest?'Topic Test':'Level '+st.label}</text>`;
+      svg+=`<text x="${x}" y="${y+R+16}" text-anchor="middle" font-family="Nunito,sans-serif" font-size="10" fill="rgba(255,255,255,.25)">${st.isTest?T('topic_test_chip'):T('levelWord')+' '+st.label}</text>`;
     }
   });
 
@@ -2244,12 +2274,12 @@ function buildTopicJourneyMap(topics,prog,color,profile){
 
   // Other topics indicator at bottom
   const doneCt=topics.filter(t=>prog['t'+t.id].done).length;
-  svg+=`<text x="150" y="685" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.35)">${doneCt}/${topics.length} topics done</text>`;
+  svg+=`<text x="150" y="685" text-anchor="middle" font-family="Nunito,sans-serif" font-size="9" fill="rgba(255,255,255,.35)">${T('topics_done',doneCt,topics.length)}</text>`;
 
   svg+=`</svg></div>`;
 
   // PLAY NOW — real HTML button + make whole SVG area tappable
-  const playLabel=isTest?'⭐ Start Topic Test':'▶ Play Level '+lvl;
+  const playLabel=isTest?T('start_topic_test'):'▶ Play Level '+lvl;
   const playTid=curTopic?curTopic.id:1;
   const playLevel=isTest?'TEST':lvl;
 
@@ -2351,12 +2381,12 @@ function startSession(tid,level,method){
   const sendBtn=document.getElementById('send-btn');
   if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='Send ✉️';}
   const sendStatus=document.getElementById('send-status');
-  if(sendStatus)sendStatus.textContent=`Answer all ${nq} to send`;
+  if(sendStatus)sendStatus.textContent=T('answer_all',nq);
   document.getElementById('sess-hdr-title').textContent=topic.name;
-  document.getElementById('sess-level-chip').textContent='Level '+level;
+  document.getElementById('sess-level-chip').textContent=T('levelWord')+' '+level;
   const instr=document.getElementById('instr-strip');instr.style.display='none';
-  if(!method){document.getElementById('canvas-hint').innerHTML='Write your answer here ✏️';}
-  else{document.getElementById('canvas-hint').innerHTML='Write your column method here ✏️<br><span style="font-size:11px;color:#D4D0C8">Stack the numbers and show carrying</span>';}
+  if(!method){document.getElementById('canvas-hint').innerHTML=T('write_here');}
+  else{document.getElementById('canvas-hint').innerHTML=T('write_column')+'<br><span style="font-size:11px;color:#D4D0C8">'+T('stack_numbers')+'</span>';}
   const corrBanner=document.getElementById('correction-banner');
   if(corrBanner)corrBanner.style.display=hasCorrections?'flex':'none';
   buildOverview();
@@ -2375,10 +2405,10 @@ function loadProblem(i){
   nextBtn.textContent='›';
   const NQ2=S.sess?S.sess.problems.length:N_PROBLEMS;
   nextBtn.style.opacity=(i===NQ2-1)?'0.25':'';
-  nextBtn.title=(i===NQ2-1)?'Last question — use Send below':'';
+  nextBtn.title=(i===NQ2-1)?T('last_q'):'';
   if(i===NQ2-1){
     const st=document.getElementById('send-status');
-    if(st&&!Object.keys(S.sess.answered||{}).length)st.textContent='Last question! Write your answer then Send ✉️';
+    if(st&&!Object.keys(S.sess.answered||{}).length)st.textContent=T('last_q');
   }
 }
 
@@ -2702,10 +2732,10 @@ function buildOverview(){
   const tools=document.createElement('div');
   tools.className='ov-tools';
   const edit=document.createElement('div');
-  edit.className='tcell';edit.textContent='erase';edit.id='erase-btn';
+  edit.className='tcell';edit.textContent=T('erase');edit.id='erase-btn';
   edit.addEventListener('click',()=>toggleEraser());
   const undo=document.createElement('div');
-  undo.className='tcell';undo.textContent='undo';
+  undo.className='tcell';undo.textContent=T('undo');
   undo.addEventListener('click',()=>undoStroke());
   tools.appendChild(edit);tools.appendChild(undo);
   strip.appendChild(tools);
@@ -2783,9 +2813,11 @@ function showComplete(){
   const profile=S.profile;
 
   // Update new complete screen elements
-  document.getElementById('sc-title').textContent='Sent!';
-  document.getElementById('sc-score').textContent=nq+' questions · Level '+sess.level;
-  document.getElementById('sc-sub').innerHTML='Dad will review your work<br>and let you know 📬';
+  document.getElementById('sc-title').textContent=T('sent');
+  document.getElementById('sc-score').textContent=T('questionsN')+' · '+T('levelWord')+' '+sess.level;
+  document.getElementById('sc-sub').innerHTML=T('dad_review').replace('\n','<br>');
+  const scBackBtn=document.getElementById('sc-back-btn');
+  if(scBackBtn)scBackBtn.textContent=T('back_topics');
   const streakEl=document.getElementById('sc-streak-txt');
   if(streakEl)streakEl.textContent=streak+' day streak'+(streak>=3?' 🔥':'!');
 
@@ -3142,7 +3174,7 @@ function buildChildTab(profile){
   html+=`<div style="width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0">${name[0]}</div>`;
   html+=`<div style="flex:1"><div style="font-size:16px;font-weight:900;color:#fff">${name}</div><div style="font-size:10px;color:rgba(255,255,255,.75);font-weight:700;margin:2px 0 6px">${yr} · 🔥 ${streak} day streak · ${weekSess} sessions this week</div>`;
   html+=`<div style="background:rgba(255,255,255,.25);border-radius:99px;height:5px"><div style="width:${donePct||2}%;height:5px;border-radius:99px;background:#fff"></div></div>`;
-  html+=`<div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,.65);margin-top:2px;font-weight:800"><span>Overall progress</span><span>${donePct}%</span></div>`;
+  html+=`<div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,.65);margin-top:2px;font-weight:800"><span id="tm-overall-label">Overall progress</span><span>${donePct}%</span></div>`;
   html+=`</div></div>`;
 
   // Key stats
@@ -3549,7 +3581,7 @@ function updateSendBar(){
   const btn=document.getElementById('send-btn');
   const status=document.getElementById('send-status');
   if(btn)btn.disabled=!allDone;
-  if(status)status.textContent=allDone?'All done — ready to send! ✓':`${count} / ${nq} answered`;
+  if(status)status.textContent=allDone?T('all_sent_ready'):`${count} / ${nq} answered`;
 }
 
 async function sendSession(){
@@ -3561,7 +3593,7 @@ async function _doSend(){
   saveCanvasState(S.sess.cur);
   const btn=document.getElementById('send-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳';}
-  document.getElementById('send-status').textContent='Saving...';
+  document.getElementById('send-status').textContent=T('paused').replace('paused','').trim()||'Saving...';
 
   // Capture all canvas images
   const questions=S.sess.problems.map((prob,i)=>{
@@ -3990,7 +4022,7 @@ function sbChangeTopic(){
   const tid=parseInt(sel.value);
   const prog=initProgress(SB.profile);
   SB.tid=tid;
-  const topics=SB.getTopics(profile);
+  const topics=getTopics(SB.profile);
   const topic=topics.find(t=>t.id===tid);
   SB.topicName=topic?topic.name:'Topic '+tid;
   // Default to A for locked topics — parent builds a preview session
@@ -4010,7 +4042,7 @@ function sbChangeLevel(lvl){
 function renderSB(){
   const body=document.getElementById('sb-body');
   const prog=initProgress(SB.profile);
-  const topics=SB.getTopics(profile);
+  const topics=getTopics(SB.profile);
   const locked=getLocked(SB.profile);
   let html='';
 
@@ -4258,14 +4290,14 @@ function _setupSession(topic){
   const sendBtn=document.getElementById('send-btn');
   if(sendBtn){sendBtn.disabled=true;sendBtn.textContent='Send ✉️';}
   const sendStatus=document.getElementById('send-status');
-  if(sendStatus)sendStatus.textContent=`Answer all ${nq} to send`;
+  if(sendStatus)sendStatus.textContent=T('answer_all',nq);
   // Show onboarding on first ever session
   setTimeout(()=>checkOnboarding(),800);
   document.getElementById('sess-hdr-title').textContent=topic.name;
-  document.getElementById('sess-level-chip').textContent=S.sess.type==='topicTest'?'Topic Test':S.sess.type==='finalTest'?'Final Test':'Level '+S.sess.level;
+  document.getElementById('sess-level-chip').textContent=S.sess.type==='topicTest'?T('topic_test_chip'):S.sess.type==='topicTest'?T('topic_test_chip'):S.sess.type==='finalTest'?T('final_test_chip'):T('levelWord')+' '+S.sess.level;
   const instr=document.getElementById('instr-strip');instr.style.display='none';
-  if(!topic.method){document.getElementById('canvas-hint').innerHTML='Write your answer here ✏️';}
-  else{document.getElementById('canvas-hint').innerHTML='Write your column method here ✏️<br><span style="font-size:11px;color:#D4D0C8">Stack the numbers and show carrying</span>';}
+  if(!topic.method){document.getElementById('canvas-hint').innerHTML=T('write_here');}
+  else{document.getElementById('canvas-hint').innerHTML=T('write_column')+'<br><span style="font-size:11px;color:#D4D0C8">'+T('stack_numbers')+'</span>';}
   document.getElementById('correction-banner').style.display='none';
   buildOverview();
   loadProblem(0);
@@ -4437,7 +4469,7 @@ function checkChildNotification(profile){
     <div style="font-size:17px;font-weight:900;margin-bottom:4px">${name} reviewed your work!</div>
     <div style="font-size:12px;font-weight:700;color:#78716C;margin-bottom:4px">${d.topicName}${d.level?' · Level '+d.level:''}</div>
     <div style="font-size:32px;font-weight:900;color:${pass?'#059669':'#D97706'};margin-bottom:4px">${d.score}/${d.total}</div>
-    <div style="font-size:12px;color:#78716C;font-weight:700;margin-bottom:14px">${pass?'Great job! 🔓 Next level unlocked':'Keep going — you can do it!'}</div>
+    <div style="font-size:12px;color:#78716C;font-weight:700;margin-bottom:14px">${pass?'Great job! 🔓 Next level unlocked':T('keep_going_do_it')}</div>
     ${mistakeHTML}
     <button onclick="this.closest('.notif-overlay').remove();buildTopicsScreen();" style="width:100%;padding:14px;border:none;border-radius:12px;background:#1E3A8A;color:#fff;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;touch-action:manipulation;margin-top:4px">
       ${hasMistakes?'✏️ Got it — I\'ll practise these!':'✅ Got it — let\'s go!'}
@@ -4626,6 +4658,7 @@ function buildProfileGreeting(){
 
 window.addEventListener('load',async ()=>{
   initCanvas();
+  translateStaticUI(); // Apply language to all static strings immediately
   window.addEventListener('resize',()=>{
     if(document.getElementById('screen-session').classList.contains('active')) resizeCanvas();
   });
@@ -4714,10 +4747,10 @@ window.addEventListener('load',async ()=>{
     review_now:'📋 Review now (hand to Dad)',synced:'Synced ☁',
     paused:'Session Paused',erase:'erase',undo:'undo',
     quest:'⚓ CURRENT QUEST',start:'⚓ START YOUR QUEST',
-    levelWord:'Level',questionsN:'10 questions',play_circle:'PLAY',
+    levelWord:'Level',questionsN:T('questionsN'),play_circle:T('play_circle'),
     play:function(l){return '▶ Play Level '+l;},
     topic_test:'⭐ Start Topic Test',done_level:'DONE',locked:'🔒',
-    treasure:'☠️ TOPIC COMPLETE ☠️',
+    treasure:T('treasure'),
     topics_done:function(d,t){return d+'/'+t+' topics done';},
     journey_name:function(n){return n+"'s Journey";},
     topics_complete:function(d){return d+' topics complete';},
@@ -4741,6 +4774,19 @@ window.addEventListener('load',async ()=>{
     dad_reviewed:'Dad reviewed your work!',redo_questions:'QUESTIONS TO REDO',
     got_it_corrections:"✏️ Got it — I'll practise these!",
     got_it_clean:"✅ Got it — let's go!",
+    all_complete:'All Complete!',
+    all_done:'All topics complete!',
+    locked_keep:'Locked — keep going!',
+    coming_next:'Coming up next',
+    last_q:'Last question — use Send below',
+    keep_going_do_it:'Keep going — you can do it!',
+    final_test_chip:'Final Test',
+    all_sent_ready:'All done — ready to send! ✓',
+    in_progress:(l)=>`Level ${l} in progress`,
+    level_complete:T('level_complete'),
+    topic_test_chip:'Topic Test',
+    play_level_btn:(l)=>`▶ Play Level ${l}`,
+    start_topic_test:'⭐ Start Topic Test',
   },
   sv:{
     calculate:'BERÄKNA',write_here:'Skriv ditt svar här ✏️',
@@ -4785,16 +4831,30 @@ window.addEventListener('load',async ()=>{
     redo_questions:'FRÅGOR ATT GÖRA OM',
     got_it_corrections:'✏️ Jag förstår — jag ska träna på dessa!',
     got_it_clean:'✅ Jag förstår — nu kör vi!',
+    all_complete:'Allt klart!',
+    all_done:'Alla ämnen klara!',
+    locked_keep:'Låst — fortsätt framåt!',
+    coming_next:'Härnäst',
+    last_q:'Sista frågan — skriv svaret och skicka',
+    keep_going_do_it:'Fortsätt — du klarar det!',
+    final_test_chip:'Ämnesprov',
+    all_sent_ready:'Klart — redo att skicka! ✓',
+    in_progress:(l)=>`Nivå ${l} pågår`,
+    level_complete:'Klar ✓',
+    topic_test_chip:'Ämnesprov',
+    play_level_btn:(l)=>`▶ Spela Nivå ${l}`,
+    start_topic_test:'⭐ Starta ämnesprov',
   }
 };
 function T(key){
+  if(typeof TR==='undefined'||!TR||!TR.en)return key;
   var lang=getLang();
   var tr=(TR[lang]||TR.en);
+  if(!tr)return key;
   var val=tr[key]!==undefined?tr[key]:TR.en[key];
-
-
   if(val===undefined)return key;
-  return val;
+  var args=Array.prototype.slice.call(arguments,1);
+  return typeof val==='function'?val.apply(null,args):val;
 }
 
 
