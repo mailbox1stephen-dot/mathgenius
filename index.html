@@ -618,6 +618,8 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
     <div class="prob-eq" id="prob-eq">–</div>
   </div>
   <div class="instr-strip" id="instr-strip">Skriv din uppställning — visa hela uträkningen</div>
+  <!-- SVG visual for picture questions (clock, shapes, charts) -->
+  <div id="question-svg" style="display:none;text-align:center;padding:4px 8px 0;flex-shrink:0"></div>
 
   <!-- Side nav + canvas section -->
   <div class="canvas-section">
@@ -952,77 +954,114 @@ function gcd(a,b){return b?gcd(b,a%b):a;}
 
 // T1 Column Addition
 function alexT1(lvl,d){
-  let a,b,att=0;
-  const off=scl(0,50,d);
+  const off=scl(0,20,d);let a,b;
   switch(lvl){
-    case'A': do{a=ri(10+off/2,25+off);b=ri(3+Math.floor(d/3),6+Math.floor(d/2))}while((a%10)+b>=10&&++att<50);break;
-    case'B': do{a=ri(11+off/3,40+off/2);b=ri(10+off/4,35+off/3)}while(((a%10)+(b%10)>=10||(Math.floor(a/10)+Math.floor(b/10)>=10))&&++att<50);break;
-    case'C': do{a=ri(15+off/3,55+off/2);b=ri(15+off/4,45+off/3)}while((a%10+b%10)<10&&++att<50);break;
-    case'D': do{a=ri(100+off*3,350+off*5);b=ri(10+off/2,60+off)}while((a%10+b%10)>=10&&(Math.floor(a/10)%10+Math.floor(b/10)%10)>=10&&++att<50);break;
-    case'E': do{a=ri(100+off*3,500+off*5);b=ri(10+off/2,80+off)}while((a%10+b%10)<10&&++att<50);break;
-    case'F': do{a=ri(100+off*3,600+off*4);b=ri(100+off*2,500+off*3)}while(a+b>9999);break;
+    // Åk 2: 1-siffrig + 2-siffrig, ingen tiöverföring
+    case'A':{a=ri(10+off,40+off);b=ri(1,9);
+      while(a%10+b>9)a=ri(10+off,40+off);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 3: 2+2 siffriga, med tiöverföring
+    case'B':{do{a=ri(20+off,60+off);b=ri(10+off/2,40+off);}while((a%10+b%10)<10);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 3: 3-siffrig + 2-siffrig
+    case'C':{a=ri(100+off*3,400+off*3);b=ri(10+off,80+off);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 4: 3+3 siffriga
+    case'D':{a=ri(100+off*3,500+off*3);b=ri(100+off*2,400+off*2);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 4-5: 3+3 med tiöverföring
+    case'E':{do{a=ri(200+off*3,600+off*3);b=ri(100+off*2,400+off*2);}while((a%100+b%100)<100);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 5: 4-siffrig + 3-siffrig
+    case'F':{a=ri(1000+off*10,5000+off*10);b=ri(100+off*3,800+off*3);
+      return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
   }
-  return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};
 }
 
 // T2 Column Subtraction
 function alexT2(lvl,d){
-  let a,b,att=0;
-  const off=scl(0,50,d);
+  const off=scl(0,20,d);let a,b;
   switch(lvl){
-    case'A': do{a=ri(12+off/3,40+off);b=ri(3+Math.floor(d/3),6+Math.floor(d/2))}while(a%10<b&&++att<50);break;
-    case'B': do{a=ri(20+off/2,60+off);b=ri(10+off/4,a-1)}while(a%10<b%10&&++att<50);break;
-    case'C': do{a=ri(22+off/2,65+off);b=ri(11+off/4,a-1)}while((a%10>=b%10)&&++att<50);break;
-    case'D': do{a=ri(110+off*3,500+off*5);b=ri(10+off/2,80+off)}while((b>=a||a%10<b%10)&&++att<50);break;
-    case'E': do{a=ri(120+off*3,600+off*5);b=ri(11+off/2,90+off)}while((b>=a||a%10>=b%10)&&++att<50);break;
-    case'F': do{a=ri(200+off*4,800+off*4);b=ri(100+off*2,a-10)}while(b>=a&&++att<50);break;
+    // Åk 2: 2-siffrig - 1-siffrig, ingen lån
+    case'A':{do{a=ri(20+off,60+off);b=ri(1,9);}while(a%10<b);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 3: 2-siffrig - 2-siffrig, med lån
+    case'B':{do{a=ri(30+off,80+off);b=ri(10+off/2,a-5);}while(a%10>=b%10);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 3: 3-siffrig - 2-siffrig
+    case'C':{a=ri(120+off*3,500+off*3);b=ri(10+off,90+off);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 4: 3-siffrig - 3-siffrig
+    case'D':{do{a=ri(200+off*3,600+off*3);b=ri(100+off*2,a-50);}while(b<100);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 4-5: 3-siffrig med lån
+    case'E':{do{a=ri(300+off*3,700+off*3);b=ri(100+off*2,a-100);}while(a%100>=b%100);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 5: 4-siffrig - 3-siffrig
+    case'F':{a=ri(1000+off*10,5000+off*10);b=ri(100+off*3,800+off*3);
+      return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
   }
-  return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};
 }
 
 // T3 Mental Arithmetic
 function alexT3(lvl,d){
-  const n=scl(5,50,d);
-  let a,b,op='+',ans;
+  let q,ans;
   switch(lvl){
-    case'A': a=ri(1,10+n/2);b=ri(1,10+n/2);op='+';break;
-    case'B': a=ri(10,30+n);b=ri(1,15+n/2);op='+';break;
-    case'C': a=ri(15+n/3,50+n);b=ri(1,15+n/3);op='-';break;
-    case'D': a=ri(20+n/2,80+n);b=ri(10+n/4,40+n/2);op='+';break;
-    case'E': a=ri(50+n,200+n*2);b=ri(10+n/3,50+n);op='-';break;
-    case'F': a=ri(100+n*2,500+n*5);b=ri(10+n,80+n);op=ri(0,1)?'+':'-';break;
+    // Åk 2: närmaste 10, 2-siffriga
+    case'A':{const n=ri(11,89);q=`Avrunda ${n} till närmaste 10`;ans=String(Math.round(n/10)*10);break;}
+    // Åk 3: närmaste 10, 3-siffriga
+    case'B':{const n=ri(101,499);q=`Avrunda ${n} till närmaste 10`;ans=String(Math.round(n/10)*10);break;}
+    // Åk 3: närmaste 100, 3-siffriga
+    case'C':{const n=ri(101,899);q=`Avrunda ${n} till närmaste 100`;ans=String(Math.round(n/100)*100);break;}
+    // Åk 4: närmaste 100, 4-siffriga
+    case'D':{const n=ri(1001,4999);q=`Avrunda ${n} till närmaste 100`;ans=String(Math.round(n/100)*100);break;}
+    // Åk 4-5: närmaste 1000
+    case'E':{const n=ri(1001,9499);q=`Avrunda ${n} till närmaste 1000`;ans=String(Math.round(n/1000)*1000);break;}
+    // Åk 5: uppskatta summa
+    case'F':{const rA=Math.round(ri(100,500)/10)*10;const rB=Math.round(ri(100,500)/10)*10;
+      const o1=rA+ri(-4,4);const o2=rB+ri(-4,4);
+      q=`Uppskatta: ${o1} + ${o2}  (avrunda till 10 först)`;ans=String(rA+rB);break;}
   }
-  ans=op==='+'?a+b:a-b;
-  if(ans<0){a+=Math.abs(ans)+ri(1,5);ans=op==='+'?a+b:a-b;}
-  return{display:`${a} ${op} ${b}`,answer:ans,hint:`= ${ans}`};
+  return{display:q,answer:ans,hint:`Svar: ${ans}`};
 }
 
 // T4 Times Tables
 function alexT4(lvl,d){
-  const tablesByDiff=[[2,5,10],[2,3,4,5],[3,4,6,8],[6,7,8,9],[7,8,9,11],[2,3,4,5,6,7,8,9,11,12]];
-  const tables={A:[2,5,10],B:[2,3,4,5],C:[6,7,8,9],D:[2,3,4,5,6,7,8,9],E:[7,8,9,11,12],F:[2,3,4,5,6,7,8,9,11,12]};
-  const tList=tables[lvl]||tables.A;
-  const t=tList[ri(0,tList.length-1)];
-  const maxN=lvl==='A'?10:lvl==='B'?10:lvl==='C'?10:12;
-  const n=ri(1+Math.floor(d/9*(maxN-5)),maxN);
-  const reverse=d>=7&&ri(0,1); // hard difficulty: missing factor
-  if(reverse) return{display:`? × ${t} = ${t*n}`,answer:n,hint:`${n} × ${t} = ${t*n}`};
-  return{display:`${t} × ${n}`,answer:t*n,hint:`= ${t*n}`};
+  const off=scl(0,5,d);let a,b,ans;
+  switch(lvl){
+    // Åk 2: ×2, ×5, ×10
+    case'A':{b=[2,5,10][ri(0,2)];a=ri(2+off,10);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+    // Åk 3: ×3, ×4
+    case'B':{b=[3,4][ri(0,1)];a=ri(2+off,10+off);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+    // Åk 3: ×6, ×7
+    case'C':{b=[6,7][ri(0,1)];a=ri(2+off,10+off);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+    // Åk 3-4: ×8, ×9
+    case'D':{b=[8,9][ri(0,1)];a=ri(2+off,10+off);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+    // Åk 4: 2-siffrig × 1-siffrig
+    case'E':{a=ri(11+off,49+off);b=ri(2,9);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+    // Åk 4-5: 3-siffrig × 1-siffrig
+    case'F':{a=ri(101+off*5,499+off*5);b=ri(2,7);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
+  }
 }
 
 // T5 Division
 function alexT5(lvl,d){
-  let dv,q;
-  const off=scl(0,8,d);
+  const off=scl(0,4,d);let q,ans;
   switch(lvl){
-    case'A': dv=ri(2,4);q=ri(1,5+off);break;
-    case'B': dv=ri(2,8);q=ri(1,6+off);break;
-    case'C': dv=ri(2,9);q=ri(4+off,10+off);break;
-    case'D': dv=ri(3,9);q=ri(8+off,18+off);break;
-    case'E': dv=ri(6,12);q=ri(4+off,12+off);break;
-    case'F': dv=ri(7,12);q=ri(8+off,20+off);break;
+    // Åk 2-3: ÷2, ÷5, ÷10, ingen rest
+    case'A':{const b=[2,5,10][ri(0,2)];const qv=ri(2,10+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
+    // Åk 3: ÷3, ÷4, ingen rest
+    case'B':{const b=[3,4][ri(0,1)];const qv=ri(2,10+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
+    // Åk 3-4: ÷6-9, ingen rest
+    case'C':{const b=ri(6,9);const qv=ri(2,9+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
+    // Åk 4: ÷2-5, med rest
+    case'D':{const b=ri(2,5+off);const qv=ri(3,9+off);const r=ri(1,b-1);q=`${b*qv+r} ÷ ${b}`;ans=`${qv} rest ${r}`;break;}
+    // Åk 4: ÷6-9, med rest
+    case'E':{const b=ri(6,9);const qv=ri(3,9+off);const r=ri(1,b-1);q=`${b*qv+r} ÷ ${b}`;ans=`${qv} rest ${r}`;break;}
+    // Åk 4-5: 2-siffrig ÷ 1-siffrig, med rest
+    case'F':{const b=ri(3,8+off);const qv=ri(10,15+off);const r=ri(1,b-1);q=`${b*qv+r} ÷ ${b}`;ans=`${qv} rest ${r}`;break;}
   }
-  return{display:`${dv*q} ÷ ${dv}`,answer:q,hint:`= ${q}`};
+  return{display:q,answer:ans,hint:`Svar: ${ans}`};
 }
 
 // T6 Fractions — part of whole
@@ -1037,20 +1076,42 @@ function alexT6(lvl,d){
 }
 
 // T7 Telling the Time
+function _clockSVG(h,m){
+  const ha=(h%12+m/60)*30*Math.PI/180;
+  const ma=m*6*Math.PI/180;
+  const hx=(100+48*Math.sin(ha)).toFixed(1);const hy=(100-48*Math.cos(ha)).toFixed(1);
+  const mx=(100+70*Math.sin(ma)).toFixed(1);const my=(100-70*Math.cos(ma)).toFixed(1);
+  const ticks=Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180;const r1=i%3===0?68:73;const r2=82;return`<line x1="${(100+r1*Math.sin(a)).toFixed(1)}" y1="${(100-r1*Math.cos(a)).toFixed(1)}" x2="${(100+r2*Math.sin(a)).toFixed(1)}" y2="${(100-r2*Math.cos(a)).toFixed(1)}" stroke="#1C1917" stroke-width="${i%3===0?3:1.5}" stroke-linecap="round"/>`;}).join('');
+  const nums=[12,1,2,3,4,5,6,7,8,9,10,11].map((n,i)=>{const a=i*30*Math.PI/180;return`<text x="${(100+56*Math.sin(a)).toFixed(1)}" y="${(100-56*Math.cos(a)+5).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1917" font-family="Arial">${n}</text>`;}).join('');
+  return`<svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:0 auto"><circle cx="100" cy="100" r="90" fill="white" stroke="#1E3A8A" stroke-width="4"/>${ticks}${nums}<line x1="100" y1="100" x2="${hx}" y2="${hy}" stroke="#1C1917" stroke-width="6" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx}" y2="${my}" stroke="#1E3A8A" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="100" r="5" fill="#1C1917"/></svg>`;
+}
+function _clockSVG(h,m){
+  const ha=(h%12+m/60)*30*Math.PI/180;
+  const ma=m*6*Math.PI/180;
+  const hx=(100+48*Math.sin(ha)).toFixed(1);const hy=(100-48*Math.cos(ha)).toFixed(1);
+  const mx=(100+70*Math.sin(ma)).toFixed(1);const my=(100-70*Math.cos(ma)).toFixed(1);
+  const ticks=Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180;const r1=i%3===0?68:73;const r2=82;return`<line x1="${(100+r1*Math.sin(a)).toFixed(1)}" y1="${(100-r1*Math.cos(a)).toFixed(1)}" x2="${(100+r2*Math.sin(a)).toFixed(1)}" y2="${(100-r2*Math.cos(a)).toFixed(1)}" stroke="#1C1917" stroke-width="${i%3===0?3:1.5}" stroke-linecap="round"/>`;}).join('');
+  const nums=[12,1,2,3,4,5,6,7,8,9,10,11].map((n,i)=>{const a=i*30*Math.PI/180;return`<text x="${(100+56*Math.sin(a)).toFixed(1)}" y="${(100-56*Math.cos(a)+5).toFixed(1)}" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1917" font-family="Arial">${n}</text>`;}).join('');
+  return`<svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:0 auto"><circle cx="100" cy="100" r="90" fill="white" stroke="#1E3A8A" stroke-width="4"/>${ticks}${nums}<line x1="100" y1="100" x2="${hx}" y2="${hy}" stroke="#1C1917" stroke-width="6" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx}" y2="${my}" stroke="#1E3A8A" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="100" r="5" fill="#1C1917"/></svg>`;
+}
 function alexT7(lvl,d){
-  const h=ri(1,12);
-  let m,display,answer;
+  let h,m,display,answer,svg;
   switch(lvl){
-    case'A': m=d<5?0:30;break;
-    case'B': m=[0,15,30,45][Math.floor(d/9*3)];break;
-    case'C': m=Math.floor(ri(0,11))*5;break;
-    case'D': m=ri(0,59);break;
-    case'E':{const h24=ri(0,23);m=ri(0,59);answer=`${String(h24).padStart(2,'0')}:${String(m).padStart(2,'0')}`;const ampm=h24<12?`${h24===0?12:h24}:${String(m).padStart(2,'0')} am`:`${h24===12?12:h24-12}:${String(m).padStart(2,'0')} pm`;display=`Write the 24-hour time for: ${ampm}`;return{display,answer,hint:answer};}
-    case'F':{const startH=ri(1,10);const startM=Math.floor(ri(0,11))*5;const addH=ri(0,3);const addM=Math.floor(ri(0,11))*5;const tot=(startH*60+startM+addH*60+addM);const endH=Math.floor(tot/60)%24;const endM=tot%60;answer=`${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;display=`Start: ${startH}:${String(startM).padStart(2,'0')}. Add ${addH}h ${addM}min. End time?`;return{display,answer,hint:answer};}
+    // Åk 1-2: Hela timmar
+    case'A':{h=ri(1,12);m=0;answer=`${h}:00`;display='Vad är klockan?';break;}
+    // Åk 2: Halva timmar
+    case'B':{h=ri(1,12);m=30;answer=`${h}:30`;display='Vad är klockan?';break;}
+    // Åk 2-3: Kvart i/över
+    case'C':{h=ri(1,12);m=[15,45][ri(0,1)];answer=`${h}:${m}`;display='Vad är klockan?';break;}
+    // Åk 3: 5-minutersintervall
+    case'D':{h=ri(1,12);m=ri(0,11)*5;answer=`${h}:${m.toString().padStart(2,'0')}`;display='Vad är klockan?';break;}
+    // Åk 3-4: Valfri minut
+    case'E':{h=ri(1,12);m=ri(1,59);answer=`${h}:${m.toString().padStart(2,'0')}`;display='Vad är klockan?';break;}
+    // Åk 4-5: Tidsskillnad
+    case'F':{const h1=ri(7,16);const m1=ri(0,11)*5;const dur=ri(1,4)*15;const t2=h1*60+m1+dur;const h2=Math.floor(t2/60)%24;const m2=t2%60;display=`Klockan är ${h1}:${m1.toString().padStart(2,'0')}. Vad är klockan om ${dur} minuter?`;answer=`${h2}:${m2.toString().padStart(2,'0')}`;svg=null;return{display,answer,svg,hint:`Svar: ${answer}`};}
   }
-  answer=`${h}:${String(m).padStart(2,'0')}`;
-  display=`A clock shows ${h}:${String(m).padStart(2,'0')}. Write the time.`;
-  return{display,answer,hint:answer};
+  svg=_clockSVG(h,m);
+  return{display,answer,svg,hint:`Svar: ${answer}`};
 }
 
 // T8 Length & Mass
@@ -1069,46 +1130,76 @@ function alexT8(lvl,d){
 }
 
 // T9 Geometry — Perimeter
+function _rectSVG(w,h){
+  const sw=Math.min(160,w*14+40);const sh=Math.min(100,h*12+30);
+  const x0=30;const y0=25;
+  return`<svg viewBox="0 0 230 ${sh+60}" width="210" height="${sh+55}" style="display:block;margin:0 auto"><rect x="${x0}" y="${y0}" width="${sw}" height="${sh}" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="2.5" rx="2"/><text x="${x0+sw/2}" y="${y0-8}" text-anchor="middle" font-size="13" font-weight="900" fill="#1C1917" font-family="Arial">${w} cm</text><text x="${x0+sw+12}" y="${y0+sh/2+5}" text-anchor="middle" font-size="13" font-weight="900" fill="#1C1917" font-family="Arial">${h} cm</text><polyline points="${x0+12},${y0} ${x0+12},${y0+12} ${x0},${y0+12}" fill="none" stroke="#1E3A8A" stroke-width="1.5"/></svg>`;
+}
+function _triSVG(a,b,c){
+  return`<svg viewBox="0 0 200 150" width="180" height="135" style="display:block;margin:0 auto"><polygon points="100,15 20,130 180,130" fill="#D1FAE5" stroke="#059669" stroke-width="2.5"/><text x="55" y="85" text-anchor="middle" font-size="12" font-weight="900" fill="#1C1917" font-family="Arial" transform="rotate(-52,55,85)">${a} cm</text><text x="148" y="85" text-anchor="middle" font-size="12" font-weight="900" fill="#1C1917" font-family="Arial" transform="rotate(52,148,85)">${b} cm</text><text x="100" y="148" text-anchor="middle" font-size="12" font-weight="900" fill="#1C1917" font-family="Arial">${c} cm</text></svg>`;
+}
+function _rectSVG(w,h){
+  const sw=160,sh=90,x0=55,y0=55;
+  const vW=x0+sw+80,vH=y0+sh+40;
+  return`<svg viewBox="0 0 ${vW} ${vH}" width="${vW}" height="${vH}" style="display:block;margin:0 auto"><rect x="${x0}" y="${y0}" width="${sw}" height="${sh}" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="3" rx="2"/><polyline points="${x0+14},${y0} ${x0+14},${y0+14} ${x0},${y0+14}" fill="none" stroke="#1E3A8A" stroke-width="2"/><line x1="${x0}" y1="${y0-18}" x2="${x0+sw}" y2="${y0-18}" stroke="#374151" stroke-width="1.5"/><line x1="${x0}" y1="${y0-24}" x2="${x0}" y2="${y0-12}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw}" y1="${y0-24}" x2="${x0+sw}" y2="${y0-12}" stroke="#374151" stroke-width="1.5"/><rect x="${x0+sw/2-28}" y="${y0-38}" width="56" height="22" fill="white" rx="3"/><text x="${x0+sw/2}" y="${y0-21}" text-anchor="middle" font-size="16" font-weight="bold" fill="#1E3A8A" font-family="Arial">${w} cm</text><line x1="${x0+sw+18}" y1="${y0}" x2="${x0+sw+18}" y2="${y0+sh}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw+12}" y1="${y0}" x2="${x0+sw+24}" y2="${y0}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw+12}" y1="${y0+sh}" x2="${x0+sw+24}" y2="${y0+sh}" stroke="#374151" stroke-width="1.5"/><rect x="${x0+sw+28}" y="${y0+sh/2-11}" width="52" height="22" fill="white" rx="3"/><text x="${x0+sw+54}" y="${y0+sh/2+6}" text-anchor="middle" font-size="16" font-weight="bold" fill="#1E3A8A" font-family="Arial">${h} cm</text></svg>`;
+}
+function _triSVG(a,b,c){
+  return`<svg viewBox="0 0 240 170" width="200" height="170" style="display:block;margin:0 auto"><polygon points="120,18 25,145 215,145" fill="#D1FAE5" stroke="#059669" stroke-width="3"/><rect x="28" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="54" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${a} cm</text><rect x="162" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="188" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${b} cm</text><rect x="96" y="150" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="122" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${c} cm</text></svg>`;
+}
 function alexT9(lvl,d){
-  const sz=2+Math.floor(d/9*7);
-  let display,answer;
+  const sz=scl(2,8,d);let display,answer,svg;
   switch(lvl){
-    case'A':{const s=ri(sz,sz+4);display=`A square has sides of ${s} cm. Perimeter = ?`;answer=String(s*4);break;}
-    case'B':{const l=ri(sz+2,sz+8);const w=ri(sz,sz+3);display=`Rectangle: length ${l} cm, width ${w} cm. Perimeter = ?`;answer=String(2*(l+w));break;}
-    case'C':{const s=ri(sz,sz+5);display=`Equilateral triangle, sides ${s} cm. Perimeter = ?`;answer=String(s*3);break;}
-    case'D':{const a=ri(sz,sz+4),b=ri(sz,sz+5),c=ri(sz,sz+6);display=`Triangle sides: ${a} cm, ${b} cm, ${c} cm. Perimeter = ?`;answer=String(a+b+c);break;}
-    case'E':{const a=ri(sz,sz+5),b=ri(sz,sz+4),c=ri(sz,sz+6),e=ri(sz,sz+3);display=`4-sided shape: ${a}, ${b}, ${c}, ${e} cm. Perimeter = ?`;answer=String(a+b+c+e);break;}
-    case'F':{const tot=ri(20+sz*2,40+sz*3);const s1=ri(3,8),s2=ri(3,8),s3=ri(3,8);const miss=tot-s1-s2-s3;if(miss<1)return alexT9(lvl,d);display=`Perimeter = ${tot} cm. Three sides: ${s1}, ${s2}, ${s3} cm. Find the 4th side.`;answer=String(miss);break;}
+    // Åk 3: Omkrets rektangel
+    case'A':{const w=ri(sz+2,sz+8);const h=ri(sz,sz+5);svg=_rectSVG(w,h);display='Vad är omkretsen av rektangeln?';answer=`${2*(w+h)} cm`;break;}
+    // Åk 3: Omkrets kvadrat
+    case'B':{const s=ri(sz+2,sz+8);svg=_rectSVG(s,s);display='Vad är omkretsen av kvadraten?';answer=`${4*s} cm`;break;}
+    // Åk 3-4: Area rektangel
+    case'C':{const w=ri(sz+2,sz+8);const h=ri(sz+1,sz+5);svg=_rectSVG(w,h);display='Vad är arean? (A = l × b)';answer=`${w*h} cm²`;break;}
+    // Åk 4: Omkrets triangel
+    case'D':{const a=ri(sz+2,sz+6);const b=ri(sz+2,sz+6);const c=ri(sz+1,sz+5);svg=_triSVG(a,b,c);display='Vad är omkretsen av triangeln?';answer=`${a+b+c} cm`;break;}
+    // Åk 4: Area triangel
+    case'E':{const b=ri(sz+2,sz+8)*2;const h=ri(sz+2,sz+6)*2;svg=_triSVG(b,h,ri(sz+3,sz+7));display=`Area av triangeln? (A = bas×höjd÷2, bas=${b} cm, höjd=${h} cm)`;answer=`${b*h/2} cm²`;break;}
+    // Åk 4-5: Blandad
+    case'F':{const w=ri(sz+4,sz+10);const h=ri(sz+3,sz+8);svg=_rectSVG(w,h);const isP=ri(0,1)===0;display=isP?'Vad är omkretsen?':'Vad är arean? (A = l × b)';answer=isP?`${2*(w+h)} cm`:`${w*h} cm²`;break;}
   }
-  return{display,answer,hint:`Answer: ${answer} cm`};
+  return{display,answer,svg,hint:`Svar: ${answer}`};
 }
 
 // T10 Statistics — Reading tables
+function _barSVG(labels,values,colors){
+  const maxV=Math.max(...values);const barW=28;const gap=14;const bH=80;const ox=35;const oy=100;
+  const bars=values.map((v,i)=>{const x=ox+i*(barW+gap);const bh=Math.round(v/maxV*bH);const y=oy-bh;return`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${colors[i]||'#3B82F6'}" rx="2"/><text x="${x+barW/2}" y="${y-3}" text-anchor="middle" font-size="10" font-weight="700" fill="#1C1917" font-family="Arial">${v}</text><text x="${x+barW/2}" y="${oy+14}" text-anchor="middle" font-size="13" font-family="Arial">${labels[i]}</text>`;}).join('');
+  const yLabels=Array.from({length:5},(_,i)=>{const v=Math.round(maxV*i/4);const y=oy-Math.round(v/maxV*bH);return`<line x1="${ox-3}" y1="${y}" x2="${ox+(values.length*(barW+gap))}" y2="${y}" stroke="#F3F4F6" stroke-width="1"/><text x="${ox-5}" y="${y+4}" text-anchor="end" font-size="9" fill="#9CA3AF" font-family="Arial">${v}</text>`;}).join('');
+  const W=ox+values.length*(barW+gap)+10;
+  return`<svg viewBox="0 0 ${W} 125" width="${Math.min(220,W)}" height="125" style="display:block;margin:0 auto"><line x1="${ox}" y1="10" x2="${ox}" y2="${oy}" stroke="#E5E7EB" stroke-width="1"/><line x1="${ox}" y1="${oy}" x2="${W-5}" y2="${oy}" stroke="#1C1917" stroke-width="2"/>${yLabels}${bars}</svg>`;
+}
+function _barSVG(labels,values,colors){
+  const maxV=Math.max(...values);
+  const barW=42,gap=16,bH=90,ox=50,oy=120;
+  const W=ox+values.length*(barW+gap)+30;const H=170;
+  const bars=values.map((v,i)=>{const x=ox+i*(barW+gap),bh=Math.round(v/maxV*bH),y=oy-bh;return`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${colors[i]||'#3B82F6'}" rx="3"/><text x="${x+barW/2}" y="${y-6}" text-anchor="middle" font-size="13" font-weight="bold" fill="#1C1917" font-family="Arial">${v}</text><text x="${x+barW/2}" y="${oy+22}" text-anchor="middle" font-size="14" font-weight="bold" fill="#333" font-family="Arial">${labels[i]}</text>`;}).join('');
+  const yLines=[0,1,2,3,4].map(i=>{const v=Math.round(maxV*i/4),y=oy-Math.round(v/maxV*bH);return`<line x1="${ox}" y1="${y}" x2="${W-10}" y2="${y}" stroke="#E5E7EB" stroke-width="1"/><text x="${ox-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#9CA3AF" font-family="Arial">${v}</text>`;}).join('');
+  return`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;margin:0 auto"><line x1="${ox}" y1="15" x2="${ox}" y2="${oy}" stroke="#CBD5E1" stroke-width="1.5"/><line x1="${ox}" y1="${oy}" x2="${W-10}" y2="${oy}" stroke="#1C1917" stroke-width="2.5"/>${yLines}${bars}</svg>`;
+}
 function alexT10(lvl,d){
-  const sports=['football','swimming','tennis','running','cycling','basketball'];
-  const sh=arr=>[...arr].sort(()=>Math.random()-.5);
-  const mx=3+Math.floor(d/9*15);
-  const picked=sh(sports).slice(0,4);
-  const vals=picked.map(()=>ri(2,mx));
-  const tbl=picked.map((n,i)=>`${n}:${vals[i]}`).join(', ');
-  const total=vals.reduce((a,b)=>a+b,0);
-  const maxI=vals.indexOf(Math.max(...vals));
-  const minI=vals.indexOf(Math.min(...vals));
-  const diff=Math.abs(vals[0]-vals[1]);
-  const qs=[
-    {display:`Survey results: ${tbl}. How many children in total?`,answer:String(total)},
-    {display:`Data: ${tbl}. Which activity is most popular?`,answer:picked[maxI]},
-    {display:`Data: ${tbl}. Which has the fewest?`,answer:picked[minI]},
-    {display:`Data: ${tbl}. How many more ${picked[0]} than ${picked[1]}?`,answer:String(diff)},
-  ];
+  const mx=4+Math.floor(d/9*8);let display,answer,svg;
+  const labels=['Katt','Hund','Fisk','Kanin'];
+  const colors=['#3B82F6','#EF4444','#EAB308','#10B981'];
   switch(lvl){
-    case'A': return{...qs[0],hint:`Total: ${total}`};
-    case'B': return{...qs[1],hint:picked[maxI]};
-    case'C': return{...qs[2],hint:picked[minI]};
-    case'D': return{...qs[ri(0,qs.length-1)],hint:'Calculate carefully'};
-    case'E':{const n=ri(2,mx);const grps=Math.floor(n/5);const rem=n%5;return{display:`Tally: ${grps} full groups of 5 and ${rem} extra. Total = ?`,answer:String(n),hint:String(n)};}
-    case'F':{const known=vals.slice(0,3);const miss=total-known.reduce((a,b)=>a+b,0);const ktbl=picked.slice(0,3).map((n,i)=>`${n}:${known[i]}`).join(', ');return{display:`Total: ${total}. Known: ${ktbl}. How many chose ${picked[3]}?`,answer:String(miss),hint:String(miss)};}
+    // Åk 3: Läsa av enstaka stapel
+    case'A':{const vs=[ri(3,mx+4),ri(2,mx+3),ri(4,mx+5)];const ls=labels.slice(0,3),cs=colors.slice(0,3);svg=_barSVG(ls,vs,cs);display=`Hur många ${ls[1]} finns det?`;answer=String(vs[1]);break;}
+    // Åk 3: Jämföra två staplar
+    case'B':{const vs=[ri(4,mx+5),ri(2,mx+2),ri(5,mx+6)];const ls=labels.slice(0,3),cs=colors.slice(0,3);svg=_barSVG(ls,vs,cs);const diff=vs[0]-vs[1];display=`Hur många fler ${ls[0]} än ${ls[1]}?`;answer=String(Math.abs(diff));break;}
+    // Åk 3-4: Medelvärde av 3 tal
+    case'C':{let nums,s,att=0;do{nums=[ri(2,mx),ri(2,mx),ri(2,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%3!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/3);break;}
+    // Åk 4: Medelvärde av 4 tal
+    case'D':{let nums,s,att=0;do{nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%4!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/4);break;}
+    // Åk 4: Totalt från diagram
+    case'E':{const vs=[ri(3,mx+5),ri(2,mx+3),ri(4,mx+6),ri(1,mx+2)];svg=_barSVG(labels,vs,colors);const tot=vs.reduce((a,b)=>a+b,0);display='Hur många djur totalt i diagrammet?';answer=String(tot);break;}
+    // Åk 4-5: Median
+    case'F':{const nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)].sort((a,b)=>a-b);display=`Median av: ${nums.join(', ')}`;answer=String(nums[2]);break;}
   }
+  return{display,answer,svg,hint:`Svar: ${answer}`};
 }
 
 // ── ESTELLE ──
@@ -2361,6 +2452,9 @@ function startSession(tid,level,method){
 function loadProblem(i){
   const p=S.sess.problems[i];
   document.getElementById('prob-eq').textContent=p.display;
+  // SVG visual (clock, shapes, charts)
+  const svgBox=document.getElementById('question-svg');
+  if(svgBox){if(p.svg){svgBox.innerHTML=p.svg;svgBox.style.display='block';}else{svgBox.innerHTML='';svgBox.style.display='none';}}
   document.getElementById('btn-prev').disabled=(i===0);
   const nextBtn=document.getElementById('btn-next');
   nextBtn.textContent='›';
