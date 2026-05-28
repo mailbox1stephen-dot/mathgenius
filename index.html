@@ -1819,6 +1819,18 @@ async function aiCheckAll(profile,sessionId){
   showParentReview(profile,sessionId);
   showToast('✅ AI klar — granska och godkänn');
 }
+
+function markAllQuestions(profile,sessionId,correct){
+  const key='md_pending_'+profile;
+  const pending=sjp(localStorage.getItem(key),[]);
+  const session=pending.find(s=>s.id===sessionId);
+  if(!session)return;
+  session.questions.forEach(q=>{q.parentMark=correct;});
+  localStorage.setItem(key,JSON.stringify(pending));
+  cloudSet(key,pending);
+  showParentReview(profile,sessionId);
+  showToast(correct?'✅ Alla markerade som rätt':'✗ Alla markerade som fel');
+}
 // ── END AI CHECK ─────────────────────────────────────────────────
 
 function genProblem(profile,tid,lvl,d=5){
@@ -3897,6 +3909,16 @@ function renderReview(session,profile){
     <div style="font-size:10px;color:#78716C;font-weight:700">${new Date(session.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>
   </div>`;
 
+  // ── BULK ACTION BUTTONS ─────────────────────────────────────────
+  const hasApiKey=!!(S.apiKey||readCred('md_apikey'));
+  html+=`<div style="display:flex;gap:8px;padding:0 12px 10px">`;
+  html+=`<button onclick="markAllQuestions('${profile}',${session.id},true)" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#D1FAE5;color:#065F46;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">✅ Markera alla rätt</button>`;
+  if(hasApiKey){
+    html+=`<button onclick="aiCheckAll('${profile}',${session.id})" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">🤖 AI-kolla alla</button>`;
+  }
+  html+=`</div>`;
+  // ── END BULK ACTIONS ─────────────────────────────────────────────
+
   session.questions.forEach((q,i)=>{
     const mark=q.parentMark;
     const cc=mark===true?'ok':mark===false?'no':'';
@@ -3936,11 +3958,10 @@ function renderReview(session,profile){
     }
 
     if(q.aiResult){html+=`<div class="pr-ai-result">${q.aiResult}</div>`;}
-    html+=`<div class="pr-q-btns"><button id="ai-btn-${i}" class="pr-q-btn ai-btn" onclick="aiCheckOne('${S.reviewProfile}',${S.reviewSessionId},${i})">🤖 AI</button>`;
-    html+=`<div class="pr-q-btns2">
-      <button class="pr-q-btn ai-btn" id="ai-btn-${i}" 
-      <button class="pr-q-btn ok-btn" onclick="markQ('${profile}',${session.id},${i},true)">✓ Correct</button>
-      <button class="pr-q-btn no-btn" onclick="markQ('${profile}',${session.id},${i},false)">✗ Wrong</button>
+    html+=`<div class="pr-q-btns">
+      <button class="pr-q-btn ai-btn" id="ai-btn-${i}" onclick="aiCheckOne('${S.reviewProfile}',${S.reviewSessionId},${i})">🤖 AI</button>
+      <button class="pr-q-btn ok-btn" onclick="markQ('${profile}',${session.id},${i},true)">✓ Rätt</button>
+      <button class="pr-q-btn no-btn" onclick="markQ('${profile}',${session.id},${i},false)">✗ Fel</button>
     </div>
     </div>`;
   });
