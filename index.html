@@ -818,9 +818,9 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 <div id="pause-overlay">
   <div class="pause-icon">⏸</div>
-  <div class="pause-title">Session Paused</div>
-  <div class="pause-sub">Taking a break — come back soon!</div>
-  <button class="pause-resume-btn" onclick="togglePause()">▶ Resume</button>
+  <div class="pause-title" id="pause-title">Paus</div>
+  <div class="pause-sub" id="pause-sub">Fråga ? av 10</div>
+  <button class="pause-resume-btn" onclick="togglePause()">▶ Fortsätt</button>
 </div>
 
 <div id="sync-indicator">Synced ☁</div>
@@ -828,29 +828,33 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 
 <script>// ── SWEDISH CURRICULUM ──────────────────────────────────────────
 const TOPICS_ALE=[
-  {id:1,name:'Kolumnaddition',method:true,curriculum:'Lgr22 Åk 3'},
-  {id:2,name:'Kolumnsubtraktion',method:true,curriculum:'Lgr22 Åk 3'},
-  {id:3,name:'Avrundning',method:false,curriculum:'Lgr22 Åk 3–4'},
-  {id:4,name:'Multiplikation',method:false,curriculum:'Lgr22 Åk 3'},
-  {id:5,name:'Division',method:true,curriculum:'Lgr22 Åk 4'},
-  {id:6,name:'Bråk',method:false,curriculum:'Lgr22 Åk 4'},
-  {id:7,name:'Decimaltal',method:true,curriculum:'Lgr22 Åk 4'},
-  {id:8,name:'Mätning & enheter',method:false,curriculum:'Lgr22 Åk 3–5'},
-  {id:9,name:'Geometri',method:false,curriculum:'Lgr22 Åk 4'},
-  {id:10,name:'Statistik',method:false,curriculum:'Lgr22 Åk 5'},
+  {id:1,name:'De fyra räknesätten',method:true,curriculum:'Lgr22 Åk 2–4'},
+  {id:2,name:'Decimalräkning',method:true,curriculum:'Lgr22 Åk 2–4'},
+  {id:3,name:'Negativa tal',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:4,name:'Potenser & rötter',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:5,name:'Rimlighetsbedömning',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:6,name:'Algebra',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:7,name:'Geometri',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:8,name:'Procent',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:9,name:'Bråk',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:10,name:'Statistik',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:11,name:'Sannolikhet',method:false,curriculum:'Lgr22 Åk 2–4'},
+  {id:12,name:'Koordinatsystem & Proportionalitet',method:false,curriculum:'Lgr22 Åk 3–5'},
 ];
 const TOPICS_EST=[
-  {id:1,name:'Decimalräkning',method:true,curriculum:'Lgr22 Åk 4–6'},
-  {id:2,name:'Procent',method:false,curriculum:'Lgr22 Åk 6'},
-  {id:3,name:'Bråk',method:false,curriculum:'Lgr22 Åk 5–6'},
-  {id:4,name:'Algebra',method:false,curriculum:'Lgr22 Åk 6'},
-  {id:5,name:'Multiplikation & division',method:true,curriculum:'Lgr22 Åk 5–6'},
-  {id:6,name:'Geometri',method:false,curriculum:'Lgr22 Åk 5–6'},
-  {id:7,name:'Potenser & rötter',method:false,curriculum:'Lgr22 Åk 6'},
-  {id:8,name:'Statistik',method:false,curriculum:'Lgr22 Åk 5–6'},
-  {id:9,name:'Negativa tal',method:false,curriculum:'Lgr22 Åk 6'},
-  {id:10,name:'Sannolikhet & avrundning',method:false,curriculum:'Lgr22 Åk 6'},
-];
+  {id:1,name:'De fyra räknesätten',method:true,curriculum:'Lgr22 Åk 3–6'},
+  {id:2,name:'Decimalräkning',method:true,curriculum:'Lgr22 Åk 3–6'},
+  {id:3,name:'Negativa tal',method:false,curriculum:'Lgr22 Åk 3–6'},
+  {id:4,name:'Potenser & rötter',method:false,curriculum:'Lgr22 Åk 6'},
+  {id:5,name:'Rimlighetsbedömning',method:false,curriculum:'Lgr22 Åk 3–6'},
+  {id:6,name:'Algebra',method:false,curriculum:'Lgr22 Åk 5–6'},
+  {id:7,name:'Geometri',method:false,curriculum:'Lgr22 Åk 5–6'},
+  {id:8,name:'Procent',method:false,curriculum:'Lgr22 Åk 5–6'},
+  {id:9,name:'Bråk',method:false,curriculum:'Lgr22 Åk 4–6'},
+  {id:10,name:'Statistik',method:false,curriculum:'Lgr22 Åk 5–6'},
+  {id:11,name:'Sannolikhet',method:false,curriculum:'Lgr22 Åk 6'},
+  {id:12,name:'Koordinatsystem & Proportionalitet',method:false,curriculum:'Lgr22 Åk 4–6'},
+]
 const TOPICS_SV=TOPICS_ALE;
 function getTopics(profile){return profile==='estelle'?TOPICS_EST:TOPICS_ALE;}
 // ── END SWEDISH CURRICULUM ───────────────────────────────────────
@@ -918,9 +922,20 @@ function setProgress(p,d){
 }
 function initProgress(p){
   let d = getProgress(p);
-  if(d) return d;
+  if(d){
+    // Migrate: add any missing topics (e.g. old 10-topic data → 11)
+    let changed=false;
+    for(let i=1;i<=12;i++){
+      if(!d['t'+i]){
+        d['t'+i]={locked:true,level:'A',completed:[],done:false};
+        changed=true;
+      }
+    }
+    if(changed)setProgress(p,d);
+    return d;
+  }
   d = {};
-  for(let i=1;i<=10;i++){
+  for(let i=1;i<=12;i++){
     d['t'+i] = i===1
       ? {locked:false, level:'A', completed:[], done:false}
       : {locked:true,  level:'A', completed:[], done:false};
@@ -964,109 +979,22 @@ function sv(n){const s=String(n);return s.includes('.')?s.replace('.',','):s;}
 // ── ALEXANDER ──
 
 // T1 Column Addition
-function alexT1(lvl,d){
-  const off=scl(0,20,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
-  const th=['äpplen','bollar','pennor','klistermärken','kex','böcker'];
-  const n=()=>nm[ri(0,nm.length-1)],t=()=>th[ri(0,th.length-1)];
-  let a,b;
-  switch(lvl){
-    case'A':{do{a=ri(20+off,60+off);b=ri(10,40+off);}while((a%10+b%10)>=10);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
-    case'B':{do{a=ri(20+off,60+off);b=ri(10,40+off);}while((a%10+b%10)<10);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
-    case'C':{a=ri(100+off*3,400+off*3);b=ri(10+off,80+off);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
-    case'D':{do{a=ri(200+off*3,600+off*3);b=ri(100+off*2,400+off*2);}while((a%100+b%100)<100);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
-    case'E':{const na=n(),ti=t(),x=ri(25+off,85+off),y=ri(15+Math.floor(off/2),60+off);return{display:`${na} har ${x} ${ti}. Hen får ${y} till. Hur många ${ti} har ${na} nu?`,answer:x+y,hint:`${x}+${y}=${x+y}`,type:'reason'};}
-    case'F':{const a2=ri(120+off*3,380+off*3),b2=ri(80+off*2,250+off*2),c=ri(50+off,150+off);return{display:`En skola har ${a2} elever i lågstadiet, ${b2} i mellanstadiet och ${c} i förskoleklass. Hur många elever totalt?`,answer:a2+b2+c,hint:`${a2}+${b2}+${c}=${a2+b2+c}`,type:'reason'};}
-  }
-}
+
 
 // T2 Column Subtraction
-function alexT2(lvl,d){
-  const off=scl(0,20,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
-  const th=['äpplen','bollar','pennor','klistermärken','kex','böcker'];
-  const n=()=>nm[ri(0,nm.length-1)],t=()=>th[ri(0,th.length-1)];
-  let a,b;
-  switch(lvl){
-    case'A':{do{a=ri(20+off,60+off);b=ri(1,9);}while(a%10<b);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
-    case'B':{do{a=ri(30+off,80+off);b=ri(10,a-5);}while(a%10>=b%10);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
-    case'C':{a=ri(150+off*3,500+off*3);b=ri(10+off,90+off);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
-    case'D':{do{a=ri(300+off*3,700+off*3);b=ri(100+off*2,a-100);}while(a%100>=b%100);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
-    case'E':{const na=n(),ti=t(),x=ri(40+off,90+off),y=ri(10+Math.floor(off/2),x-5);return{display:`${na} hade ${x} ${ti}. Hen gav bort ${y} stycken. Hur många ${ti} har ${na} kvar?`,answer:x-y,hint:`${x}-${y}=${x-y}`,type:'reason'};}
-    case'F':{const pris=ri(45+off,95+off),bet=(Math.floor((pris+10)/50)+1)*50,vx=bet-pris;return{display:`En leksak kostar ${pris} kr. ${n()} betalar med ${bet} kr. Hur mycket växel får hen tillbaka?`,answer:vx,hint:`${bet}-${pris}=${vx} kr`,type:'reason'};}
-  }
-}
+
 
 // T3 Mental Arithmetic
-function alexT3(lvl,d){
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const x=ri(11,89);q=`Avrunda ${x} till närmaste 10`;ans=String(Math.round(x/10)*10);break;}
-    case'B':{const x=ri(101,499);q=`Avrunda ${x} till närmaste 10`;ans=String(Math.round(x/10)*10);break;}
-    case'C':{const x=ri(101,899);q=`Avrunda ${x} till närmaste 100`;ans=String(Math.round(x/100)*100);break;}
-    case'D':{const x=ri(1001,9499);q=`Avrunda ${x} till närmaste 1000`;ans=String(Math.round(x/1000)*1000);break;}
-    case'E':{const a=ri(23+scl(0,40,d),87+scl(0,40,d)),b=ri(18+scl(0,30,d),76+scl(0,30,d));const ra=Math.round(a/10)*10,rb=Math.round(b/10)*10;q=`Uppskatta ${a} + ${b} (avrunda till närmaste 10 först)`;ans=String(ra+rb);break;}
-    case'F':{const p=[ri(23,87),ri(14,56),ri(31,78)];const rp=p.map(x=>Math.round(x/10)*10);q=`${n()} ska köpa tre saker: ${p.join(' kr, ')} kr. Uppskatta totalkostnaden (avrunda varje pris).`;ans=`${rp.reduce((a,b)=>a+b,0)} kr`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T4 Times Tables
-function alexT4(lvl,d){
-  const off=scl(0,5,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let a,b,ans;
-  switch(lvl){
-    case'A':{b=[2,5,10][ri(0,2)];a=ri(3+off,12);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
-    case'B':{b=[3,4,6,7][ri(0,3)];a=ri(3+off,10+off);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
-    case'C':{b=[8,9][ri(0,1)];a=ri(3+off,10+off);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
-    case'D':{a=ri(12+off,49+off);b=ri(3,9);ans=a*b;return{display:`${a} × ${b}`,answer:ans,hint:`= ${ans}`};}
-    case'E':{const na=n(),ant=ri(3+off,8+off),pris=ri(5+off,25+off);return{display:`${na} köper ${ant} godispåsar à ${pris} kr. Hur mycket betalar ${na} totalt?`,answer:ant*pris,hint:`${ant}×${pris}=${ant*pris} kr`,type:'reason'};}
-    case'F':{const rad=ri(4+off,8+off),st=ri(8+off,15+off),tot=rad*st;const pris=ri(60,120);return{display:`En biograf har ${rad} rader med ${st} stolar. Hur många platser totalt? Om biljetten kostar ${pris} kr, vad kostar det att fylla salongen?`,answer:`${tot} platser, ${tot*pris} kr`,hint:`${rad}×${st}=${tot}, ${tot}×${pris}=${tot*pris}`,type:'reason'};}
-  }
-}
+
 
 // T5 Division
-function alexT5(lvl,d){
-  const off=scl(0,4,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  const th=['äpplen','bollar','pennor','klistermärken','kakor'];
-  const t=()=>th[ri(0,th.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const b=[2,5,10][ri(0,2)],qv=ri(2,10+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
-    case'B':{const b=ri(3,9),qv=ri(2,9+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
-    case'C':{const b=ri(2,5+off),qv=ri(3,9+off),r=ri(1,b-1);q=`${b*qv+r} ÷ ${b}`;ans=`${qv} rest ${r}`;break;}
-    case'D':{const b=ri(6,9),qv=ri(3,9+off),r=ri(1,b-1);q=`${b*qv+r} ÷ ${b}`;ans=`${qv} rest ${r}`;break;}
-    case'E':{const na=n(),ti=t(),tot=ri(20+off*2,60+off*2),pers=ri(2,6);const per=Math.floor(tot/pers),rest=tot%pers;q=`${na} ska dela ${tot} ${ti} lika mellan ${pers} kompisar. Hur många får varje kompis?`;ans=rest>0?`${per} var, ${rest} över`:`${per} var`;break;}
-    case'F':{const total=ri(50+off*5,120+off*5),per=ri(4+off,8+off),hela=Math.floor(total/per),rest=total%per;q=`${total} elever ska resa med bussar. Det får plats ${per} elever i varje buss. Hur många bussar behövs?`;ans=rest>0?`${hela+1} bussar`:`${hela} bussar`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T6 Fractions — part of whole
-function alexT6(lvl,d){
-  const f=2+Math.floor(d/9*3);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const dn=[2,4][ri(0,1)],hel=dn*ri(3,8);q=`1/${dn} av ${hel}`;ans=String(hel/dn);break;}
-    case'B':{const opts=[{n:3,d:4},{n:1,d:3},{n:2,d:3}];const o=opts[ri(0,2)],hel=o.d*ri(2,6);q=`${o.n}/${o.d} av ${hel}`;ans=String(o.n*hel/o.d);break;}
-    case'C':{const dn=ri(4,10),n1=ri(1,Math.floor(dn/2)),n2=ri(1,Math.floor(dn/2));const s=n1+n2;const g=gcd(s,dn);q=`${n1}/${dn} + ${n2}/${dn}`;const ans2=s>=dn?`${Math.floor(s/dn)}${s%dn>0?` ${s%dn}/${dn}`:''}`:`${s/g}/${dn/g}`;ans=ans2;break;}
-    case'D':{const dn=ri(4,10),n1=ri(3,dn-1),n2=ri(1,n1-1);const diff=n1-n2;const g2=gcd(diff,dn);q=`${n1}/${dn} − ${n2}/${dn}`;ans=`${diff/g2}/${dn/g2}`;break;}
-    case'E':{q=`${n()} åt 1/4 av en tårta på fredag och 1/4 på lördag. Hur stor del åts totalt? Hur stor del är kvar?`;ans='2/4 = 1/2 åts, 1/2 kvar';break;}
-    case'F':{const dn=ri(3,6),mult=ri(3,6),hel=dn*mult,num=ri(1,dn-1),del=hel*num/dn;q=`Av ${hel} elever i en klass är ${num}/${dn} pojkar. Hur många pojkar är det? Hur många flickor?`;ans=`${del} pojkar, ${hel-del} flickor`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T7 Telling the Time
 
@@ -1079,40 +1007,10 @@ function _clockSVG(h,m){
   const nums=[12,1,2,3,4,5,6,7,8,9,10,11].map((n,i)=>{const a=i*30*Math.PI/180;return`<text x="${sv((100+56*Math.sin(a)).toFixed(1))}" y="${sv((100-56*Math.cos(a)+5).toFixed(1))}" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1917" font-family="Arial">${n}</text>`;}).join('');
   return`<svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:0 auto"><circle cx="100" cy="100" r="90" fill="white" stroke="#1E3A8A" stroke-width="4"/>${ticks}${nums}<line x1="100" y1="100" x2="${hx}" y2="${hy}" stroke="#1C1917" stroke-width="6" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx}" y2="${my}" stroke="#1E3A8A" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="100" r="5" fill="#1C1917"/></svg>`;
 }
-function alexT7(lvl,d){
-  const off=scl(0,20,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const w=ri(1,9),dc=ri(1,9);q=`Skriv som decimaltal: ${w} hel och ${dc} tiondel`;ans=`${w},${dc}`;break;}
-    case'B':{let a,b;do{a=ri(10+off/5,50+off);b=ri(1,15+off/5);}while(Math.round(((a*10%10)+(b*10%10)))>=10);const av=a+ri(1,9)/10,bv=b+ri(1,9)/10;const tot=Math.round((av+bv)*10)/10;q=`${sv(av.toFixed(1))} + ${sv(bv.toFixed(1))}`;ans=sv(tot.toFixed(1));break;}
-    case'C':{let av,bv;do{av=ri(10+off/5,50+off)+ri(1,9)/10;bv=ri(1,15+off/5)+ri(1,9)/10;}while(Math.round(av*10%10+bv*10%10)<10);const tot=Math.round((av+bv)*10)/10;q=`${sv(av.toFixed(1))} + ${sv(bv.toFixed(1))}`;ans=sv(tot.toFixed(1));break;}
-    case'D':{let av,bv;do{av=ri(15+off/5,60+off)+ri(1,9)/10;bv=ri(1,20+off/5)+ri(1,9)/10;}while(bv>=av);const tot2=Math.round((av-bv)*10)/10;q=`${sv(av.toFixed(1))} − ${sv(bv.toFixed(1))}`;ans=sv(tot2.toFixed(1));break;}
-    case'E':{const na=n(),a2=ri(10+off/5,50+off)+ri(1,9)/10,b2=ri(5+off/5,30+off/5)+ri(1,9)/10;const tot=Math.round((a2+b2)*10)/10;q=`${na} köper en glass för ${sv(a2.toFixed(1))} kr och en dricka för ${sv(b2.toFixed(1))} kr. Hur mycket kostar det totalt?`;ans=`${sv(tot.toFixed(1))} kr`;break;}
-    case'F':{const na=n(),a3=ri(1,4)+ri(1,9)/10,b3=ri(1,3)+ri(1,9)/10;const tot=Math.round((a3+b3)*10)/10;q=`${na} mäter en bänk: ${sv(a3.toFixed(1))} m, och ett bord: ${sv(b3.toFixed(1))} m. Hur lång är den totala längden?`;ans=`${sv(tot.toFixed(1))} m`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T8 Length & Mass
-function alexT8(lvl,d){
-  const off=scl(0,5,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{if(ri(0,1)===0){const cm=ri(1,9)*100;q=`${cm} cm = ? m`;ans=`${cm/100} m`;}else{const g=ri(1,9)*1000;q=`${g} g = ? kg`;ans=`${g/1000} kg`;}break;}
-    case'B':{if(ri(0,1)===0){const dl=ri(2,20+off);q=`${dl} dl = ? l`;ans=`${sv(dl/10)} l`;}else{const l=ri(1,4+off);q=`${l} l = ? dl`;ans=`${l*10} dl`;}break;}
-    case'C':{const r=ri(0,2);if(r===0){const m=ri(1,4)+ri(1,9)/10;q=`${sv(m.toFixed(1))} m = ? cm`;ans=`${Math.round(m*100)} cm`;}else if(r===1){const kg=ri(1,4)+ri(1,9)/10;q=`${sv(kg.toFixed(1))} kg = ? g`;ans=`${Math.round(kg*1000)} g`;}else{const l=ri(1,3)+ri(1,9)/10;q=`${sv(l.toFixed(1))} l = ? dl`;ans=`${Math.round(l*10)} dl`;}break;}
-    case'D':{const m1=ri(1,4+off),cm1=ri(1,9)*10,m2=ri(1,3+off),cm2=ri(1,9)*10;const tot=m1*100+cm1+m2*100+cm2;q=`${m1} m ${cm1} cm + ${m2} m ${cm2} cm = ?`;ans=`${Math.floor(tot/100)} m ${tot%100} cm`;break;}
-    case'E':{const na=n(),dl=ri(10+off,20+off),dl2=ri(2,Math.floor(dl*0.6));q=`${na} har ${dl} dl juice. Hen häller upp ${dl2} dl i ett glas. Hur mycket juice är kvar? Skriv i dl och i l.`;ans=`${dl-dl2} dl = ${sv((dl-dl2)/10)} l`;break;}
-    case'F':{const per=ri(4,8+off),ml=ri(2,6+off),n2=ri(2,Math.max(3,per-1));const nyRaw=Math.round(ml*n2/per*10)/10;const ny=sv(nyRaw);q=`Ett recept för ${per} personer kräver ${ml} dl mjölk. Hur mycket behövs för ${n2} personer?`;ans=`${ny} dl`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T9 Geometry — Perimeter
 
@@ -1125,29 +1023,9 @@ function _rectSVG(w,h){
 function _triSVG(a,b,c){
   return`<svg viewBox="0 0 240 170" width="200" height="170" style="display:block;margin:0 auto"><polygon points="120,18 25,145 215,145" fill="#D1FAE5" stroke="#059669" stroke-width="3"/><rect x="28" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="54" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${a} cm</text><rect x="162" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="188" y="90" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${b} cm</text><rect x="96" y="150" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="122" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#059669" font-family="Arial">${c} cm</text></svg>`;
 }
-function _rectSVG(w,h){
-  const sw=160,sh=90,x0=55,y0=55,vW=x0+sw+80,vH=y0+sh+40;
-  return`<svg viewBox="0 0 ${vW} ${vH}" width="${vW}" height="${vH}" style="display:block;margin:0 auto"><rect x="${x0}" y="${y0}" width="${sw}" height="${sh}" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="3" rx="2"/><polyline points="${x0+14},${y0} ${x0+14},${y0+14} ${x0},${y0+14}" fill="none" stroke="#1E3A8A" stroke-width="2"/><line x1="${x0}" y1="${y0-18}" x2="${x0+sw}" y2="${y0-18}" stroke="#374151" stroke-width="1.5"/><line x1="${x0}" y1="${y0-24}" x2="${x0}" y2="${y0-12}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw}" y1="${y0-24}" x2="${x0+sw}" y2="${y0-12}" stroke="#374151" stroke-width="1.5"/><rect x="${x0+sw/2-28}" y="${y0-38}" width="56" height="22" fill="white" rx="3"/><text x="${x0+sw/2}" y="${y0-21}" text-anchor="middle" font-size="16" font-weight="700" fill="#1E3A8A" font-family="Arial">${w} cm</text><line x1="${x0+sw+18}" y1="${y0}" x2="${x0+sw+18}" y2="${y0+sh}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw+12}" y1="${y0}" x2="${x0+sw+24}" y2="${y0}" stroke="#374151" stroke-width="1.5"/><line x1="${x0+sw+12}" y1="${y0+sh}" x2="${x0+sw+24}" y2="${y0+sh}" stroke="#374151" stroke-width="1.5"/><rect x="${x0+sw+28}" y="${y0+sh/2-11}" width="52" height="22" fill="white" rx="3"/><text x="${x0+sw+54}" y="${y0+sh/2+6}" text-anchor="middle" font-size="16" font-weight="700" fill="#1E3A8A" font-family="Arial">${h} cm</text></svg>`;
-}
-function _triSVG(a,b,c){
-  return`<svg viewBox="0 0 240 170" width="200" height="170" style="display:block;margin:0 auto"><polygon points="120,18 25,145 215,145" fill="#D1FAE5" stroke="#059669" stroke-width="3"/><rect x="28" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="54" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#059669" font-family="Arial">${a} cm</text><rect x="162" y="74" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="188" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#059669" font-family="Arial">${b} cm</text><rect x="96" y="150" width="52" height="22" fill="white" opacity="0.9" rx="3"/><text x="122" y="166" text-anchor="middle" font-size="15" font-weight="700" fill="#059669" font-family="Arial">${c} cm</text></svg>`;
-}
-function alexT9(lvl,d){
-  const sz=scl(2,8,d);
-  const nm=['Kalle','Maja','Leo','Sara','Liam'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let display,answer,svg;
-  switch(lvl){
-    case'A':{const w=ri(sz+2,sz+8),h=ri(sz,sz+5);svg=_rectSVG(w,h);display='Vad är omkretsen av rektangeln? (P = 2×l + 2×b)';answer=`${2*(w+h)} cm`;break;}
-    case'B':{const s=ri(sz+2,sz+8);svg=_rectSVG(s,s);display='Vad är omkretsen av kvadraten? (P = 4×s)';answer=`${4*s} cm`;break;}
-    case'C':{const w=ri(sz+2,sz+8),h=ri(sz+1,sz+5);svg=_rectSVG(w,h);display='Vad är arean? (A = l × b)';answer=`${w*h} cm²`;break;}
-    case'D':{const a=ri(sz+2,sz+6),b=ri(sz+2,sz+6),c=ri(sz+1,sz+5);svg=_triSVG(a,b,c);display='Vad är omkretsen av triangeln? (P = a+b+c)';answer=`${a+b+c} cm`;break;}
-    case'E':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+7),pris=ri(3,8)*10;svg=_rectSVG(w,h);display=`${n()} ska köpa matta till ett rum som är ${w} m × ${h} m. Mattan kostar ${pris} kr per m². Hur stor är rummet? Vad kostar mattan?`;answer=`${w*h} m², ${w*h*pris} kr`;break;}
-    case'F':{const w=ri(sz+4,sz+12),h=ri(sz+3,sz+8),pris=ri(40,80+sz*5);svg=_rectSVG(w,h);display=`${n()} ska sätta upp staket runt en trädgård ${w} m × ${h} m. Staketet kostar ${pris} kr/m. Vad kostar stängsel runt hela trädgården?`;answer=`${2*(w+h)*pris} kr`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display,answer,svg,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
-}
+
+
+
 
 // T10 Statistics — Reading tables
 
@@ -1159,119 +1037,25 @@ function _barSVG(labels,values,colors){
   const yLines=[0,1,2,3,4].map(i=>{const v=Math.round(maxV*i/4),y=oy-Math.round(v/maxV*bH);return`<line x1="${ox}" y1="${y}" x2="${W-10}" y2="${y}" stroke="#E5E7EB" stroke-width="1"/><text x="${ox-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#9CA3AF" font-family="Arial">${v}</text>`;}).join('');
   return`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;margin:0 auto"><line x1="${ox}" y1="15" x2="${ox}" y2="${oy}" stroke="#CBD5E1" stroke-width="1.5"/><line x1="${ox}" y1="${oy}" x2="${W-10}" y2="${oy}" stroke="#1C1917" stroke-width="2.5"/>${yLines}${bars}</svg>`;
 }
-function _barSVG(labels,values,colors){
-  const maxV=Math.max(...values);
-  const barW=42,gap=16,bH=90,ox=50,oy=120;
-  const W=ox+values.length*(barW+gap)+30;const H=170;
-  const bars=values.map((v,i)=>{const x=ox+i*(barW+gap),bh=Math.round(v/maxV*bH),y=oy-bh;return`<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${colors[i]||'#3B82F6'}" rx="3"/><text x="${x+barW/2}" y="${y-6}" text-anchor="middle" font-size="13" font-weight="700" fill="#1C1917" font-family="Arial">${v}</text><text x="${x+barW/2}" y="${oy+22}" text-anchor="middle" font-size="14" font-weight="700" fill="#333" font-family="Arial">${labels[i]}</text>`;}).join('');
-  const yL=[0,1,2,3,4].map(i=>{const v=Math.round(maxV*i/4),y=oy-Math.round(v/maxV*bH);return`<line x1="${ox}" y1="${y}" x2="${W-10}" y2="${y}" stroke="#E5E7EB" stroke-width="1"/><text x="${ox-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#9CA3AF" font-family="Arial">${v}</text>`;}).join('');
-  return`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;margin:0 auto"><line x1="${ox}" y1="15" x2="${ox}" y2="${oy}" stroke="#CBD5E1" stroke-width="1.5"/><line x1="${ox}" y1="${oy}" x2="${W-10}" y2="${oy}" stroke="#1C1917" stroke-width="2.5"/>${yL}${bars}</svg>`;
-}
-function alexT10(lvl,d){
-  const mx=4+Math.floor(d/9*8);let display,answer,svg;
-  const labels=['Katt','Hund','Fisk','Kanin'];
-  const colors=['#3B82F6','#EF4444','#EAB308','#10B981'];
-  const days=['Mån','Tis','Ons','Tor','Fre'];
-  switch(lvl){
-    case'A':{const vs=[ri(3,mx+4),ri(2,mx+3),ri(4,mx+5)];const ls=labels.slice(0,3),cs=colors.slice(0,3);svg=_barSVG(ls,vs,cs);display=`Hur många ${ls[1]} finns det i diagrammet?`;answer=String(vs[1]);break;}
-    case'B':{const vs=[ri(4,mx+5),ri(2,mx+2),ri(5,mx+6)];const ls=labels.slice(0,3),cs=colors.slice(0,3);svg=_barSVG(ls,vs,cs);const diff=Math.abs(vs[0]-vs[1]);display=`Hur många fler ${ls[0]} än ${ls[1]}?`;answer=String(diff);break;}
-    case'C':{let nums,s,att=0;do{nums=[ri(2,mx),ri(2,mx),ri(2,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%3!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/3);break;}
-    case'D':{let nums,s,att=0;do{nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%4!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/4);break;}
-    case'E':{const vs=[ri(3,mx+5),ri(2,mx+3),ri(4,mx+6),ri(1,mx+2)];svg=_barSVG(labels,vs,colors);const tot=vs.reduce((a,b)=>a+b,0);display='Hur många djur totalt i diagrammet?';answer=String(tot);break;}
-    case'F':{const nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)].sort((a,b)=>a-b);const sh=[...nums].sort(()=>Math.random()-.5);display=`Temperaturen fem dagar: ${sh.join(', ')}°C. Ordna talen och hitta medianen.`;answer=`${nums[2]}°C`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display,answer,svg,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
-}
+
+
 
 // ── ESTELLE ──
 
 // T1 Decimal Arithmetic (updated with difficulty)
-function estT1(lvl,d){
-  const off=scl(0,20,d);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let a,b,ans;
-  switch(lvl){
-    case'A':{do{a=ri(10+off,50+off)+ri(1,9)/10;b=ri(1,15+off/5)+ri(1,9)/10;}while(Math.round(a*10%10+b*10%10)>=10);const s=Math.round((a+b)*10)/10;return{display:`${sv(a.toFixed(1))} + ${sv(b.toFixed(1))}`,answer:sv(s.toFixed(1)),hint:`= ${sv(s.toFixed(1))}`};}
-    case'B':{do{a=ri(15+off,50+off)+ri(1,9)/10;b=ri(1,20+off/5)+ri(1,9)/10;}while(b>=a);const s=Math.round((a-b)*10)/10;return{display:`${sv(a.toFixed(1))} − ${sv(b.toFixed(1))}`,answer:sv(s.toFixed(1)),hint:`= ${sv(s.toFixed(1))}`};}
-    case'C':{a=ri(2+off/5,9)+ri(1,9)/10;b=ri(2,7);ans=Math.round(a*b*10)/10;return{display:`${sv(a.toFixed(1))} × ${b}`,answer:sv(ans.toFixed(1)),hint:`= ${sv(ans.toFixed(1))}`};}
-    case'D':{b=ri(2,6);const qv=ri(2,8)+ri(1,9)/10;a=Math.round(qv*b*10)/10;return{display:`${sv(a.toFixed(1))} ÷ ${b}`,answer:sv(qv.toFixed(1)),hint:`= ${sv(qv.toFixed(1))}`};}
-    case'E':{const na=n(),x=ri(10+off,50+off)+ri(1,9)/10,y=ri(5+off/5,30+off/5)+ri(1,9)/10;const tot=Math.round((x+y)*10)/10;return{display:`${na} köper en smoothie för ${sv(x.toFixed(1))} kr och en macka för ${sv(y.toFixed(1))} kr. Hur mycket betalar ${na} totalt?`,answer:`${sv(tot.toFixed(1))} kr`,hint:`${sv(x.toFixed(1))}+${sv(y.toFixed(1))}=${sv(tot.toFixed(1))}`,type:'reason'};}
-    case'F':{const na=n(),p=ri(2+off/5,7)+ri(1,9)/10,ant=ri(3,6);const tot=Math.round(p*ant*10)/10;return{display:`En apelsin kostar ${sv(p.toFixed(1))} kr. ${na} köper ${ant} stycken. Hur mycket kostar det totalt?`,answer:`${sv(tot.toFixed(1))} kr`,hint:`${sv(p.toFixed(1))}×${ant}=${sv(tot.toFixed(1))}`,type:'reason'};}
-  }
-}
+
 
 // T2 Multiply & Divide Decimals
-function estT2(lvl,d){
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const pairs=[{p:'50%',f:'1/2'},{p:'25%',f:'1/4'},{p:'75%',f:'3/4'},{p:'10%',f:'1/10'},{p:'20%',f:'1/5'}];const it=pairs[ri(0,4)];q=`Skriv ${it.p} som ett bråk`;ans=it.f;break;}
-    case'B':{const pcts=[10,20,25,50];const p=pcts[ri(0,3)],x=ri(4+scl(0,10,d),20+scl(0,30,d))*4;q=`Beräkna ${p}% av ${x}`;ans=sv(x*p/100);break;}
-    case'C':{const p=ri(1,19)*5;q=`Skriv ${p}% som ett decimaltal`;ans=sv(p/100);break;}
-    case'D':{const p=[10,20,25,50][ri(0,3)],x=ri(4,16+scl(0,10,d))*10,op=ri(0,1);const res=Math.round((op?x*(1+p/100):x*(1-p/100))*100)/100;q=`${op?'Öka':'Minska'} ${x} med ${p}%`;ans=sv(res);break;}
-    case'E':{const pris=ri(4,20+scl(0,10,d))*50,rab=[10,20,25,30][ri(0,3)];const eff=Math.round(pris*(1-rab/100));q=`En jacka kostar ${pris} kr. Den är nedsatt med ${rab}%. Vad kostar jackan nu?`;ans=`${eff} kr`;break;}
-    case'F':{const orig=ri(3,12)*100,ok=[5,10,15,20][ri(0,3)];const ny=Math.round(orig*(1+ok/100));q=`Ett busskort kostar ${orig} kr. Priset höjs med ${ok}%. Vad kostar det nu? Hur mycket mer är det?`;ans=`${ny} kr (${ny-orig} kr mer)`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T3 Rounding & Estimation
-function estT3(lvl,d){
-  const f=2+Math.floor(d/9*4);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{let nu,dn,g;do{dn=ri(6,16);nu=ri(2,dn-1);g=gcd(nu,dn);}while(g<2);q=`Förenkla ${nu}/${dn}`;ans=`${nu/g}/${dn/g}`;break;}
-    case'B':{const dn=ri(4,10),mult=ri(2,f);const nu=ri(1,dn-1);q=`Skriv ${nu}/${dn} med nämnaren ${dn*mult}`;ans=`${nu*mult}/${dn*mult}`;break;}
-    case'C':{const dn=ri(4,12),n1=ri(1,Math.floor(dn/2)),n2=ri(1,Math.floor(dn/2));const s=n1+n2;const g=gcd(s,dn);const a=s>=dn?`${Math.floor(s/dn)}${s%dn>0?` ${s%dn}/${dn}`:''}`:`${s/g}/${dn/g}`;q=`${n1}/${dn} + ${n2}/${dn}`;ans=a;break;}
-    case'D':{const dn=ri(4,12),n1=ri(3,dn-1),n2=ri(1,n1-1);const diff=n1-n2;const g2=gcd(diff,dn);q=`${n1}/${dn} − ${n2}/${dn}`;ans=`${diff/g2}/${dn/g2}`;break;}
-    case'E':{q=`${n()} åt 1/4 av en pizza på fredagen och 2/4 på lördagen. Hur stor del åts totalt? Hur stor del är kvar?`;ans='3/4 åts, 1/4 kvar';break;}
-    case'F':{const hel=ri(12,24),dn=ri(3,6),nu=ri(1,dn-1),del=Math.round(hel*nu/dn);q=`Av ${hel} elever i en klass är ${nu}/${dn} flickor. Hur många flickor är det?`;ans=`${del} flickor`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T4 Fractions Simplify & Expand
-function estT4(lvl,d){
-  const c=1+Math.floor(d/9*5);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const a=ri(2,c+3),b=ri(2,c+3);q=`Förenkla: ${a}x + ${b}x`;ans=`${a+b}x`;break;}
-    case'B':{const a=ri(3,c+5),x=ri(4,c+8);q=`Lös: x + ${a} = ${x+a}`;ans=`x = ${x}`;break;}
-    case'C':{const a=ri(2,c+4),x=ri(3,c+6);q=`Lös: ${a}x = ${a*x}`;ans=`x = ${x}`;break;}
-    case'D':{const a=ri(2,4),b=ri(2,c+3),x=ri(2,c+5);q=`Lös: ${a}x + ${b} = ${a*x+b}`;ans=`x = ${x}`;break;}
-    case'E':{const na=n(),ant=ri(3,7),pris=ri(15,45+c*5),tot=ant*pris;q=`${na} köper ${ant} lika dyra böcker och betalar ${tot} kr totalt. Skriv en ekvation och lös den. Vad kostar en bok?`;ans=`${ant}x = ${tot}  →  x = ${pris} kr`;break;}
-    case'F':{const a=ri(2,c+2),b=ri(3,c+4),x=ri(2,5);q=`En rektangel har längden ${a}(x + ${b}) cm. Expandera uttrycket. Om x = ${x}, vad är längden?`;ans=`${a}x + ${a*b} cm  →  ${a*x+a*b} cm`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T5 Percentages
-function estT5(lvl,d){
-  const off=scl(0,5,d);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const a=ri(12+off,49+off),b=ri(3,9);q=`${a} × ${b}`;ans=String(a*b);break;}
-    case'B':{const a=ri(12+off,49+off),b=ri(12+off,39+off);q=`${a} × ${b}`;ans=String(a*b);break;}
-    case'C':{const b=ri(2,7+off),qv=ri(20,60+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
-    case'D':{const b=ri(11+off,19+off),qv=ri(12,25+off);q=`${b*qv} ÷ ${b}`;ans=String(qv);break;}
-    case'E':{const na=n(),ant=ri(12+off,49+off),pris=ri(12+off,39+off);q=`En skola köper ${ant} miniräknare à ${pris} kr styck. Hur mycket kostar det totalt?`;ans=`${ant*pris} kr`;break;}
-    case'F':{const el=ri(5,12+off)*ri(12,18+off),lär=ri(3,8+off);const klass=Math.floor(el/lär),rest=el%lär;q=`${el} elever ska delas in i ${lär} lika stora grupper. Hur många elever per grupp? Är det någon rest?`;ans=rest>0?`${klass} elever per grupp, ${rest} över`:`${klass} elever per grupp, jämnt`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T6 Algebra — Simplify
 function _trapSVG(a,b,h){
@@ -1279,91 +1063,19 @@ function _trapSVG(a,b,h){
   const tx=(W-tW)/2,bx=(W-bW)/2;
   return`<svg viewBox="0 0 ${W} 160" width="220" height="145" style="display:block;margin:0 auto"><polygon points="${tx},25 ${tx+tW},25 ${bx+bW},135 ${bx},135" fill="#EDE9FE" stroke="#764BA2" stroke-width="3"/><line x1="${tx}" y1="15" x2="${tx+tW}" y2="15" stroke="#374151" stroke-width="1.5"/><line x1="${tx}" y1="10" x2="${tx}" y2="20" stroke="#374151" stroke-width="1.5"/><line x1="${tx+tW}" y1="10" x2="${tx+tW}" y2="20" stroke="#374151" stroke-width="1.5"/><rect x="${W/2-22}" y="3" width="44" height="18" fill="white" rx="3"/><text x="${W/2}" y="16" text-anchor="middle" font-size="14" font-weight="700" fill="#764BA2" font-family="Arial">${a} cm</text><line x1="${bx}" y1="148" x2="${bx+bW}" y2="148" stroke="#374151" stroke-width="1.5"/><line x1="${bx}" y1="143" x2="${bx}" y2="153" stroke="#374151" stroke-width="1.5"/><line x1="${bx+bW}" y1="143" x2="${bx+bW}" y2="153" stroke="#374151" stroke-width="1.5"/><rect x="${W/2-22}" y="150" width="44" height="16" fill="white" rx="3"/><text x="${W/2}" y="162" text-anchor="middle" font-size="14" font-weight="700" fill="#764BA2" font-family="Arial">${b} cm</text><line x1="12" y1="25" x2="12" y2="135" stroke="#374151" stroke-width="1.5"/><line x1="6" y1="25" x2="18" y2="25" stroke="#374151" stroke-width="1.5"/><line x1="6" y1="135" x2="18" y2="135" stroke="#374151" stroke-width="1.5"/><rect x="17" y="72" width="30" height="18" fill="white" rx="3"/><text x="32" y="85" text-anchor="middle" font-size="14" font-weight="700" fill="#764BA2" font-family="Arial">${h} cm</text></svg>`;
 }
-function estT6(lvl,d){
-  const sz=scl(3,12,d);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let display,answer,svg;
-  switch(lvl){
-    case'A':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+8);svg=_rectSVG(w,h);display='Vad är arean av rektangeln? (A = l × b)';answer=`${w*h} cm²`;break;}
-    case'B':{const b2=ri(sz+3,sz+10)*2,h2=ri(sz+2,sz+8)*2;svg=_triSVG(b2,h2,ri(sz+4,sz+9));display=`Vad är arean? (A = bas × höjd ÷ 2, bas=${b2} cm, höjd=${h2} cm)`;answer=`${b2*h2/2} cm²`;break;}
-    case'C':{const a=ri(sz+2,sz+8),b=ri(a+2,a+8),h=ri(sz+2,sz+6);const area=Math.round((a+b)*h/2);svg=_trapSVG(a,b,h);display='Area av trapets? (A = (a+b)/2 × h)';answer=`${area} cm²`;break;}
-    case'D':{const l=ri(sz+3,sz+10),b2=ri(sz+2,sz+7),h=ri(sz+2,sz+6);svg=_rectSVG(l,b2);display=`Volym av rätblock ${l} cm × ${b2} cm × ${h} cm? (V = l × b × h)`;answer=`${l*b2*h} cm³`;break;}
-    case'E':{const w=ri(sz+3,sz+12),h=ri(sz+2,sz+8),pris=ri(2,8)*10;svg=_rectSVG(w,h);display=`${n()} ska lägga parkettgolv i ett rum ${w} m × ${h} m. Parketten kostar ${pris} kr per m². Vad kostar det totalt?`;answer=`${w*h} m²  →  ${w*h*pris} kr`;break;}
-    case'F':{const w=ri(sz+5,sz+14),h=ri(sz+4,sz+10),tw=ri(sz+1,sz+4),th=ri(sz+1,sz+3);svg=_rectSVG(w,h);display=`En vägg är ${w} m × ${h} m. Det finns ett fönster ${tw} m × ${th} m. Hur stor väggyta ska målas?`;answer=`${w*h}-${tw*th}=${w*h-tw*th} m²`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display,answer,svg,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T7 Equations — Balance method
-function estT7(lvl,d){
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const x=ri(2,7);q=`${x}² = ?`;ans=String(x*x);break;}
-    case'B':{const x=ri(6,12);q=`${x}² = ?`;ans=String(x*x);break;}
-    case'C':{const x=ri(2,5);q=`${x}³ = ?`;ans=String(x*x*x);break;}
-    case'D':{const x=ri(2,12);q=`√${x*x} = ?`;ans=String(x);break;}
-    case'E':{const a=ri(2,8),b=ri(2,6);q=`Beräkna: ${a}² + ${b}²`;ans=`${a*a}+${b*b}=${a*a+b*b}`;break;}
-    case'F':{const trips=[[3,4,5],[5,12,13],[6,8,10],[8,15,17]];const t=trips[ri(0,3)];q=`En rätvinklig triangel har kateterna ${t[0]} cm och ${t[1]} cm. Beräkna hypotenusan med Pythagoras: c² = a² + b²`;ans=`c² = ${t[0]*t[0]+t[1]*t[1]}  →  c = ${t[2]} cm`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T8 Geometry — Area
-function estT8(lvl,d){
-  const mx=5+Math.floor(d/9*10);
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let display,answer,svg;
-  switch(lvl){
-    case'A':{let nums,s,att=0;do{nums=[ri(3,mx),ri(3,mx),ri(3,mx),ri(3,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%4!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/4);break;}
-    case'B':{const nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)].sort((a,b)=>a-b);const sh=[...nums].sort(()=>Math.random()-.5);display=`Median av: ${sh.join(', ')}`;answer=String(nums[2]);break;}
-    case'C':{const labels=['Mån','Tis','Ons','Tor','Fre'],vs=[ri(4,mx+3),ri(4,mx+3),ri(4,mx+3),ri(4,mx+3),ri(4,mx+3)];const tot=vs.reduce((a,b)=>a+b,0);svg=_barSVG(labels,vs,['#764BA2','#A855F7','#C084FC','#9333EA','#6D28D9']);display='Hur många elever var frånvarande hela veckan?';answer=`${tot} elever`;break;}
-    case'D':{const target=ri(5,mx),cnt=4,others=Array.from({length:cnt-1},()=>ri(2,mx));const miss=target*cnt-others.reduce((a,b)=>a+b,0);if(miss<1||miss>mx*2)return estT8(lvl,d);display=`Medelvärde av ${cnt} tal = ${target}. Talen är: ${others.join(', ')} och ?`;answer=String(miss);break;}
-    case'E':{const labels2=['Klass A','Klass B','Klass C'],vs2=[ri(18,24),ri(18,24),ri(18,24)];const max=Math.max(...vs2),min=Math.min(...vs2);svg=_barSVG(labels2,vs2,['#764BA2','#A855F7','#C084FC']);display='Vilken klass är störst? Vad är skillnaden mellan störst och minst?';answer=`${labels2[vs2.indexOf(max)]} (${max}), skillnad ${max-min}`;break;}
-    case'F':{const prov=[ri(50,90),ri(50,90),ri(50,90)];const snitt=Math.round(prov.reduce((a,b)=>a+b)/3);const mål=ri(snitt+5,95);const beh=mål*4-prov.reduce((a,b)=>a+b,0);display=`${n()} har fått ${prov.join(', ')}p på tre prov (snitt ${snitt}p). Hen vill ha snitt ${mål}p efter 4 prov. Hur många poäng behövs på nästa prov?`;answer=`${Math.max(0,beh)} poäng`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display,answer,svg:svg||null,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T9 Statistics — Mean
-function estT9(lvl,d){
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const nums=[ri(-15,-1),ri(-12,-2),ri(1,8),ri(-10,-3)].sort(()=>Math.random()-.5);const sorted=[...nums].sort((a,b)=>a-b);q=`Ordna talen från minst till störst: ${nums.join(', ')}`;ans=sorted.join(' < ');break;}
-    case'B':{const a=ri(3,15),b=ri(1,12);q=`${a} + (−${b}) = ?`;ans=String(a-b);break;}
-    case'C':{const a=ri(-8,8),b=ri(2,10);q=`${a} − ${b} = ?`;ans=String(a-b);break;}
-    case'D':{const a=ri(2,9),b=ri(2,9),neg=ri(0,1);q=neg?`−${a} × ${b} = ?`:`${a} × (−${b}) = ?`;ans=`−${a*b}`;break;}
-    case'E':{const t1=ri(-15,-3),t2=ri(2,15);q=`På morgonen är temperaturen ${t1}°C. På eftermiddagen är det ${t2}°C. Hur många grader steg temperaturen?`;ans=`${t2-t1} grader`;break;}
-    case'F':{const skuld=ri(200,500),spar=ri(50,150),mån=ri(3,6);const kvar=skuld-spar*mån;q=`${n()} har ${skuld} kr i skuld (−${skuld} kr). Hen sparar ${spar} kr i månaden. Hur mycket skuld kvar efter ${mån} månader?`;ans=kvar>0?`−${kvar} kr (fortfarande i skuld)`:`Skulden är betald! ${Math.abs(kvar)} kr över`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // T10 Powers
-function estT10(lvl,d){
-  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
-  const n=()=>nm[ri(0,nm.length-1)];
-  let q,ans;
-  switch(lvl){
-    case'A':{const x=ri(10,80)+ri(10,99)/100;q=`Avrunda ${sv(x.toFixed(2))} till 1 decimal`;ans=sv((Math.round(x*10)/10).toFixed(1));break;}
-    case'B':{const tot=ri(4,10),fav=ri(1,tot-1);q=`En påse har ${tot} kulor varav ${fav} är röda. Sannolikhet att plocka röd kula?`;ans=`${fav}/${tot}`;break;}
-    case'C':{const tots=[4,5,8,10,20];const tot=tots[ri(0,4)],fav=ri(1,tot-1);q=`Sannolikheten är ${fav}/${tot}. Skriv detta som procent.`;ans=`${Math.round(fav/tot*100)}%`;break;}
-    case'D':{const x=ri(1000,9999);const mag=Math.pow(10,Math.floor(Math.log10(x)));const r=Math.round(x/mag)*mag;q=`Avrunda ${x} till 2 signifikanta siffror`;ans=String(r);break;}
-    case'E':{const dagar=['mån','tis','ons','tor','fre','lör','sön'];const nx=ri(2,4);q=`Om man väljer en slumpmässig dag i veckan, vad är sannolikheten att det är ${nx === 1 ? 'en måndag' : 'en av de första ' + nx + ' vardagarna'} (av 7 dagar)?`;ans=`${nx}/7 ≈ ${Math.round(nx/7*100)}%`;break;}
-    case'F':{const tot=ri(40,80),fav=ri(8,Math.floor(tot/2));q=`I en klass om ${tot} elever gillar ${fav} stycken fotboll. Uppskatta sannolikheten (till 1 decimal). Är det troligare eller otroligare än 50%?`;ans=`${fav}/${tot} ≈ ${sv((Math.round(fav/tot*10)/10).toFixed(1))} = ${Math.round(fav/tot*100)}%  (${fav/tot>0.5?'troligare':'otroligare'} än 50%)`;break;}
-  }
-  const isR=lvl==='E'||lvl==='F';
-  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
-}
+
 
 // ── QUESTION BROWSER ────────────────────────────────────────────
 function showQuestionBrowser(profile){
@@ -1455,6 +1167,131 @@ function showQuestionBrowser(profile){
 
   buildBrowser();
 }
+
+// ── VISUAL SVG HELPERS ──────────────────────────────────────────
+
+function _thermometerSVG(temp){
+  // Range: -20 to +40
+  const mn=-20,mx=40,range=mx-mn;
+  const pct=Math.max(0,Math.min(1,(temp-mn)/range));
+  const bulbY=175,tubeTop=25,tubeH=150;
+  const fillH=Math.round(tubeH*pct);
+  const fillY=tubeTop+tubeH-fillH;
+  const col=temp<0?'#60A5FA':temp<15?'#34D399':temp<25?'#FBBF24':'#EF4444';
+  const ticks=[];
+  for(let t=-20;t<=40;t+=10){
+    const y=tubeTop+tubeH-Math.round(tubeH*(t-mn)/range);
+    ticks.push(`<line x1="55" y1="${y}" x2="${t%20===0?48:52}" y2="${y}" stroke="#374151" stroke-width="1.5"/>`);
+    if(t%20===0)ticks.push(`<text x="44" y="${y+4}" text-anchor="end" font-size="10" fill="#374151" font-family="Arial">${t}°</text>`);
+  }
+  return`<svg viewBox="0 0 100 210" width="80" height="168" style="display:block;margin:0 auto">
+    ${ticks.join('')}
+    <rect x="52" y="${tubeTop}" width="12" height="${tubeH}" rx="6" fill="#E5E7EB" stroke="#D1D5DB" stroke-width="1"/>
+    <rect x="52" y="${fillY}" width="12" height="${fillH}" rx="3" fill="${col}"/>
+    <circle cx="58" cy="${bulbY}" r="12" fill="${col}" stroke="#D1D5DB" stroke-width="1"/>
+    <rect x="54" y="${tubeTop+tubeH-8}" width="8" height="10" fill="${col}"/>
+    <text x="58" y="${bulbY+5}" text-anchor="middle" font-size="10" font-weight="bold" fill="white" font-family="Arial">${temp}°</text>
+    <rect x="56" y="${fillY-24}" width="28" height="18" fill="white" rx="3" stroke="${col}" stroke-width="1.5"/>
+    <text x="70" y="${fillY-11}" text-anchor="middle" font-size="11" font-weight="bold" fill="${col}" font-family="Arial">${temp}°C</text>
+  </svg>`;
+}
+
+function _balanceSVG(leftExpr,rightVal,balanced){
+  const tilt=balanced?0:(leftExpr.includes('?')?-8:8);
+  const lY=80+tilt,rY=80-tilt;
+  return`<svg viewBox="0 0 240 160" width="220" height="147" style="display:block;margin:0 auto">
+    <line x1="120" y1="20" x2="120" y2="90" stroke="#374151" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="120" cy="90" r="5" fill="#374151"/>
+    <line x1="40" y1="90" x2="200" y2="90" stroke="#374151" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="40" y1="90" x2="40" y2="${lY}" stroke="#374151" stroke-width="2"/>
+    <line x1="200" y1="90" x2="200" y2="${rY}" stroke="#374151" stroke-width="2"/>
+    <rect x="18" y="${lY}" width="44" height="32" rx="6" fill="#DBEAFE" stroke="#1E3A8A" stroke-width="2"/>
+    <text x="40" y="${lY+22}" text-anchor="middle" font-size="13" font-weight="bold" fill="#1E3A8A" font-family="Arial">${leftExpr}</text>
+    <rect x="178" y="${rY}" width="44" height="32" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="2"/>
+    <text x="200" y="${rY+22}" text-anchor="middle" font-size="13" font-weight="bold" fill="#059669" font-family="Arial">${rightVal}</text>
+    <polygon points="100,140 120,110 140,140" fill="#9CA3AF"/>
+  </svg>`;
+}
+
+function _batterySVG(pct){
+  const fillW=Math.round(140*Math.min(100,Math.max(0,pct))/100);
+  const col=pct>=60?'#10B981':pct>=30?'#F59E0B':'#EF4444';
+  return`<svg viewBox="0 0 200 90" width="190" height="86" style="display:block;margin:0 auto">
+    <rect x="10" y="20" width="160" height="50" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="2"/>
+    <rect x="170" y="33" width="14" height="24" rx="4" fill="#D1D5DB"/>
+    <rect x="16" y="26" width="${fillW}" height="38" rx="5" fill="${col}"/>
+    <text x="90" y="52" text-anchor="middle" font-size="18" font-weight="bold" fill="${pct>50?'white':'#374151'}" font-family="Arial">${pct}%</text>
+  </svg>`;
+}
+
+function _diceSVG(n){
+  const dots={
+    1:[[50,50]],
+    2:[[25,25],[75,75]],
+    3:[[25,25],[50,50],[75,75]],
+    4:[[25,25],[75,25],[25,75],[75,75]],
+    5:[[25,25],[75,25],[50,50],[25,75],[75,75]],
+    6:[[25,20],[75,20],[25,50],[75,50],[25,80],[75,80]]
+  };
+  const d=dots[Math.max(1,Math.min(6,n))];
+  const dotsSVG=d.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="7" fill="#1E3A8A"/>`).join('');
+  return`<svg viewBox="0 0 100 100" width="90" height="90" style="display:block;margin:0 auto">
+    <rect x="5" y="5" width="90" height="90" rx="16" fill="white" stroke="#374151" stroke-width="3"/>
+    ${dotsSVG}
+  </svg>`;
+}
+
+function _priceTagSVG(price,label){
+  const lbl=label||'Pris';
+  return`<svg viewBox="0 0 180 100" width="170" height="95" style="display:block;margin:0 auto">
+    <path d="M20,10 L140,10 L160,50 L140,90 L20,90 Z" fill="#FEF3C7" stroke="#D97706" stroke-width="2.5"/>
+    <circle cx="35" cy="50" r="7" fill="none" stroke="#D97706" stroke-width="2"/>
+    <text x="95" y="38" text-anchor="middle" font-size="11" fill="#92400E" font-family="Arial">${lbl}</text>
+    <text x="95" y="62" text-anchor="middle" font-size="20" font-weight="bold" fill="#92400E" font-family="Arial">${price} kr</text>
+  </svg>`;
+}
+function _gridSVG(points,size,fourQuad){
+  const sz=size||6,W=220,H=220,pad=30;
+  const gs=Math.floor((W-pad*2)/sz);
+  const cx=fourQuad?W/2:pad,cy=fourQuad?H/2:H-pad;
+  const toX=v=>fourQuad?cx+v*gs:pad+v*gs;
+  const toY=v=>fourQuad?cy-v*gs:H-pad-v*gs;
+  let lines='',labels='',dots='';
+  // Grid lines
+  const minV=fourQuad?-sz:0,maxV=sz;
+  for(let v=minV;v<=maxV;v++){
+    const gx=toX(v),gy=toY(v);
+    if(v!==0){
+      lines+=`<line x1="${gx}" y1="${pad}" x2="${gx}" y2="${H-pad}" stroke="#E5E7EB" stroke-width="1"/>`;
+      lines+=`<line x1="${pad}" y1="${gy}" x2="${W-pad}" y2="${gy}" stroke="#E5E7EB" stroke-width="1"/>`;
+    }
+    if(v!==0&&Math.abs(v)<=sz&&v%2===0){
+      labels+=`<text x="${gx}" y="${cy+16}" text-anchor="middle" font-size="10" fill="#6B7280" font-family="Arial">${v}</text>`;
+      if(fourQuad)labels+=`<text x="${cx-14}" y="${gy+4}" text-anchor="middle" font-size="10" fill="#6B7280" font-family="Arial">${v}</text>`;
+    }
+  }
+  // Axes
+  lines+=`<line x1="${pad}" y1="${cy}" x2="${W-pad}" y2="${cy}" stroke="#374151" stroke-width="2"/>`;
+  lines+=`<line x1="${cx}" y1="${pad}" x2="${cx}" y2="${H-pad}" stroke="#374151" stroke-width="2"/>`;
+  // Arrowheads
+  lines+=`<polygon points="${W-pad},${cy} ${W-pad-8},${cy-4} ${W-pad-8},${cy+4}" fill="#374151"/>`;
+  lines+=`<polygon points="${cx},${pad} ${cx-4},${pad+8} ${cx+4},${pad+8}" fill="#374151"/>`;
+  // Axis labels
+  labels+=`<text x="${W-pad+4}" y="${cy+4}" font-size="12" font-weight="bold" fill="#374151" font-family="Arial">x</text>`;
+  labels+=`<text x="${cx+4}" y="${pad-4}" font-size="12" font-weight="bold" fill="#374151" font-family="Arial">y</text>`;
+  // Origin
+  labels+=`<text x="${cx-12}" y="${cy+14}" font-size="10" fill="#6B7280" font-family="Arial">0</text>`;
+  // Points
+  points.forEach(([px,py],i)=>{
+    const gx=toX(px),gy=toY(py);
+    const cols=['#EF4444','#3B82F6','#10B981'];
+    dots+=`<circle cx="${gx}" cy="${gy}" r="6" fill="${cols[i%3]}" stroke="white" stroke-width="2"/>`;
+    dots+=`<rect x="${gx+8}" y="${gy-16}" width="${String(`(${px},${py})`).length*7}" height="16" fill="white" rx="2" opacity=".9"/>`;
+    dots+=`<text x="${gx+10}" y="${gy-4}" font-size="11" font-weight="bold" fill="${cols[i%3]}" font-family="Arial">(${px},${py})</text>`;
+  });
+  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">${lines}${labels}${dots}</svg>`;
+}
+// ── END VISUAL SVG HELPERS ──────────────────────────────────────
 // ── SESSION BUILDER PREVIEW ─────────────────────────────────────
 function sbPreview(tid,lvl,profile){
   const ex=document.getElementById('sb-preview-overlay');if(ex)ex.remove();
@@ -1490,6 +1327,451 @@ function sbPreview(tid,lvl,profile){
 
 function normAns(s){return String(s).trim().replace(/,/g,'.');}
 function r3(n){return typeof n==='number'?Math.round(n*1000)/1000:n;}
+
+
+
+
+
+
+
+
+
+
+
+function alexT1(lvl,d){
+  const off=scl(0,12,d);
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  const ti=['äpplen','bollar','pennor','klistermärken','kex','kort'];
+  const t=()=>ti[ri(0,ti.length-1)];
+  switch(lvl){
+    case'A':{const a=ri(3+off,12+off),b=ri(2+off,9+off);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    case'B':{const op=ri(0,1);if(op===0){const a=ri(20+off,60+off),b=ri(10+off,30+off);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}else{const a=ri(30+off,80+off),b=ri(10,a-5);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}}
+    case'C':{const a=ri(20+off,70+off),b=ri(10+off,50+off);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    case'D':{const ts=[[2,ri(2,10)],[3,ri(2,8)],[4,ri(2,7)],[5,ri(2,8)],[10,ri(2,9)]];const[x,y]=ts[ri(0,4)];return{display:`${y} × ${x}`,answer:x*y,hint:`= ${x*y}`};}
+    case'E':{const na=n(),x=ri(20+off,80),y=ri(5+off,x-3);return{display:`${na} har ${x} ${t()}. Hen ger bort ${y} stycken. Hur många har ${na} kvar?`,answer:x-y,hint:`${x}-${y}=${x-y}`,type:'reason'};}
+    case'F':{const na=n(),ant=ri(3,7),pris=ri(5+off,15+off);return{display:`${na} köper ${ant} glassar à ${pris} kr. Hur mycket kostar det totalt?`,answer:`${ant*pris} kr`,hint:`${ant}×${pris}=${ant*pris}`,type:'reason'};}
+  }
+}
+function alexT2(lvl,d){
+  const off=scl(0,10,d);
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  switch(lvl){
+    case'A':{const kr=ri(1+off,9+off),ore=[25,50,75][ri(0,2)];return{display:`${kr} kr och ${ore} öre — skriv som decimaltal`,answer:`${kr},${ore===25?'25':ore===50?'50':'75'}`,hint:`= ${kr},${ore===25?'25':ore===50?'50':'75'} kr`};}
+    case'B':{const w=ri(1,9),dec=ri(1,9);return{display:`Skriv som decimaltal: ${w} hel och ${dec} tiondel`,answer:`${w},${dec}`,hint:`= ${w},${dec}`};}
+    case'C':{let a,b;do{a=ri(10+off,40+off)+ri(1,9)/10;b=ri(1,15+off)+ri(1,9)/10;}while(Math.round(a*10%10+b*10%10)>=10);const s=Math.round((a+b)*10)/10;return{display:`${sv(a.toFixed(1))} + ${sv(b.toFixed(1))}`,answer:sv(s.toFixed(1)),hint:`= ${sv(s.toFixed(1))}`};}
+    case'D':{let a,b;do{a=ri(15+off,50+off)+ri(1,9)/10;b=ri(1+off,20)+ri(1,9)/10;}while(b>=a);const s=Math.round((a-b)*10)/10;return{display:`${sv(a.toFixed(1))} − ${sv(b.toFixed(1))}`,answer:sv(s.toFixed(1)),hint:`= ${sv(s.toFixed(1))}`};}
+    case'E':{const na=n(),x=ri(10+off,40+off)+ri(1,9)/10,y=ri(5,25+off)+ri(1,9)/10;const tot=Math.round((x+y)*10)/10;return{display:`${na} köper en glass för ${sv(x.toFixed(1))} kr och en dricka för ${sv(y.toFixed(1))} kr. Hur mycket totalt?`,answer:`${sv(tot.toFixed(1))} kr`,type:'reason'};}
+    case'F':{const na=n(),a=ri(1,4)+ri(1,9)/10,b=ri(1,3)+ri(1,9)/10;const tot=Math.round((a+b)*10)/10;return{display:`${na} mäter en bänk (${sv(a.toFixed(1))} m) och ett bord (${sv(b.toFixed(1))} m). Hur lång är den totala längden?`,answer:`${sv(tot.toFixed(1))} m`,type:'reason'};}
+  }
+}
+function alexT3(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{const t=ri(-8,-1);q=`Termometern visar ${t}°C. Är det plus eller minus? Hur många grader under noll?`;ans=`Minus, ${Math.abs(t)} grader under noll`;break;}
+    case'B':{const a=ri(-8,-1),b=ri(-8,-1);q=`Vilket tal är störst: ${a} eller ${b}?`;ans=String(Math.max(a,b));break;}
+    case'C':{const a=ri(3,12),b=ri(a+1,15);q=`${a} − ${b} = ?`;ans=String(a-b);break;}
+    case'D':{const a=ri(2,10),b=ri(1,8);q=`${a} + (−${b}) = ?`;ans=String(a-b);return{display:q,answer:ans,svg:_thermometerSVG(a-b),hint:`= ${a-b}`};}
+    case'E':{const t1=ri(-10,-1),t2=ri(2,12);q=`På morgonen: ${t1}°C. På eftermiddagen: ${t2}°C. Hur många grader steg det?`;ans=`${t2-t1} grader`;return{display:q,answer:ans,svg:_thermometerSVG(t1),hint:`Svar: ${ans}`,type:'reason'};}
+    case'F':{const na=n(),skuld=ri(20,80),spar=ri(10,20),mån=ri(2,4);const kvar=skuld-spar*mån;q=`${na} är skyldig ${skuld} kr och sparar ${spar} kr/mån. Skuld kvar efter ${mån} månader?`;ans=kvar>0?`${kvar} kr (i skuld)`:`Betald! ${Math.abs(kvar)} kr kvar`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT4(lvl,d){
+  let q,ans;
+  switch(lvl){
+    case'A':{const x=ri(2,3);q=`${x}² = ?  (${x} × ${x})`;ans=String(x*x);break;}
+    case'B':{const x=ri(2,5);q=`${x}² = ?`;ans=String(x*x);break;}
+    case'C':{const x=ri(4,7);q=`${x}² = ?`;ans=String(x*x);break;}
+    case'D':{const t=ri(0,1);if(t===0){const x=ri(6,10);q=`${x}² = ?`;ans=String(x*x);}else{const x=ri(2,8);q=`√${x*x} = ?`;ans=String(x);}break;}
+    case'E':{const s=ri(3,8);q=`En kvadrat har sidan ${s} cm. Vad är arean? (A = sida²)`;ans=`${s*s} cm²`;break;}
+    case'F':{const a=ri(2,5),b=ri(2,4);q=`Beräkna: ${a}² + ${b}²`;ans=`${a*a} + ${b*b} = ${a*a+b*b}`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT5(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{const x=ri(12,49);q=`Avrunda ${x} till närmaste 10`;ans=String(Math.round(x/10)*10);break;}
+    case'B':{const t=ri(0,1);if(t===0){const x=ri(51,199);q=`Avrunda ${x} till närmaste 100`;ans=String(Math.round(x/100)*100);}else{const x=ri(12,89);q=`Avrunda ${x} till närmaste 10`;ans=String(Math.round(x/10)*10);}break;}
+    case'C':{const rA=Math.round(ri(20,80)/10)*10,rB=Math.round(ri(20,60)/10)*10;const o1=rA+ri(-3,3),o2=rB+ri(-3,3);q=`Uppskatta: ${o1} + ${o2} (avrunda till 10 först)`;ans=String(rA+rB);return{display:q,answer:ans,svg:_priceTagSVG(o1,'Vara 1'),hint:`≈ ${rA}+${rB}=${rA+rB}`};}
+    case'D':{const real=ri(5,15)*ri(3,7),wrong=real+ri(1,2)*ri(5,15)*(ri(0,1)?1:-1);const opts=[real,wrong].sort(()=>Math.random()-.5);q=`${opts[0]} eller ${opts[1]} — vilket svar är rimligt?`;ans=String(real);break;}
+    case'E':{const pris=ri(10,30),ant=ri(2,5);const tot=pris*ant;const est=Math.round(pris/10)*10*ant;q=`${n()} köper ${ant} saker à ${pris} kr. Uppskatta totalkostnaden (avrunda till 10).`;ans=`≈ ${est} kr (exakt: ${tot} kr)`;return{display:q,answer:ans,svg:_priceTagSVG(pris,'Per styck'),hint:`≈ ${est} kr`,type:'reason'};}
+    case'F':{const na=n(),pris=ri(10,30),ant=ri(3,8);const tot=pris*ant;const wrong=tot+ri(1,2)*10*(ri(0,1)?1:-1);q=`${na} köper ${ant} pennor à ${pris} kr. Hen räknar ut ${wrong} kr. Rimligt? Rätt svar?`;ans=`Nej, rätt svar är ${tot} kr`;return{display:q,answer:ans,svg:_priceTagSVG(pris,'Per penna'),hint:`${ant}×${pris}=${tot}`,type:'reason'};}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT6(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{const a=ri(1,5),x=ri(2,8);q=`□ + ${a} = ${x+a}   Vad är □?`;ans=`□ = ${x}`;break;}
+    case'B':{const a=ri(2,8),x=ri(3,12);q=`□ + ${a} = ${x+a}   Vad är □?`;ans=`□ = ${x}`;break;}
+    case'C':{const a=ri(2,8),x=ri(3,10);q=`Lös: x + ${a} = ${x+a}`;ans=`x = ${x}`;return{display:q,answer:ans,svg:_balanceSVG(`x + ${a}`,x+a),hint:`x = ${x}`};}
+    case'D':{const a=ri(2,5),x=ri(2,8);q=`Lös: ${a}x = ${a*x}`;ans=`x = ${x}`;return{display:q,answer:ans,svg:_balanceSVG(`${a}x`,a*x),hint:`x = ${x}`};}
+    case'E':{const na=n(),ant=ri(2,5),pris=ri(8,20),tot=ant*pris;q=`${na} köper ${ant} lika dyra böcker och betalar ${tot} kr. Skriv en ekvation och lös den.`;ans=`${ant}x = ${tot}  →  x = ${pris} kr`;break;}
+    case'F':{const na=n(),a=ri(2,4),b=ri(3,8),x=ri(2,5);q=`${na} tänker på ett tal. Talet gånger ${a} plus ${b} är ${a*x+b}. Vilket tal tänker ${na} på?`;ans=`x = ${x}`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT7(lvl,d){
+  const sz=scl(2,10,d);
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let display,answer,svg;
+  switch(lvl){
+    case'A':{const s=ri(2+sz,6+sz);svg=_rectSVG(s,s);display=`Vad är omkretsen av kvadraten? (P = 4 × sida)`;answer=`${4*s} cm`;break;}
+    case'B':{const w=ri(sz+2,sz+8),h=ri(sz+2,sz+6);svg=_rectSVG(w,h);display=`Vad är omkretsen av rektangeln? (P = 2×l + 2×b)`;answer=`${2*(w+h)} cm`;break;}
+    case'C':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+7);svg=_rectSVG(w,h);display=`Vad är arean av rektangeln? (A = l × b)`;answer=`${w*h} cm²`;break;}
+    case'D':{const a=ri(sz+2,sz+8),b=ri(sz+2,sz+6),c=ri(sz+2,sz+7);svg=_triSVG(a,b,c);display=`Vad är omkretsen av triangeln? (P = a+b+c)`;answer=`${a+b+c} cm`;break;}
+    case'E':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+7),pris=ri(2,5)*10;svg=_rectSVG(w,h);display=`${n()} ska köpa matta till ett rum ${w} m × ${h} m. Mattan kostar ${pris} kr/m². Vad kostar det?`;answer=`${w*h} m² → ${w*h*pris} kr`;break;}
+    case'F':{const w=ri(sz+4,sz+10),h=ri(sz+3,sz+8),pris=ri(20,50);svg=_rectSVG(w,h);display=`${n()} sätter upp staket runt en trädgård ${w} m × ${h} m. Staketet kostar ${pris} kr/m. Vad kostar det?`;answer=`${2*(w+h)*pris} kr`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display,answer,svg,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
+}
+function alexT8(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{q=`Hälften = 50%. Skriv 50% som ett bråk.`;ans='1/2';return{display:q,answer:ans,svg:_batterySVG(50),hint:'= 1/2'};}
+    case'B':{const pairs=[{p:'50%',f:'1/2',v:50},{p:'25%',f:'1/4',v:25},{p:'10%',f:'1/10',v:10}];const it=pairs[ri(0,2)];q=`Skriv ${it.p} som ett bråk`;ans=it.f;return{display:q,answer:ans,svg:_batterySVG(it.v),hint:`= ${ans}`};}
+    case'C':{const x=ri(2,20)*2;q=`Beräkna 50% av ${x}`;ans=String(x/2);break;}
+    case'D':{const p=[25,10][ri(0,1)],x=ri(2,20)*4;q=`Beräkna ${p}% av ${x}`;ans=sv(x*p/100);break;}
+    case'E':{const pris=ri(4,16)*10,rab=[25,50][ri(0,1)];q=`En tröja kostar ${pris} kr. Den är nedsatt med ${rab}%. Vad kostar tröjan nu?`;ans=`${Math.round(pris*(1-rab/100))} kr`;break;}
+    case'F':{const klass=ri(20,28)*1;q=`I en klass om ${klass} elever är 50% flickor. Hur många flickor?`;ans=`${Math.round(klass/2)} flickor`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT9(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{const hel=ri(2,5)*2;q=`1/2 av ${hel}`;ans=String(hel/2);break;}
+    case'B':{const d2=[2,4][ri(0,1)],hel=d2*ri(2,8);q=`1/${d2} av ${hel}`;ans=String(hel/d2);break;}
+    case'C':{const opts=[{n:3,d:4},{n:1,d:3},{n:2,d:3}];const o=opts[ri(0,2)],hel=o.d*ri(2,6);q=`${o.n}/${o.d} av ${hel}`;ans=String(o.n*hel/o.d);break;}
+    case'D':{const dn=ri(4,8),n1=ri(1,Math.floor(dn/2)),n2=ri(1,Math.floor(dn/2));const s=n1+n2,g=gcd(s,dn);const a=s>=dn?`${Math.floor(s/dn)}${s%dn>0?` ${s%dn}/${dn}`:''}`:`${s/g}/${dn/g}`;q=`${n1}/${dn} + ${n2}/${dn}`;ans=a;break;}
+    case'E':{q=`${n()} åt 1/4 av en pizza på fredagen och 1/4 på lördagen. Hur stor del åts totalt? Hur stor del är kvar?`;ans='2/4 = 1/2 åts, 1/2 kvar';break;}
+    case'F':{const dn2=ri(3,5),mult=ri(3,5),hel=dn2*mult,num=ri(1,dn2-1);q=`Av ${hel} elever är ${num}/${dn2} pojkar. Hur många pojkar? Hur många flickor?`;ans=`${hel*num/dn2} pojkar, ${hel-hel*num/dn2} flickor`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT10(lvl,d){
+  const mx=4+Math.floor(d/9*8);
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let display,answer,svg;
+  switch(lvl){
+    case'A':{const lb=['Katt','Hund','Fisk','Kanin'],vs=[ri(2,mx+2),ri(2,mx+2),ri(2,mx+2),ri(2,mx+2)];const maxI=vs.indexOf(Math.max(...vs));svg=_barSVG(lb,vs,['#3B82F6','#EF4444','#EAB308','#10B981']);display=`Vilket djur är vanligast i diagrammet?`;answer=lb[maxI];break;}
+    case'B':{const lb=['Mån','Tis','Ons','Tor'],vs=[ri(2,mx+3),ri(2,mx+3),ri(2,mx+3),ri(2,mx+3)];const tot=vs.reduce((a,b)=>a+b,0);svg=_barSVG(lb,vs,['#3B82F6','#EF4444','#EAB308','#10B981']);display=`Hur många totalt under 4 dagar?`;answer=`${tot}`;break;}
+    case'C':{let nums,s,att=0;do{nums=[ri(2,mx+2),ri(2,mx+2),ri(2,mx+2)];s=nums.reduce((a,b)=>a+b,0);}while(s%3!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/3);break;}
+    case'D':{let nums,s,att=0;do{nums=[ri(2,mx+2),ri(2,mx+2),ri(2,mx+2),ri(2,mx+2)];s=nums.reduce((a,b)=>a+b,0);}while(s%4!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/4);break;}
+    case'E':{const lb=['Mån','Tis','Ons','Tor','Fre'],vs=[ri(3,mx+4),ri(3,mx+4),ri(3,mx+4),ri(3,mx+4),ri(3,mx+4)];const tot2=vs.reduce((a,b)=>a+b,0);svg=_barSVG(lb,vs,['#3B82F6','#EF4444','#EAB308','#10B981','#F97316']);display=`Hur många elever var frånvarande totalt under hela veckan?`;answer=`${tot2} elever`;break;}
+    case'F':{const nums=[ri(2,mx+3),ri(2,mx+3),ri(2,mx+3),ri(2,mx+3),ri(2,mx+3)].sort((a,b)=>a-b);const sh=[...nums].sort(()=>Math.random()-.5);display=`Temperaturen fem dagar: ${sh.join(', ')}°C. Ordna och hitta medianen.`;answer=`Ordning: ${nums.join(', ')}  |  Median: ${nums[2]}°C`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display,answer,svg:svg||null,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
+}
+function alexT11(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    case'A':{const scenarios=[{s:'Det snöar i sommar',a:'Osannolik'},{s:'Solen går upp imorgon',a:'Säker'},{s:'En tärning visar 8',a:'Omöjlig'},{s:'Det regnar i november',a:'Trolig'}];const sc=scenarios[ri(0,3)];q=`Är detta säkert, troligt, osannolikt eller omöjligt: "${sc.s}"?`;ans=sc.a;break;}
+    case'B':{const tot=ri(4,8),fav=ri(1,tot-1),nfav=tot-fav;q=`En påse har ${fav} röda och ${nfav} blå kulor. Är det troligare att plocka röd eller blå?`;ans=fav>nfav?'Röd (flest)':fav<nfav?'Blå (flest)':'Lika troligt';break;}
+    case'C':{const tot=ri(4,8),fav=ri(1,tot-1);q=`En påse har ${tot} kulor, ${fav} röda. Sannolikhet att plocka röd?`;ans=`${fav}/${tot}`;return{display:q,answer:ans,svg:_diceSVG(fav),hint:`= ${fav}/${tot}`};}
+    case'D':{const x=ri(1,6);q=`En tärning kastas. Sannolikhet att få ${x}?`;ans=`1/6`;return{display:q,answer:ans,svg:_diceSVG(x),hint:'= 1/6'};}
+    case'E':{const tot=ri(4,8),fav=ri(1,tot-1);q=`${n()} har ${tot} glassar: ${fav} jordgubb och ${tot-fav} choklad. Vad är sannolikheten att ta en jordgubb?`;ans=`${fav}/${tot}`;break;}
+    case'F':{const a=ri(2,4),b=ri(5,8),tot=10;q=`Påse 1 har ${a}/${tot} röda kulor. Påse 2 har ${b}/${tot} röda. Från vilken påse är det störst chans att plocka röd?`;ans=`Påse 2 (${b}/${tot} > ${a}/${tot})`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function alexT12(lvl,d){
+  const nm=['Kalle','Maja','Leo','Sara','Liam','Ella'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3: Avläs punkt i första kvadranten — SVG grid
+    case'A':{const x=ri(1,6),y=ri(1,6);q=`Vad har punkten för koordinater?`;ans=`(${x}, ${y})`;return{display:q,answer:ans,svg:_gridSVG([[x,y]],6,false),hint:`x=${x}, y=${y}`};}
+    // Åk 3-4: Rita en punkt — vilken?
+    case'B':{const x=ri(1,5),y=ri(1,5);q=`En punkt har koordinaterna (${x}, ${y}). Hitta den i rutnätet.`;ans=`x=${x} → höger ${x}, y=${y} → upp ${y}`;return{display:q,answer:ans,svg:_gridSVG([[x,y]],6,false),hint:`Gå ${x} åt höger och ${y} uppåt`};}
+    // Åk 3-4: Enkel proportionalitet — dubbel/tredubbel
+    case'C':{const pris=ri(2,6),ant1=ri(2,4),ant2=ant1*ri(2,3);q=`Om ${ant1} äpplen kostar ${ant1*pris} kr, vad kostar ${ant2} äpplen?`;ans=`${ant2*pris} kr`;break;}
+    // Åk 4: Proportionellt samband i tabell
+    case'D':{const k=ri(2,6),xs=[1,2,3,4];const ys=xs.map(x=>x*k);q=`Mönster: x = ${xs.join(', ')} → y = ${ys.slice(0,3).join(', ')}, ?   Vad är y när x = 4?`;ans=String(ys[3]);break;}
+    // Åk 4: Koordinat word problem 💡
+    case'E':{const x=ri(1,5),y=ri(1,5),na=n();q=`${na} ska möta en kompis på koordinat (${x}, ${y}) på en karta. Hen börjar i (0,0). Hur många steg åt höger och hur många steg uppåt?`;ans=`${x} steg höger, ${y} steg uppåt`;return{display:q,answer:ans,svg:_gridSVG([[x,y]],6,false),hint:`Svar: ${ans}`,type:'reason'};}
+    // Åk 4-5: Skala 1:10 💡
+    case'F':{const rit=ri(3,9),vera=rit*10;q=`På en ritning är 1 cm = 10 cm på verkligheten (skala 1:10). Ritningen visar ${rit} cm. Hur lång är det på riktigt?`;ans=`${vera} cm`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT1(lvl,d){
+  const off=scl(0,15,d);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  switch(lvl){
+    // Åk 3: 2+2 siffriga addition
+    case'A':{let a,b;do{a=ri(20+off,70+off);b=ri(10,50+off);}while((a%10+b%10)>=10);return{display:`${a} + ${b}`,answer:a+b,hint:`= ${a+b}`};}
+    // Åk 3-4: 2-siffrig subtraktion med lån
+    case'B':{let a,b;do{a=ri(30+off,80+off);b=ri(10,a-5);}while(a%10>=b%10);return{display:`${a} − ${b}`,answer:a-b,hint:`= ${a-b}`};}
+    // Åk 4-5: 2×2 siffrig multiplikation
+    case'C':{const a=ri(12+off,39+off),b=ri(11+off,29+off);return{display:`${a} × ${b}`,answer:a*b,hint:`= ${a*b}`};}
+    // Åk 5: 3-siffrig ÷ 1-siffrig
+    case'D':{const dv=ri(2,7+off),qv=ri(20,60+off);return{display:`${dv*qv} ÷ ${dv}`,answer:qv,hint:`= ${qv}`};}
+    // Åk 5-6: Ordningsregler
+    case'E':{const x=ri(2+off,8),y=ri(2+off,6),z=ri(2,5);const correct=x+y*z;return{display:`${x} + ${y} × ${z} = ?`,answer:correct,hint:`Mult. först: ${x}+${y*z}=${correct}`,type:'reason'};}
+    // Åk 6: Blandad problemlösning
+    case'F':{const el=ri(60+off*5,120+off*5),gr=ri(3,7+off),per=Math.floor(el/gr),rest=el%gr;return{display:`${el} elever ska delas in i ${gr} lika stora grupper. Hur många per grupp? Är det någon rest?`,answer:rest>0?`${per} per grupp, ${rest} över`:`${per} per grupp, jämnt`,hint:`${el}÷${gr}`,type:'reason'};}
+  }
+}
+function estT2(lvl,d){
+  const off=scl(0,20,d);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  switch(lvl){
+    // Åk 3-4: Förstå tiondelar
+    case'A':{const w=ri(1,9),dec=ri(1,9);return{display:`Skriv som decimaltal: ${w} hel och ${dec} tiondel`,answer:`${w},${dec}`,hint:`= ${w},${dec}`};}
+    // Åk 4: Decimal + utan tiöverf.
+    case'B':{let a,b;do{a=ri(10+off/5,50+off)+ri(1,9)/10;b=ri(1,15+off/5)+ri(1,9)/10;}while(Math.round(a*10%10+b*10%10)>=10);const s=Math.round((a+b)*10)/10;return{display:`${sv(a.toFixed(1))} + ${sv(b.toFixed(1))}`,answer:sv(s.toFixed(1)),hint:`= ${sv(s.toFixed(1))}`};}
+    // Åk 4-5: Decimal × heltal
+    case'C':{const a=ri(2+off/5,9)+ri(1,9)/10,b=ri(2,7);const ans=Math.round(a*b*10)/10;return{display:`${sv(a.toFixed(1))} × ${b}`,answer:sv(ans.toFixed(1)),hint:`= ${sv(ans.toFixed(1))}`};}
+    // Åk 5: Decimal ÷ heltal
+    case'D':{const b=ri(2,6);const qv=ri(2,8)+ri(1,9)/10;const a=Math.round(qv*b*10)/10;return{display:`${sv(a.toFixed(1))} ÷ ${b}`,answer:sv(qv.toFixed(1)),hint:`= ${sv(qv.toFixed(1))}`};}
+    // Åk 5-6: Köp med decimal 💡
+    case'E':{const na=n(),x=ri(10+off,50+off)+ri(1,9)/10,y=ri(5+off/5,30+off/5)+ri(1,9)/10;const tot=Math.round((x+y)*10)/10;return{display:`${na} köper en smoothie för ${sv(x.toFixed(1))} kr och en macka för ${sv(y.toFixed(1))} kr. Hur mycket betalar ${na} totalt?`,answer:`${sv(tot.toFixed(1))} kr`,hint:`${sv(x.toFixed(1))}+${sv(y.toFixed(1))}=${sv(tot.toFixed(1))}`,type:'reason'};}
+    // Åk 6: Antal × decimal 💡
+    case'F':{const na=n(),p=ri(2+off/5,7)+ri(1,9)/10,ant=ri(3,6);const tot=Math.round(p*ant*10)/10;return{display:`En apelsin kostar ${sv(p.toFixed(1))} kr. ${na} köper ${ant} stycken. Hur mycket kostar det totalt?`,answer:`${sv(tot.toFixed(1))} kr`,hint:`${sv(p.toFixed(1))}×${ant}=${sv(tot.toFixed(1))}`,type:'reason'};}
+  }
+}
+function estT3(lvl,d){
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3-4: Vad är under noll — tallinje intro
+    case'A':{const t=ri(-8,-1);q=`Termometern visar ${t}°C. Är det plus eller minus? Hur långt från noll?`;ans=`Minus, ${Math.abs(t)} grader under noll`;break;}
+    // Åk 4: Jämföra negativa tal
+    case'B':{const a=ri(-10,-1),b=ri(-10,-1);q=`Vilket tal är störst: ${a} eller ${b}?`;ans=String(Math.max(a,b));break;}
+    // Åk 4-5: Ordna på tallinjen
+    case'C':{const nums=[ri(-10,-1),ri(-8,-2),ri(1,6),ri(-6,-1)].sort(()=>Math.random()-.5);q=`Ordna från minst till störst: ${nums.join(', ')}`;ans=[...nums].sort((a,b)=>a-b).join(' < ');break;}
+    // Åk 5: a + (−b) beräkning
+    case'D':{const a=ri(3,15),b=ri(1,12);q=`${a} + (−${b}) = ?`;ans=String(a-b);break;}
+    // Åk 5-6: Temperaturskillnad 💡
+    case'E':{const t1=ri(-15,-3),t2=ri(2,15);q=`På morgonen är temperaturen ${t1}°C. På eftermiddagen är det ${t2}°C. Hur många grader steg temperaturen?`;ans=`${t2-t1} grader`;return{display:q,answer:ans,svg:_thermometerSVG(t1),hint:`Svar: ${ans}`,type:'reason'};}
+    // Åk 6: Skuld & sparande 💡
+    case'F':{const skuld=ri(200,500),spar=ri(50,150),mån=ri(3,6);const kvar=skuld-spar*mån;q=`${n()} har ${skuld} kr i skuld (−${skuld} kr). Hen sparar ${spar} kr i månaden. Hur mycket skuld kvar efter ${mån} månader?`;ans=kvar>0?`−${kvar} kr (fortfarande i skuld)`:`Skulden är betald! ${Math.abs(kvar)} kr kvar`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT4(lvl,d){
+  let q,ans;
+  switch(lvl){
+    // Åk 3-4: n² enkla 2²–4²
+    case'A':{const x=ri(2,4);q=`${x}² = ?`;ans=String(x*x);break;}
+    // Åk 4: n² upp till 7²
+    case'B':{const x=ri(4,7);q=`${x}² = ?`;ans=String(x*x);break;}
+    // Åk 4-5: n² upp till 12²
+    case'C':{const x=ri(7,12);q=`${x}² = ?`;ans=String(x*x);break;}
+    // Åk 5: n³ och √n
+    case'D':{const t=ri(0,1);if(t===0){const x=ri(2,5);q=`${x}³ = ?`;ans=String(x*x*x);}else{const x=ri(2,12);q=`√${x*x} = ?`;ans=String(x);}break;}
+    // Åk 5-6: Blandade uttryck 💡
+    case'E':{const a=ri(2,8),b=ri(2,6);q=`Beräkna: ${a}² + ${b}²`;ans=`${a*a}+${b*b}=${a*a+b*b}`;break;}
+    // Åk 6: Pythagoras 💡
+    case'F':{const trips=[[3,4,5],[5,12,13],[6,8,10],[8,15,17]];const t=trips[ri(0,3)];q=`En rätvinklig triangel har kateterna ${t[0]} cm och ${t[1]} cm. Beräkna hypotenusan: c² = a² + b²`;ans=`c² = ${t[0]*t[0]+t[1]*t[1]}  →  c = ${t[2]} cm`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT5(lvl,d){
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3: Avrunda till 10
+    case'A':{const x=ri(12,89);q=`Avrunda ${x} till närmaste 10`;ans=String(Math.round(x/10)*10);break;}
+    // Åk 3-4: Avrunda till 100
+    case'B':{const x=ri(112,899);q=`Avrunda ${x} till närmaste 100`;ans=String(Math.round(x/100)*100);break;}
+    // Åk 4-5: Uppskatta summa — prislapp
+    case'C':{const rA=Math.round(ri(100,500)/10)*10,rB=Math.round(ri(100,500)/10)*10;const o1=rA+ri(-4,4),o2=rB+ri(-4,4);q=`Uppskatta: ${o1} + ${o2} (avrunda till närmaste 10 först)`;ans=String(rA+rB);return{display:q,answer:ans,svg:_priceTagSVG(o1,'Vara 1'),hint:`≈ ${rA}+${rB}=${rA+rB}`};}
+    // Åk 5: Är svaret rimligt?
+    case'D':{const real=ri(20,60)*ri(10,30);const wrong=real+ri(1,3)*ri(10,100)*(ri(0,1)?1:-1);const opts=[real,wrong].sort(()=>Math.random()-.5);q=`${opts[0]} eller ${opts[1]} — vilket svar är rimligt för en beräkning?`;ans=String(real);break;}
+    // Åk 5-6: Prislapp uppskatta 💡
+    case'E':{const pris=ri(15,60),ant=ri(3,8);const tot=pris*ant;const est=Math.round(pris/10)*10*ant;q=`${n()} köper ${ant} saker à ${pris} kr. Uppskatta totalkostnaden (avrunda priset till 10-tal).`;ans=`≈ ${est} kr (exakt: ${tot} kr)`;return{display:q,answer:ans,svg:_priceTagSVG(pris,'Per styck'),hint:`≈ ${est} kr`,type:'reason'};}
+    // Åk 6: Räkna & kontrollera rimlighet 💡
+    case'F':{const na=n(),pris=ri(30,90),ant=ri(4,12);const tot=pris*ant;const wrong=tot+ri(1,3)*10*(ri(0,1)?1:-1);q=`${na} köper ${ant} böcker à ${pris} kr. Hen räknar ut ${wrong} kr. Är det rimligt? Vad är rätt svar?`;ans=`Nej, rätt svar är ${tot} kr`;return{display:q,answer:ans,svg:_priceTagSVG(pris,'Per bok'),hint:`${ant}×${pris}=${tot}`,type:'reason'};}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT6(lvl,d){
+  const c=1+Math.floor(d/9*5);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3: □ + a = b (låda-notation)
+    case'A':{const a=ri(2,8),x=ri(3,10);q=`□ + ${a} = ${x+a}   Vad är □?`;ans=`□ = ${x}`;break;}
+    // Åk 3-4: x + a = b — balansvåg
+    case'B':{const a=ri(3,c+5),x=ri(4,c+8);q=`Lös: x + ${a} = ${x+a}`;ans=`x = ${x}`;return{display:q,answer:ans,svg:_balanceSVG(`x + ${a}`,x+a),hint:`x = ${x}`};}
+    // Åk 4-5: ax = b — balansvåg
+    case'C':{const a=ri(2,c+4),x=ri(3,c+6);q=`Lös: ${a}x = ${a*x}`;ans=`x = ${x}`;return{display:q,answer:ans,svg:_balanceSVG(`${a}x`,a*x),hint:`x = ${x}`};}
+    // Åk 5: ax + b = c
+    case'D':{const a=ri(2,4),b=ri(2,c+3),x=ri(2,c+5);q=`Lös: ${a}x + ${b} = ${a*x+b}`;ans=`x = ${x}`;break;}
+    // Åk 5-6: Ekvation från vardagsproblem 💡
+    case'E':{const na=n(),ant=ri(3,7),pris=ri(15,45+c*5),tot=ant*pris;q=`${na} köper ${ant} lika dyra böcker och betalar ${tot} kr totalt. Skriv en ekvation och lös den. Vad kostar en bok?`;ans=`${ant}x = ${tot}  →  x = ${pris} kr`;break;}
+    // Åk 6: Expandera parenteser 💡
+    case'F':{const a=ri(2,c+2),b=ri(3,c+4),x=ri(2,5);q=`En rektangel har längden ${a}(x + ${b}) cm. Expandera uttrycket. Om x = ${x}, vad är längden?`;ans=`${a}x + ${a*b} cm  →  ${a*x+a*b} cm`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT7(lvl,d){
+  const sz=scl(3,12,d);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let display,answer,svg;
+  switch(lvl){
+    // Åk 3: Omkrets rektangel
+    case'A':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+8);svg=_rectSVG(w,h);display='Vad är omkretsen av rektangeln? (P = 2×l + 2×b)';answer=`${2*(w+h)} cm`;break;}
+    // Åk 3-4: Area rektangel
+    case'B':{const w=ri(sz+3,sz+10),h=ri(sz+2,sz+8);svg=_rectSVG(w,h);display='Vad är arean av rektangeln? (A = l × b)';answer=`${w*h} cm²`;break;}
+    // Åk 4-5: Area triangel
+    case'C':{const b2=ri(sz+3,sz+10)*2,h2=ri(sz+2,sz+8)*2;svg=_triSVG(b2,h2,ri(sz+4,sz+9));display=`Area? (A = bas×höjd÷2, bas=${b2} cm, höjd=${h2} cm)`;answer=`${b2*h2/2} cm²`;break;}
+    // Åk 5: Area trapets
+    case'D':{const a=ri(sz+2,sz+8),b=ri(a+2,a+8),h=ri(sz+2,sz+6);const area=Math.round((a+b)*h/2);svg=_trapSVG(a,b,h);display='Area av trapets? (A = (a+b)/2 × h)';answer=`${area} cm²`;break;}
+    // Åk 5-6: Golvkostnad 💡
+    case'E':{const w=ri(sz+3,sz+12),h=ri(sz+2,sz+8),pris=ri(2,8)*10;svg=_rectSVG(w,h);display=`${n()} ska lägga parkettgolv i ett rum ${w} m × ${h} m. Parketten kostar ${pris} kr per m². Vad kostar det totalt?`;answer=`${w*h} m²  →  ${w*h*pris} kr`;break;}
+    // Åk 6: Vägg minus fönster 💡
+    case'F':{const w=ri(sz+5,sz+14),h=ri(sz+4,sz+10),tw=ri(sz+1,sz+4),th=ri(sz+1,sz+3);svg=_rectSVG(w,h);display=`En vägg är ${w} m × ${h} m. Det finns ett fönster ${tw} m × ${th} m. Hur stor väggyta ska målas?`;answer=`${w*h}-${tw*th}=${w*h-tw*th} m²`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display,answer,svg,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
+}
+function estT8(lvl,d){
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3-4: 50% = hälften — batteri
+    case'A':{q=`Skriv 50% som ett bråk`;ans='1/2';return{display:q,answer:ans,svg:_batterySVG(50),hint:'= 1/2'};}
+    // Åk 4: 25%=¼, 10%=1/10, 75%=¾ — batteri
+    case'B':{const pairs=[{p:'25%',f:'1/4',v:25},{p:'10%',f:'1/10',v:10},{p:'75%',f:'3/4',v:75},{p:'20%',f:'1/5',v:20}];const it=pairs[ri(0,3)];q=`Skriv ${it.p} som ett bråk`;ans=it.f;return{display:q,answer:ans,svg:_batterySVG(it.v),hint:`= ${ans}`};}
+    // Åk 4-5: Beräkna % av tal
+    case'C':{const pcts=[10,20,25,50];const p=pcts[ri(0,3)],x=ri(4+scl(0,10,d),20+scl(0,30,d))*4;q=`Beräkna ${p}% av ${x}`;ans=sv(x*p/100);break;}
+    // Åk 5: Öka/minska med %
+    case'D':{const p=[10,20,25,50][ri(0,3)],x=ri(4,16+scl(0,10,d))*10,op=ri(0,1);const res=Math.round((op?x*(1+p/100):x*(1-p/100))*100)/100;q=`${op?'Öka':'Minska'} ${x} med ${p}%`;ans=sv(res);break;}
+    // Åk 5-6: Rabatt 💡
+    case'E':{const pris=ri(4,20+scl(0,10,d))*50,rab=[10,20,25,30][ri(0,3)];const eff=Math.round(pris*(1-rab/100));q=`En jacka kostar ${pris} kr. Den är nedsatt med ${rab}%. Vad kostar jackan nu?`;ans=`${eff} kr`;break;}
+    // Åk 6: Prisökning 💡
+    case'F':{const orig=ri(3,12)*100,ok=[5,10,15,20][ri(0,3)];const ny=Math.round(orig*(1+ok/100));q=`Ett busskort kostar ${orig} kr. Priset höjs med ${ok}%. Vad kostar det nu? Hur mycket mer är det?`;ans=`${ny} kr (${ny-orig} kr mer)`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT9(lvl,d){
+  const f=2+Math.floor(d/9*4);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3: ½ och ¼ av tal
+    case'A':{const den=[2,4][ri(0,1)],hel=den*ri(2,8);q=`1/${den} av ${hel}`;ans=String(hel/den);break;}
+    // Åk 3-4: ¾, ⅓, ⅔ av tal
+    case'B':{const opts=[{n:3,d:4},{n:1,d:3},{n:2,d:3}];const o=opts[ri(0,2)],hel=o.d*ri(2,6);q=`${o.n}/${o.d} av ${hel}`;ans=String(o.n*hel/o.d);break;}
+    // Åk 4-5: Förenkla bråk
+    case'C':{let nu,dn,g;do{dn=ri(6,16);nu=ri(2,dn-1);g=gcd(nu,dn);}while(g<2);q=`Förenkla ${nu}/${dn}`;ans=`${nu/g}/${dn/g}`;break;}
+    // Åk 5: Addera/subtrahera bråk
+    case'D':{const op=ri(0,1),dn=ri(4,12),n1=ri(3,dn-1),n2=ri(1,op?n1-1:Math.floor(dn/2));if(op){const diff=n1-n2,g=gcd(diff,dn);q=`${n1}/${dn} − ${n2}/${dn}`;ans=`${diff/g}/${dn/g}`;}else{const s=n1+n2,g=gcd(s,dn);const a2=s>=dn?`${Math.floor(s/dn)}${s%dn>0?` ${s%dn}/${dn}`:''}`:`${s/g}/${dn/g}`;q=`${n1}/${dn} + ${n2}/${dn}`;ans=a2;}break;}
+    // Åk 5-6: Pizza word problem 💡
+    case'E':{q=`${n()} åt 1/4 av en pizza på fredagen och 2/4 på lördagen. Hur stor del åts totalt? Hur stor del är kvar?`;ans='3/4 åts, 1/4 kvar';break;}
+    // Åk 6: Klass-bråk word problem 💡
+    case'F':{const dn2=ri(3,6),mult2=ri(3,6),hel2=dn2*mult2,nu2=ri(1,dn2-1),del2=hel2*nu2/dn2;q=`Av ${hel2} elever i en klass är ${nu2}/${dn2} flickor. Hur många flickor är det?`;ans=`${del2} flickor`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT10(lvl,d){
+  const mx=5+Math.floor(d/9*10);
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let display,answer,svg;
+  switch(lvl){
+    // Åk 3: Avläsa stapeldiagram
+    case'A':{const lb=['Katt','Hund','Fisk','Kanin'],vs=[ri(3,mx+3),ri(2,mx+2),ri(4,mx+4),ri(1,mx+1)];const idx=ri(0,3);svg=_barSVG(lb,vs,['#3B82F6','#EF4444','#EAB308','#10B981']);display=`Hur många ${lb[idx]} finns det i diagrammet?`;answer=String(vs[idx]);break;}
+    // Åk 3-4: Jämföra staplar
+    case'B':{const lb=['Katt','Hund','Fisk','Kanin'],vs=[ri(4,mx+4),ri(3,mx+3),ri(5,mx+5),ri(2,mx+2)];const maxV=Math.max(...vs),minV=Math.min(...vs);svg=_barSVG(lb,vs,['#3B82F6','#EF4444','#EAB308','#10B981']);display=`Hur många fler ${lb[vs.indexOf(maxV)]} än ${lb[vs.indexOf(minV)]}?`;answer=String(maxV-minV);break;}
+    // Åk 4-5: Medelvärde
+    case'C':{let nums,s,att=0;do{nums=[ri(3,mx),ri(3,mx),ri(3,mx),ri(3,mx)];s=nums.reduce((a,b)=>a+b,0);}while(s%4!==0&&++att<50);display=`Medelvärde av: ${nums.join(', ')}`;answer=String(s/4);break;}
+    // Åk 5: Median + hitta saknat tal
+    case'D':{const nums=[ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx),ri(2,mx)].sort((a,b)=>a-b);const sh=[...nums].sort(()=>Math.random()-.5);display=`Median av: ${sh.join(', ')}`;answer=String(nums[2]);break;}
+    // Åk 5-6: Jämföra klasser 💡
+    case'E':{const labels2=['Klass A','Klass B','Klass C'],vs2=[ri(18,24),ri(18,24),ri(18,24)];const max2=Math.max(...vs2),min2=Math.min(...vs2);svg=_barSVG(labels2,vs2,['#764BA2','#A855F7','#C084FC']);display='Vilken klass är störst? Vad är skillnaden mellan störst och minst?';answer=`${labels2[vs2.indexOf(max2)]} (${max2}), skillnad ${max2-min2}`;break;}
+    // Åk 6: Provpoäng — saknat värde 💡
+    case'F':{const prov=[ri(50,90),ri(50,90),ri(50,90)];const snitt=Math.round(prov.reduce((a,b)=>a+b)/3);const mål=ri(snitt+5,95);const beh=mål*4-prov.reduce((a,b)=>a+b,0);display=`${n()} har fått ${prov.join(', ')}p (snitt ${snitt}p). Vill ha snitt ${mål}p efter 4 prov. Hur många poäng behövs?`;answer=`${Math.max(0,beh)} poäng`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display,answer,svg:svg||null,hint:`Svar: ${answer}`,...(isR?{type:'reason'}:{})};
+}
+function estT11(lvl,d){
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3-4: Trolig/otrolig/omöjlig
+    case'A':{const scenarios=[{s:'Det snöar i juli i Sverige',a:'Otrolig'},{s:'Solen går upp imorgon',a:'Säker'},{s:'En tärning visar 7',a:'Omöjlig'},{s:'Det regnar i november i Sverige',a:'Trolig'}];const sc=scenarios[ri(0,3)];q=`Hur trolig är händelsen: "${sc.s}"?`;ans=sc.a;break;}
+    // Åk 4: Enkel sannolikhet — kulor i påse — tärning
+    case'B':{const tot=ri(4,10),fav=ri(1,tot-1);q=`En påse har ${tot} kulor varav ${fav} är röda. Sannolikhet att plocka röd kula?`;ans=`${fav}/${tot}`;return{display:q,answer:ans,svg:_diceSVG(fav),hint:`= ${fav}/${tot}`};}
+    // Åk 4-5: Sannolikhet som %
+    case'C':{const tots=[4,5,8,10,20];const tot=tots[ri(0,4)],fav=ri(1,tot-1);q=`Sannolikheten för en händelse är ${fav}/${tot}. Skriv detta som procent.`;ans=`${Math.round(fav/tot*100)}%`;break;}
+    // Åk 5: Tärning — minimum — tärningsbild
+    case'D':{const roll=ri(2,5);const favOut=6-roll+1;q=`En tärning kastas. Sannolikhet att få MINST ${roll}?`;ans=`${favOut}/6`;return{display:q,answer:ans,svg:_diceSVG(roll),hint:`= ${favOut}/6`};}
+    // Åk 5-6: Komplementhändelse 💡
+    case'E':{const tot=ri(10,20),fav=ri(3,tot-3);q=`Sannolikheten för en händelse är ${fav}/${tot}. Vad är sannolikheten att händelsen INTE inträffar?`;ans=`${tot-fav}/${tot}`;break;}
+    // Åk 6: Klassundersökning 💡
+    case'F':{const tot2=ri(40,80),fav2=ri(8,Math.floor(tot2/2));q=`I en klass om ${tot2} elever gillar ${fav2} stycken fotboll. Uppskatta sannolikheten. Troligare eller otroligare än 50%?`;ans=`${fav2}/${tot2} ≈ ${Math.round(fav2/tot2*100)}%  (${fav2/tot2>0.5?'troligare':'otroligare'} än 50%)`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
+function estT12(lvl,d){
+  const nm=['Emma','Lova','Alva','Tilda','Sofia'];
+  const n=()=>nm[ri(0,nm.length-1)];
+  let q,ans;
+  switch(lvl){
+    // Åk 3-4: Avläs punkt i första kvadranten
+    case'A':{const x=ri(1,7),y=ri(1,7);q=`Vad har punkten för koordinater? Skriv (x, y).`;ans=`(${x}, ${y})`;return{display:q,answer:ans,svg:_gridSVG([[x,y]],8,false),hint:`x=${x}, y=${y}`};}
+    // Åk 4-5: Alla fyra kvadranter
+    case'B':{const x=ri(-5,5),y=ri(-5,5);q=`Punkten visas i koordinatsystemet. Vilka är koordinaterna?`;ans=`(${x}, ${y})`;return{display:q,answer:ans,svg:_gridSVG([[x,y]],6,true),hint:`x=${x}, y=${y}`};}
+    // Åk 5: Direkt proportionalitet
+    case'C':{const k=ri(3,8),x1=ri(2,5),x2=ri(6,10);q=`y är proportionellt mot x. När x=${x1} är y=${x1*k}. Vad är y när x=${x2}?`;ans=String(x2*k);break;}
+    // Åk 5: Skala och förhållanden
+    case'D':{const scale=ri(2,5)*10,rit=ri(4,9);q=`På en karta är skalan 1:${scale}0. En sträcka är ${rit} cm på kartan. Hur lång är den på verkligheten? Svara i meter.`;ans=`${sv(rit*scale/100)} m`;break;}
+    // Åk 5-6: Rita punkter + rät linje 💡
+    case'E':{const k=ri(1,3),b=ri(0,3);const pts=[[1,1*k+b],[2,2*k+b],[3,3*k+b]];q=`Linjens regel: y = ${k}x + ${b}. Beräkna y för x=1,2,3 och beskriv riktningen.`;ans=`(1,${pts[0][1]}), (2,${pts[1][1]}), (3,${pts[2][1]}) — stigande linje`;return{display:q,answer:ans,svg:_gridSVG(pts,8,false),hint:`Svar: ${ans}`,type:'reason'};}
+    // Åk 6: Proportionalitet i sammanhang 💡
+    case'F':{const na=n(),speed=ri(4,8)*10,time=ri(2,5);q=`${na} cyklar med konstant hastighet ${speed} km/h. Hur långt har ${na} cyklat efter ${time} timmar? Är detta ett proportionellt samband?`;ans=`${speed*time} km — Ja, sträcka = hastighet × tid`;break;}
+  }
+  const isR=lvl==='E'||lvl==='F';
+  return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
+}
 function genProblem(profile,tid,lvl,d=5){
   try{
     let prob;
@@ -1498,14 +1780,14 @@ function genProblem(profile,tid,lvl,d=5){
         case 1:prob=alexT1(lvl,d);break;case 2:prob=alexT2(lvl,d);break;case 3:prob=alexT3(lvl,d);break;
         case 4:prob=alexT4(lvl,d);break;case 5:prob=alexT5(lvl,d);break;case 6:prob=alexT6(lvl,d);break;
         case 7:prob=alexT7(lvl,d);break;case 8:prob=alexT8(lvl,d);break;case 9:prob=alexT9(lvl,d);break;
-        case 10:prob=alexT10(lvl,d);break;default:prob=alexT1(lvl,d);
+        case 10:prob=alexT10(lvl,d);break;case 11:prob=alexT11(lvl,d);break;case 12:prob=alexT12(lvl,d);break;default:prob=alexT1(lvl,d);
       }
     }else{
       switch(tid){
         case 1:prob=estT1(lvl,d);break;case 2:prob=estT2(lvl,d);break;case 3:prob=estT3(lvl,d);break;
         case 4:prob=estT4(lvl,d);break;case 5:prob=estT5(lvl,d);break;case 6:prob=estT6(lvl,d);break;
         case 7:prob=estT7(lvl,d);break;case 8:prob=estT8(lvl,d);break;case 9:prob=estT9(lvl,d);break;
-        case 10:prob=estT10(lvl,d);break;default:prob=estT1(lvl,d);
+        case 10:prob=estT10(lvl,d);break;case 11:prob=estT11(lvl,d);break;case 12:prob=estT12(lvl,d);break;default:prob=estT1(lvl,d);
       }
     }
     if(prob){
@@ -1731,7 +2013,7 @@ function refreshProfileTags(){
   ['alexander','estelle'].forEach(p=>{
     const d=initProgress(p);
     let tid=1;
-    for(let i=1;i<=10;i++){if(!d['t'+i].locked&&!d['t'+i].done){tid=i;break;}}
+    for(let i=1;i<=12;i++){if(d['t'+i]&&!d['t'+i].locked&&!d['t'+i].done){tid=i;break;}}
     const tp=d['t'+tid];
     const tagId=p==='alexander'?'alex-tag':'est-tag';
     const el=document.getElementById(tagId);
@@ -2054,6 +2336,11 @@ function showChildPin(profile){
   document.getElementById('cpn-name').textContent=profile==='alexander'?'Alexander':'Estelle';
   document.getElementById('cpn-err').textContent='';
   document.body.dataset.profile=profile;
+  // Theme PIN screen by profile
+  const pinScreen=document.getElementById('screen-child-pin');
+  if(pinScreen) pinScreen.style.background=profile==='estelle'?'#F5F3FF':'#F4F1EC';
+  const pinName=document.getElementById('cpn-name');
+  if(pinName) pinName.style.color=profile==='estelle'?'#4C1D95':'#1C1917';
   updateCpnDots();
   showScreen('screen-child-pin');
 }
@@ -2977,6 +3264,9 @@ function markDot(i,correct){
 function showFeedback(correct,prob,message){
   const i=S.sess.cur;
   markDot(i,correct);
+  // Track score for mastery gate
+  S.sess.totalFeedback=(S.sess.totalFeedback||0)+1;
+  if(correct)S.sess.correctCount=(S.sess.correctCount||0)+1;
   const name=S.profile==='alexander'?'Alexander':'Estelle';
   const ring=document.getElementById('fb-ring');
   const title=document.getElementById('fb-title');
@@ -3009,9 +3299,36 @@ function nextProblem(){
 // ════════════════════════════════════════════
 function showComplete(){
   const sess=S.sess;
-  const streak=bumpStreak(S.profile);
-  const nq=S.sess?S.sess.problems.length:N_PROBLEMS;
   const profile=S.profile;
+
+  // ── 90% MASTERY GATE (regular levels only) ──────────────────
+  if(sess.type==='topicTest'||sess.type==='finalTest'){showScreen('screen-complete');return;}
+  const _total=sess.totalFeedback||sess.problems.length;
+  const _correct=sess.correctCount||0;
+  const _pct=_total>0?Math.round(_correct/_total*100):0;
+  if(_pct<90){
+    const accent=profile==='estelle'?'linear-gradient(135deg,#667EEA,#764BA2)':'#1E3A8A';
+    document.getElementById('sc-title').textContent='Nästan! 💪';
+    document.getElementById('sc-score').textContent=`${_correct}/${_total} rätt — ${_pct}%`;
+    document.getElementById('sc-sub').innerHTML=
+      `Du behöver <strong style="color:#EF4444">90%</strong> för att gå vidare.<br>`+
+      `Försök igen med nya frågor! Du klarar det! ${profile==='estelle'?'🌟':'⭐'}`;
+    const unlockEl=document.getElementById('sc-unlock');
+    if(unlockEl){unlockEl.style.display='block';unlockEl.textContent=`${90-_pct}% kvar till godkänt`;}
+    const streakEl=document.getElementById('sc-streak-txt');
+    if(streakEl)streakEl.textContent='Håll i! Du kan det här 💪';
+    const scBackBtn=document.getElementById('sc-back-btn');
+    if(scBackBtn){scBackBtn.textContent='🔄 Försök igen →';scBackBtn.onclick=retryLevel;}
+    const circles=document.querySelector('#screen-complete [style*="position:relative;width:140px"]');
+    if(circles){const inner=circles.querySelector('[style*="inset:28px"]');if(inner)inner.style.background='linear-gradient(135deg,#F59E0B,#EF4444)';}
+    const backBtn=document.querySelector('#screen-complete button');
+    if(backBtn)backBtn.style.background=accent;
+    showScreen('screen-complete');
+    return;
+  }
+  // ── NORMAL COMPLETION ───────────────────────────────────────
+  const streak=bumpStreak(profile);
+  const nq=S.sess?S.sess.problems.length:N_PROBLEMS;
 
   // Update new complete screen elements
   document.getElementById('sc-title').textContent='Skickat!';
@@ -3039,6 +3356,15 @@ function showComplete(){
   unlockEl.style.display='none';unlockEl.textContent='';
   showScreen('screen-complete');
 }
+// ── MASTERY RETRY ────────────────────────────────────────────
+function retryLevel(){
+  const tid=S.sess.tid,level=S.sess.level,profile=S.profile;
+  // Reset score counters and generate fresh questions for same level
+  _setupSession(profile,tid,level);
+  showScreen('screen-session');
+}
+// ── END MASTERY RETRY ─────────────────────────────────────────
+
 
 // ════════════════════════════════════════════
 // UTILS
@@ -3432,10 +3758,18 @@ function buildChildTab(profile){
   if(locked){
     html+=`<div style="background:#D1FAE5;border:1.5px solid #A7F3D0;border-radius:11px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px"><div style="font-size:13px">🔒</div><div style="flex:1;font-size:11px;font-weight:800;color:#065F46">Session locked: ${locked.topicName} L.${locked.level}</div><button onclick="showSessionBuilder('${profile}')" style="background:transparent;border:1.5px solid #A7F3D0;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;color:#065F46;cursor:pointer;font-family:'Nunito',sans-serif">Edit</button></div>`;
   }
-  html+=`<div style="display:flex;gap:7px;margin-bottom:16px">`;
+  html+=`<div style="display:flex;gap:7px;margin-bottom:8px">`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #1E3A8A;background:#EFF6FF;text-align:center;cursor:pointer" onclick="showSessionBuilder('${profile}')"><div style="font-size:16px;margin-bottom:3px">📋</div><div style="font-size:10px;font-weight:800;color:#1D4ED8">Build session</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #BFDBFE;background:#EFF6FF;text-align:center;cursor:pointer" onclick="unlockNextTopic('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔓</div><div style="font-size:10px;font-weight:800;color:#1D4ED8">Unlock topic</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#F0FDF4;text-align:center;cursor:pointer" onclick="showQuestionBrowser('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔍</div><div style="font-size:10px;font-weight:800;color:#065F46">Se frågor</div></div>`;
+  html+=`</div>`;
+  // Granska button — only if pending sessions exist
+  const _pend=sjp(localStorage.getItem('md_pending_'+profile),[]);
+  if(_pend.length>0){
+    html+=`<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:8px" onclick="showScreen('screen-parent-review');loadPendingSession('${profile}')">`;
+    html+=`<div><div style="font-size:10px;font-weight:800;color:#92400E">📝 Granska inlämnade svar</div><div style="font-size:9px;color:#78716C;margin-top:2px">${_pend.length} session${_pend.length>1?'er':''} väntar på granskning</div></div>`;
+    html+=`<div style="font-size:18px">→</div></div>`;
+  }
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #FDE68A;background:#FFFBEB;text-align:center;cursor:pointer" onclick="resetCurrentLevel('${profile}')"><div style="font-size:16px;margin-bottom:3px">↩</div><div style="font-size:10px;font-weight:800;color:#92400E">Reset level</div></div>`;
   html+=`<div style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #A7F3D0;background:#F0FDF9;text-align:center;cursor:pointer" onclick="fixProgressFromHistory('${profile}')"><div style="font-size:16px;margin-bottom:3px">🔧</div><div style="font-size:10px;font-weight:800;color:#065F46">Fix progress</div></div>`;
   html+=`</div>`;
@@ -3522,7 +3856,7 @@ function renderReview(session,profile){
   const correct=session.questions.filter(q=>q.parentMark===true).length;
   const total=session.questions.length;
   const allMarked=session.questions.every(q=>q.parentMark!==null);
-  const pass=correct/total>=0.8;
+  const pass=correct/total>=0.9;
   const barColor=pass?'#10B981':'#EF4444';
   const btnLabel=allMarked?(pass?`✓ Approve — ${correct}/${total} correct · Level clears`:`↩ ${correct}/${total} correct · Level repeats`):'Mark all questions first';
 
@@ -3660,7 +3994,7 @@ function clearSession(profile,sessionId){
   if(!session)return;
   const correct=session.questions.filter(q=>q.parentMark===true).length;
   const total=session.questions.length;
-  const pass=correct/total>=0.8;
+  const pass=correct/total>=0.9;
   if(session.level!=='TEST'&&session.level!=='FINAL') saveCorrections(profile,session);
   saveHistory(profile,session.tid,session.level,correct,session.questions.length,session.duration||0);
   saveChildNotification(profile,correct,total,session.topicName,session);
@@ -4275,7 +4609,7 @@ function renderSB(){
   const lvlDescs={A:'Lättast — grundläggande',B:'Lätt-medel — bygger självförtroende',C:'Medel — kärnfärdighet',D:'Medel-svår — befäster kunskaper',E:'Svår — nära behärskning',F:'Utmaning — redo för ämnesprov'};
   html+=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">`;
   html+=`<div style="font-size:10px;color:#78716C;font-weight:700;flex:1">${SB.topicName} · Level ${SB.level} — ${lvlDescs[SB.level]||''}</div>`;
-  html+=`<button onclick="sbPreview(${SB.tid},'${SB.level}','${SB.profile}')" style="display:flex;align-items:center;gap:4px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;color:#1E3A8A;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap">👁 Se exempel</button>`;
+  html+=`<button onclick="sbPreview(${SB.tid},'${SB.level}','${SB.profile}')" style="display:flex;align-items:center;gap:4px;background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:800;color:#1E3A8A;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap">👁 Exempel</button>`;
   html+=`</div>`;
   html+=`</div>`;
 
@@ -4395,15 +4729,18 @@ function clearCorrections(profile){
 // TOPIC TEST & FINAL TEST
 // ════════════════════════════════════════════
 function genTopicTest(profile,tid){
+  // 12 questions: 2 from each level A-F — blandad test
   const qs=[];
-  LEVELS.forEach((lvl,i)=>{
-    const count=i<2?4:3;
-    for(let j=0;j<count&&qs.length<20;j++){
-      try{qs.push(genProblem(profile,tid,lvl,ri(0,9)));}catch(e){}
-    }
+  const diffs={A:[2,5],B:[3,6],C:[3,7],D:[4,8],E:[5,7],F:[6,9]};
+  LEVELS.forEach(lvl=>{
+    const ds=diffs[lvl]||[3,7];
+    ds.forEach(d=>{
+      try{const q=genProblem(profile,tid,lvl,d);if(q)qs.push(q);}catch(e){}
+    });
   });
-  while(qs.length<20){try{qs.push(genProblem(profile,tid,'C',ri(0,9)));}catch(e){break;}}
-  return qs.slice(0,20);
+  // Shuffle so it's not ordered A→F
+  for(let i=qs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[qs[i],qs[j]]=[qs[j],qs[i]];}
+  return qs.slice(0,12);
 }
 
 function genFinalTest(profile){
@@ -4540,6 +4877,16 @@ function stopTimer(){
 }
 
 function togglePause(){
+  // Update pause info
+  if(S.sess){
+    const cur=(S.sess.cur||0)+1;
+    const tot=S.sess.problems?S.sess.problems.length:10;
+    const title=document.getElementById('pause-title');
+    const sub=document.getElementById('pause-sub');
+    const paused=!document.getElementById('pause-overlay').classList.contains('active');
+    if(title) title.textContent=paused?'Paus ⏸':'';
+    if(sub) sub.textContent=`${S.sess.topicName||'Session'} · Nivå ${S.sess.level||''} · Fråga ${cur} av ${tot}`;
+  }
   if(!timerInterval)return;
   timerPaused=!timerPaused;
   const btn=document.getElementById('timer-pause-btn');
