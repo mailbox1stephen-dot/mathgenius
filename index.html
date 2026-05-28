@@ -1759,9 +1759,13 @@ function estT12(lvl,d){
 async function aiCheckQuestion(q,attempt=1){
   const _key=S.apiKey||readCred('md_apikey')||'';
   if(!_key)return{correct:false,comment:'❌ Ingen API-nyckel — ange nyckel i inställningar'};
-  const content=[{type:'text',text:`Maths question: "${q.display}". Correct answer: ${q.answer}. Check the student's work and typed answer. Reply ONLY: CORRECT or WRONG, then one brief reason (max 8 words).`}];
-  if(q.workURL&&q.workURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
-  if(q.answerURL&&q.answerURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
+  const hasWork=q.workURL&&q.workURL.length>100;
+  const hasAns=q.answerURL&&q.answerURL.length>100;
+  const imgCount=(hasWork?1:0)+(hasAns?1:0);
+  const imgDesc=imgCount===2?'Image 1=working/calculation, Image 2=final answer written by child':imgCount===1?'One image shows student handwriting':'No images';
+  const content=[{type:'text',text:`Swedish math question: "${q.display}". Correct answer: "${q.answer}". ${imgDesc}. Look at the handwritten answer. Is it CORRECT or WRONG? Reply ONLY: CORRECT or WRONG, then max 8 words reason in Swedish.`}];
+  if(hasWork)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
+  if(hasAns)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -3210,8 +3214,8 @@ let canvasCache={};
 function saveCanvasState(i){
   try{
     canvasCache[i]={
-      work:canvas.toDataURL('image/jpeg',0.7),
-      ans:aCanvas.toDataURL('image/jpeg',0.7),
+      work:canvas.toDataURL('image/jpeg',0.85),
+      ans:aCanvas.toDataURL('image/jpeg',0.85),
       hasWork:hasInk, hasAns:aHasInk,
       workStrokes:[...strokes], ansStrokes:[...aStrokes]
     };
@@ -3930,9 +3934,9 @@ function renderReview(session,profile){
       <div class="pr-q-top">
         <div class="pr-q-num">${i+1}</div>
         <div style="flex:1">
-          <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em">Calculate</div>
+          <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em">Fråga</div>
           <div class="pr-q-eq">${q.display}</div>
-          <div style="font-size:10px;font-weight:700;color:#78716C">Answer: ${q.answer}</div>
+          <div style="font-size:10px;font-weight:700;color:#059669">✓ Rätt svar: ${q.answer}</div>
         </div>
         <div class="pr-q-mark">${icon}</div>
       </div>`;
@@ -3947,7 +3951,7 @@ function renderReview(session,profile){
         </div>`;
       }
       if(hasAns){
-        html+=`<div style="flex:${hasWork?'0.5':'1'}">
+        html+=`<div style="flex:${hasWork?'0.8':'1'}">
           <div style="font-size:8px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Answer</div>
           <img src="${q.answerURL}" style="width:100%;border-radius:7px;border:2px solid #FCD34D;display:block;background:#FFFBEB" loading="lazy">
         </div>`;
