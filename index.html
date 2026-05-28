@@ -40,7 +40,6 @@ input,textarea,select{
 .hdr-chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;background:#FEF3C7;color:#B45309;white-space:nowrap}
 
 /* ── API SETUP ── */
-#screen-api{background:#1E3A8A;justify-content:center;align-items:center;text-align:center;padding:32px 24px;padding-bottom:max(32px,calc(env(safe-area-inset-bottom) + 24px));overflow-y:auto}
 .api-logo{font-size:30px;font-weight:900;color:#fff;margin-bottom:5px}
 .api-logo span{color:#FCD34D}
 .api-sub{font-size:13px;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:6px}
@@ -470,24 +469,7 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <body>
 
 <!-- ── API SETUP ── -->
-<div class="screen active" id="screen-api">
-  <div class="api-logo">Math<span>Genius</span></div>
-  <div class="api-sub">For Alexander &amp; Estelle</div>
-  <div class="api-desc">Enter your Anthropic API key to enable AI handwriting recognition.</div>
-  <div class="api-err" id="api-err"></div>
-  <input class="api-input" id="api-input" type="text" inputmode="text" placeholder="sk-ant-api03-…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-  <button class="api-btn" onclick="saveKey()">Save &amp; Start →</button>
-
-  <!-- Cloud restore for new devices -->
-  <div style="width:100%;max-width:320px;margin-top:22px;border-top:1px solid rgba(255,255,255,.15);padding-top:18px">
-    <div style="font-size:11px;color:rgba(255,255,255,.55);font-weight:700;margin-bottom:10px">Already using MathGenius? Restore all data from cloud:</div>
-    <input class="api-input" id="restore-url" type="text" inputmode="url" placeholder="Supabase URL (https://…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="margin-bottom:8px">
-    <input class="api-input" id="restore-key" type="text" inputmode="text" placeholder="Supabase key (sb_pub…)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <button onclick="restoreFromCloud()" style="width:100%;max-width:320px;padding:13px;border:1.5px solid rgba(255,255,255,.3);border-radius:12px;background:transparent;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px">☁ Restore from cloud</button>
-  </div>
-  <div class="api-note" style="margin-top:12px">API key: console.anthropic.com · Cloud: supabase.com</div>
-</div>
-
+<div cl
 <!-- ── PROFILE SELECT ── -->
 <div class="screen" id="screen-profile">
   <div class="ps-logo">MATHGENIUS</div>
@@ -905,7 +887,6 @@ const LEVELS = ['A','B','C','D','E','F'];
 // STATE
 // ════════════════════════════════════════════
 let S = {
-  apiKey: '',
   profile: null,
   sess: null
 };
@@ -1834,10 +1815,7 @@ function saveKey(){
     err.textContent='Please enter a valid Anthropic API key';return;
   }
   err.textContent='';
-  S.apiKey=k;
-  saveCred('md_apikey',k);
-  // API key kept local-only for security
-  showScreen('screen-profile');
+    showScreen('screen-profile');
   refreshProfileTags();
 }
 
@@ -1850,7 +1828,7 @@ async function restoreFromCloud(){
   err.textContent='☁ Återställer…';
   saveCred('md_supa_url',url);
   saveCred('md_supa_key',key);
-  if(apiKey){S.apiKey=apiKey;localStorage.setItem('md_apikey',apiKey);}
+  if(apiKey){S.apiKey=apiKey;}
   try{
     await pullFromCloud();
     // Check if API key came from cloud
@@ -3146,9 +3124,6 @@ function pu(e){
   }
 }
 
-// ════════════════════════════════════════════
-// AI CHECK
-// ════════════════════════════════════════════
 // Canvas state cache — saves work when navigating between problems
 let canvasCache={};
 
@@ -3565,7 +3540,7 @@ function buildOverviewTab(){
       const name=isAlex?'Alexander':'Estelle';
       const reviewed=s.questions.filter(q=>q.parentMark!==null).length;
       const allReviewed=reviewed===s.questions.length;
-      const aiChecking=s.aiChecking;
+      
       const squares=s.questions.map(q=>`<div style="width:11px;height:11px;border-radius:3px;background:${q.parentMark===true?'#10B981':q.parentMark===false?'#EF4444':'#E5E7EB'}"></div>`).join('');
       html+=`<div style="background:#fff;border:1.5px solid ${borderColor};border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer" onclick="showParentReview('${s.profile}',${s.id})">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -3574,7 +3549,7 @@ function buildOverviewTab(){
             <div style="font-size:12px;font-weight:900;color:#1C1917">${name}</div>
             <div style="font-size:10px;font-weight:700;color:#78716C">${s.topicName} · Level ${s.level}</div>
           </div>
-          <div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${aiChecking?'#FEF3C7':allReviewed?'#D1FAE5':'#EFF6FF'};color:${aiChecking?'#D97706':allReviewed?'#047857':'#1D4ED8'}">${aiChecking?'⏳ AI checking…':allReviewed?'Ready to approve':'Review →'}</div>
+          <div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;background:${allReviewed?'#D1FAE5':'#EFF6FF'};color:${aiChecking?'#D97706':allReviewed?'#047857':'#1D4ED8'}">${allReviewed?'✅ Approve all':'Review →'}</div>
         </div>
         <div style="display:flex;gap:3px;flex-wrap:wrap">${squares}</div>
       </div>`;
@@ -3745,7 +3720,7 @@ function buildChildTab(profile){
   // Granska button — only if pending sessions exist
   const _pend=sjp(localStorage.getItem('md_pending_'+profile),[]);
   if(_pend.length>0){
-    html+=`<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:8px" onclick="showScreen('screen-parent-review');loadPendingSession('${profile}')">`;
+    html+=`<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:8px" onclick="(function(){const _p=sjp(localStorage.getItem('md_pending_'+'${profile}'),[]);if(_p.length)showParentReview('${profile}',_p[0].id);})()">`;
     html+=`<div><div style="font-size:10px;font-weight:800;color:#92400E">📝 Granska inlämnade svar</div><div style="font-size:9px;color:#78716C;margin-top:2px">${_pend.length} session${_pend.length>1?'er':''} väntar på granskning</div></div>`;
     html+=`<div style="font-size:18px">→</div></div>`;
   }
@@ -3891,11 +3866,8 @@ function renderReview(session,profile){
       html+=`<div style="padding:2px 12px 8px;font-size:10px;color:#C4C0B8;font-weight:700;font-style:italic">No canvas captured</div>`;
     }
 
-    if(q.aiResult){
-      html+=`<div class="pr-ai-result">${q.aiResult}</div>`;
-    }
     html+=`<div class="pr-q-btns">
-      <button class="pr-q-btn ai-btn" id="ai-btn-${i}" onclick="aiCheckOne('${profile}',${session.id},${i})">🤖 AI</button>
+      <button class="pr-q-btn ai-btn" id="ai-btn-${i}" 
       <button class="pr-q-btn ok-btn" onclick="markQ('${profile}',${session.id},${i},true)">✓ Correct</button>
       <button class="pr-q-btn no-btn" onclick="markQ('${profile}',${session.id},${i},false)">✗ Wrong</button>
     </div>
@@ -3918,53 +3890,9 @@ function markQ(profile,sessionId,qIdx,correct){
   showParentReview(profile,sessionId);
 }
 
-async function aiCheckOne(profile,sessionId,qIdx){
-  const key='md_pending_'+profile;
-  const pending=sjp(localStorage.getItem(key),[]);
-  const session=pending.find(s=>s.id===sessionId);
-  if(!session)return;
-  const btn=document.getElementById('ai-btn-'+qIdx);
-  if(btn){btn.textContent='⏳';btn.disabled=true;}
-  try{
-    const result=await aiCheckQuestion(session.questions[qIdx]);
-    session.questions[qIdx].aiMark=result.correct;
-    session.questions[qIdx].aiResult=result.comment;
-    if(session.questions[qIdx].parentMark===null)session.questions[qIdx].parentMark=result.correct;
-    localStorage.setItem(key,JSON.stringify(pending));cloudSet(key,pending);
-    renderReview(session,profile);
-  }catch(e){
-    console.error('aiCheckOne error:',e);
-    if(btn){btn.textContent='🤖 AI';btn.disabled=false;}
-    showToast('AI error: '+e.message);
-  }
-}
 
-async function aiCheckQuestion(q,attempt=1){
-  const _key=S.apiKey||readCred('md_apikey')||'';
-  if(!_key){return{correct:false,comment:'❌ No API key — enter key in settings'};}
-  const content=[{type:'text',text:`Maths question: "${q.display}". Correct answer: ${q.answer}. Check the student's handwritten work and answer. Reply with ONLY: CORRECT or WRONG, then one brief reason (max 8 words).`}];
-  if(q.workURL&&q.workURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
-  if(q.answerURL&&q.answerURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':_key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:MODEL,max_tokens:80,messages:[{role:'user',content}]})
-    });
-    if(!resp.ok){
-      if(attempt<3){await new Promise(r=>setTimeout(r,1000*attempt));return aiCheckQuestion(q,attempt+1);}
-      return{correct:false,comment:'❌ AI unavailable — mark manually'};
-    }
-    const data=await resp.json();
-    const text=data.content?.[0]?.text||'WRONG';
-    const correct=text.toUpperCase().startsWith('CORRECT');
-    const comment=text.replace(/^(CORRECT|WRONG)[:\s-]*/i,'').trim()||'No detail';
-    return{correct,comment:(correct?'✅ ':'❌ ')+comment};
-  }catch(e){
-    if(attempt<3){await new Promise(r=>setTimeout(r,1000*attempt));return aiCheckQuestion(q,attempt+1);}
-    return{correct:false,comment:'❌ No internet — mark manually'};
-  }
-}
+
+
 
 function clearSession(profile,sessionId){
   const key='md_pending_'+profile;
@@ -4122,7 +4050,7 @@ async function _doSend(){
         answerURL=ac.toDataURL('image/jpeg',0.4);
       }catch(e){}
     }
-    return{display:prob.display,answer:prob.answer,workURL,answerURL,aiMark:null,aiResult:null,parentMark:null};
+    return{display:prob.display,answer:prob.answer,workURL,answerURL,parentMark:null};
   });
 
   // Save session immediately — no waiting
@@ -4130,7 +4058,7 @@ async function _doSend(){
   const session={
     id:Date.now(),profile:S.profile,date:new Date().toISOString(),
     tid:S.sess.tid,level:S.sess.level,topicName:S.sess.topicName,
-    duration:sessionDuration,questions,aiChecking:!!S.apiKey
+    duration:sessionDuration,questions
   };
   const key='md_pending_'+S.profile;
   const pending=sjp(localStorage.getItem(key),[]);
@@ -4148,33 +4076,8 @@ async function _doSend(){
   // Show complete screen immediately
   showComplete();
 
-  // AI check in background — no blocking
-  if(S.apiKey){
-    const sessionId=session.id;
-    const profileSnap=S.profile;
-    (async()=>{
-      const pend=sjp(localStorage.getItem('md_pending_'+profileSnap),[]);
-      const sess=pend.find(s=>s.id===sessionId);
-      if(!sess)return;
-      let changed=false;
-      for(let i=0;i<sess.questions.length;i++){
-        try{
-          const result=await aiCheckQuestion(sess.questions[i]);
-          sess.questions[i].aiMark=result.correct;
-          sess.questions[i].aiResult=result.comment;
-          sess.questions[i].parentMark=result.correct;
-          changed=true;
-        }catch(e){}
-      }
-      sess.aiChecking=false;
-      if(changed){
-        const pend2=sjp(localStorage.getItem('md_pending_'+profileSnap),[]);
-        const idx=pend2.findIndex(s=>s.id===sessionId);
-        if(idx>=0){pend2[idx]=sess;localStorage.setItem('md_pending_'+profileSnap,JSON.stringify(pend2));cloudSet('md_pending_'+profileSnap,pend2);}
-      }
-    })();
-  }
 }
+
 
 // ════════════════════════════════════════════
 // CLOUD SYNC — Supabase
@@ -5207,8 +5110,7 @@ window.addEventListener('load',async ()=>{
   loadIcons();
   const k=readCred('md_apikey');
   if(k){
-    S.apiKey=k;
-    // Pull from cloud with 4s timeout — never block startup
+        // Pull from cloud with 4s timeout — never block startup
     if(isCloudEnabled()){
       try{
         await Promise.race([pullFromCloud(),new Promise(r=>setTimeout(r,4000))]);
@@ -5244,7 +5146,7 @@ window.addEventListener('load',async ()=>{
     });
   }else{
     // No API key — show setup screen
-    showScreen('screen-api');
+    showScreen('screen-profile');
     const saved=readCred('md_apikey');
     if(saved&&saved.startsWith('sk-')&&saved.length>20){
       const inp=document.getElementById('api-input');
