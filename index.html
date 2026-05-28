@@ -2768,6 +2768,8 @@ function buildTopicJourneyMap(topics,prog,color,profile){
 
 function buildTopicsScreen(){
   const p=S.profile;
+  // Show any pending celebration or retry notification
+  checkCelebration(p);
   const topics=getTopics(p);
   const d=initProgress(p);
   const streak=getStreak(p);
@@ -3301,32 +3303,9 @@ function showComplete(){
   const sess=S.sess;
   const profile=S.profile;
 
-  // ── 90% MASTERY GATE (regular levels only) ──────────────────
-  if(sess.type==='topicTest'||sess.type==='finalTest'){showScreen('screen-complete');return;}
-  const _total=sess.totalFeedback||sess.problems.length;
-  const _correct=sess.correctCount||0;
-  const _pct=_total>0?Math.round(_correct/_total*100):0;
-  if(_pct<90){
-    const accent=profile==='estelle'?'linear-gradient(135deg,#667EEA,#764BA2)':'#1E3A8A';
-    document.getElementById('sc-title').textContent='Nästan! 💪';
-    document.getElementById('sc-score').textContent=`${_correct}/${_total} rätt — ${_pct}%`;
-    document.getElementById('sc-sub').innerHTML=
-      `Du behöver <strong style="color:#EF4444">90%</strong> för att gå vidare.<br>`+
-      `Försök igen med nya frågor! Du klarar det! ${profile==='estelle'?'🌟':'⭐'}`;
-    const unlockEl=document.getElementById('sc-unlock');
-    if(unlockEl){unlockEl.style.display='block';unlockEl.textContent=`${90-_pct}% kvar till godkänt`;}
-    const streakEl=document.getElementById('sc-streak-txt');
-    if(streakEl)streakEl.textContent='Håll i! Du kan det här 💪';
-    const scBackBtn=document.getElementById('sc-back-btn');
-    if(scBackBtn){scBackBtn.textContent='🔄 Försök igen →';scBackBtn.onclick=retryLevel;}
-    const circles=document.querySelector('#screen-complete [style*="position:relative;width:140px"]');
-    if(circles){const inner=circles.querySelector('[style*="inset:28px"]');if(inner)inner.style.background='linear-gradient(135deg,#F59E0B,#EF4444)';}
-    const backBtn=document.querySelector('#screen-complete button');
-    if(backBtn)backBtn.style.background=accent;
-    showScreen('screen-complete');
-    return;
-  }
-  // ── NORMAL COMPLETION ───────────────────────────────────────
+  // ── NORMAL COMPLETION ─────────────────────────────────────────
+  // NOTE: 90% gate fires AFTER parent review (in session processing),
+  // not here — child always gets "Skickat!" immediately on send.
   const streak=bumpStreak(profile);
   const nq=S.sess?S.sess.problems.length:N_PROBLEMS;
 
@@ -4042,6 +4021,12 @@ function clearSession(profile,sessionId){
     const celebration={type:'finalpass'};
     localStorage.setItem('md_celebrate_'+profile,JSON.stringify(celebration));
     cloudSet('md_celebrate_'+profile,celebration);
+  }else if(!pass&&session.level!=='TEST'&&session.level!=='FINAL'){
+    // Failed session — notify child to retry when they next log in
+    const pct=Math.round(correct/total*100);
+    const retry={type:'needsretry',topicName:session.topicName,level:session.level,tid:session.tid,pct,correct,total};
+    localStorage.setItem('md_retry_'+profile,JSON.stringify(retry));
+    cloudSet('md_retry_'+profile,retry);
   }
   showToast(msg);showParentDash();
 }
@@ -4960,6 +4945,21 @@ function pickProfileIcon(profile,icon){
 }
 
 function checkCelebration(profile){
+  // Check for retry-needed notification first (from parent review fail)
+  const retryRaw=localStorage.getItem('md_retry_'+profile);
+  if(retryRaw){
+    localStorage.removeItem('md_retry_'+profile);
+    cloudDelete('md_retry_'+profile);
+    try{
+      const r=JSON.parse(retryRaw);
+      const col=profile==='alexander'?'#1E3A8A':'#764BA2';
+      const name=profile==='alexander'?'Alexander':'Estelle';
+      setTimeout(()=>{
+        launchConfetti(`<div style="font-size:48px">💪</div><div style="font-size:18px;font-weight:900;color:#1C1917;margin:10px 0 6px">Nästan, ${name}!</div><div style="font-size:13px;font-weight:700;color:${col}">${r.topicName} · Nivå ${r.level}</div><div style="font-size:13px;font-weight:700;color:#EF4444;margin-top:4px">${r.correct}/${r.total} rätt — ${r.pct}%</div><div style="font-size:11px;color:#78716C;margin-top:6px">Du behöver 90% för att gå vidare.<br>Pappa har granskat — försök igen! 🔄</div>`);
+      },600);
+    }catch(e){}
+  }
+
   const raw=localStorage.getItem('md_celebrate_'+profile);
   if(!raw)return;
   localStorage.removeItem('md_celebrate_'+profile);
