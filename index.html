@@ -216,7 +216,8 @@ input,textarea,select{
 .pr-q-num{font-size:10px;font-weight:900;color:#A8A29E;width:20px;flex-shrink:0}
 .pr-q-eq{font-size:14px;font-weight:900;flex:1}
 .pr-q-mark{font-size:18px;flex-shrink:0}
-.pr-q-btns{display:flex;gap:6px;padding:0 12px 10px}
+.pr-q-btns{display:flex;gap:6px;padding:4px 12px 0;align-items:center}
+.pr-q-btns2{display:flex;gap:6px;padding:4px 12px 10px;flex:1}
 .pr-q-btn{flex:1;padding:7px 4px;border-radius:9px;border:1.5px solid #EDE9E0;background:#F5F3EE;font-family:'Nunito',sans-serif;font-size:11px;font-weight:800;cursor:pointer;color:#78716C}
 .pr-q-btn.ai-btn{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}
 .pr-q-btn.ok-btn{background:#D1FAE5;border-color:#A7F3D0;color:#047857}
@@ -853,7 +854,7 @@ function sjp(str,fallback=null){
 // ════════════════════════════════════════════
 const PASS = 0.9;
 const N_PROBLEMS = 10;
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-haiku-4-5-20251001';
 
 const TOPICS_A = [
   {id:1, name:'Column Addition',    method:true,  curriculum:'NC Y3: Add & subtract — formal written methods'},
@@ -1753,6 +1754,73 @@ function estT12(lvl,d){
   const isR=lvl==='E'||lvl==='F';
   return{display:q,answer:ans,hint:`Svar: ${ans}`,...(isR?{type:'reason'}:{})};
 }
+
+// ── AI CHECK ────────────────────────────────────────────────────
+async function aiCheckQuestion(q,attempt=1){
+  const _key=S.apiKey||readCred('md_apikey')||'';
+  if(!_key)return{correct:false,comment:'❌ Ingen API-nyckel — ange nyckel i inställningar'};
+  const content=[{type:'text',text:`Maths question: "${q.display}". Correct answer: ${q.answer}. Check the student's work and typed answer. Reply ONLY: CORRECT or WRONG, then one brief reason (max 8 words).`}];
+  if(q.workURL&&q.workURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.workURL.split(',')[1]}});
+  if(q.answerURL&&q.answerURL.length>100)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:q.answerURL.split(',')[1]}});
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':_key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:MODEL,max_tokens:60,messages:[{role:'user',content}]})
+    });
+    if(!resp.ok){
+      if(attempt<3){await new Promise(r=>setTimeout(r,1200*attempt));return aiCheckQuestion(q,attempt+1);}
+      const err=await resp.json().catch(()=>({}));
+      return{correct:false,comment:`❌ API fel ${resp.status} — markera manuellt`};
+    }
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'WRONG';
+    const correct=text.toUpperCase().startsWith('CORRECT');
+    const comment=text.replace(/^(CORRECT|WRONG)[:\s\-]*/i,'').trim()||'';
+    return{correct,comment:(correct?'✅ ':'❌ ')+comment};
+  }catch(e){
+    if(attempt<3){await new Promise(r=>setTimeout(r,1200*attempt));return aiCheckQuestion(q,attempt+1);}
+    return{correct:false,comment:'❌ Ingen internet — markera manuellt'};
+  }
+}
+
+async function aiCheckOne(profile,sessionId,qIdx){
+  const key='md_pending_'+profile;
+  const pending=sjp(localStorage.getItem(key),[]);
+  const session=pending.find(s=>s.id===sessionId);
+  if(!session)return;
+  const btn=document.getElementById('ai-btn-'+qIdx);
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  const result=await aiCheckQuestion(session.questions[qIdx]);
+  session.questions[qIdx].aiMark=result.correct;
+  session.questions[qIdx].aiResult=result.comment;
+  if(session.questions[qIdx].parentMark===null)session.questions[qIdx].parentMark=result.correct;
+  localStorage.setItem(key,JSON.stringify(pending));
+  cloudSet(key,pending);
+  showParentReview(profile,sessionId);
+}
+
+async function aiCheckAll(profile,sessionId){
+  const key='md_pending_'+profile;
+  const pending=sjp(localStorage.getItem(key),[]);
+  const session=pending.find(s=>s.id===sessionId);
+  if(!session)return;
+  showToast('🤖 AI granskar alla svar...');
+  for(let i=0;i<session.questions.length;i++){
+    if(session.questions[i].parentMark===null){
+      const result=await aiCheckQuestion(session.questions[i]);
+      session.questions[i].aiMark=result.correct;
+      session.questions[i].aiResult=result.comment;
+      session.questions[i].parentMark=result.correct;
+    }
+  }
+  localStorage.setItem(key,JSON.stringify(pending));
+  cloudSet(key,pending);
+  showParentReview(profile,sessionId);
+  showToast('✅ AI klar — granska och godkänn');
+}
+// ── END AI CHECK ─────────────────────────────────────────────────
+
 function genProblem(profile,tid,lvl,d=5){
   try{
     let prob;
@@ -3539,6 +3607,7 @@ function buildOverviewTab(){
       const init=getIcon(s.profile);
       const name=isAlex?'Alexander':'Estelle';
       const reviewed=s.questions.filter(q=>q.parentMark!==null).length;
+      const aiChecking=s&&s.aiChecking;
       const allReviewed=reviewed===s.questions.length;
       
       const squares=s.questions.map(q=>`<div style="width:11px;height:11px;border-radius:3px;background:${q.parentMark===true?'#10B981':q.parentMark===false?'#EF4444':'#E5E7EB'}"></div>`).join('');
@@ -3866,7 +3935,9 @@ function renderReview(session,profile){
       html+=`<div style="padding:2px 12px 8px;font-size:10px;color:#C4C0B8;font-weight:700;font-style:italic">No canvas captured</div>`;
     }
 
-    html+=`<div class="pr-q-btns">
+    if(q.aiResult){html+=`<div class="pr-ai-result">${q.aiResult}</div>`;}
+    html+=`<div class="pr-q-btns"><button id="ai-btn-${i}" class="pr-q-btn ai-btn" onclick="aiCheckOne('${S.reviewProfile}',${S.reviewSessionId},${i})">🤖 AI</button>`;
+    html+=`<div class="pr-q-btns2">
       <button class="pr-q-btn ai-btn" id="ai-btn-${i}" 
       <button class="pr-q-btn ok-btn" onclick="markQ('${profile}',${session.id},${i},true)">✓ Correct</button>
       <button class="pr-q-btn no-btn" onclick="markQ('${profile}',${session.id},${i},false)">✗ Wrong</button>
@@ -4058,7 +4129,7 @@ async function _doSend(){
   const session={
     id:Date.now(),profile:S.profile,date:new Date().toISOString(),
     tid:S.sess.tid,level:S.sess.level,topicName:S.sess.topicName,
-    duration:sessionDuration,questions
+    duration:sessionDuration,questions,aiChecking:!!(S.apiKey||readCred('md_apikey'))
   };
   const key='md_pending_'+S.profile;
   const pending=sjp(localStorage.getItem(key),[]);
@@ -4076,6 +4147,33 @@ async function _doSend(){
   // Show complete screen immediately
   showComplete();
 
+  // AI check in background (if API key set)
+  if(S.apiKey||readCred('md_apikey')){
+    const _sessionId=session.id;
+    const _profile=S.profile;
+    (async()=>{
+      const _key='md_pending_'+_profile;
+      const _pend=sjp(localStorage.getItem(_key),[]);
+      const _sess=_pend.find(s=>s.id===_sessionId);
+      if(!_sess)return;
+      let _changed=false;
+      for(let _i=0;_i<_sess.questions.length;_i++){
+        try{
+          const _r=await aiCheckQuestion(_sess.questions[_i]);
+          _sess.questions[_i].aiMark=_r.correct;
+          _sess.questions[_i].aiResult=_r.comment;
+          if(_sess.questions[_i].parentMark===null)_sess.questions[_i].parentMark=_r.correct;
+          _changed=true;
+        }catch(e){}
+      }
+      if(_changed){
+        _sess.aiChecking=false;
+        const _pend2=sjp(localStorage.getItem(_key),[]);
+        const _idx=_pend2.findIndex(s=>s.id===_sessionId);
+        if(_idx>=0){_pend2[_idx]=_sess;localStorage.setItem(_key,JSON.stringify(_pend2));cloudSet(_key,_pend2);}
+      }
+    })();
+  }
 }
 
 
