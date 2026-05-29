@@ -1778,7 +1778,7 @@ async function aiCheckQuestion(q,attempt=1){
       return{correct:false,comment:`❌ API fel ${resp.status} — markera manuellt`};
     }
     const data=await resp.json();
-    const text=data.content?.[0]?.text||'WRONG';
+    const text=(data.content&&data.content[0]&&data.content[0].text)||'WRONG';
     const correct=text.toUpperCase().startsWith('CORRECT');
     const comment=text.replace(/^(CORRECT|WRONG)[:\s\-]*/i,'').trim()||'';
     return{correct,comment:(correct?'✅ ':'❌ ')+comment};
@@ -2319,11 +2319,11 @@ async function refreshAppStateFromCloud(){
 // renderAllUI — single entry point for all UI rebuilds after sync
 // Never patch UI fragments directly — always call this
 function renderAllUI(){
-  const inSession=document.getElementById('screen-session')?.classList.contains('active');
+  const inSession=(document.getElementById('screen-session')&&document.getElementById('screen-session').classList.contains('active'));
   if(inSession){console.log('[SYNC] In session — skipping UI rebuild');return;}
-  const dashActive=document.getElementById('screen-parent-dash')?.classList.contains('active');
-  const pinActive=document.getElementById('screen-parent-pin')?.classList.contains('active');
-  const topicsActive=document.getElementById('screen-topics')?.classList.contains('active');
+  const dashActive=(document.getElementById('screen-parent-dash')&&document.getElementById('screen-parent-dash').classList.contains('active'));
+  const pinActive=(document.getElementById('screen-parent-pin')&&document.getElementById('screen-parent-pin').classList.contains('active'));
+  const topicsActive=(document.getElementById('screen-topics')&&document.getElementById('screen-topics').classList.contains('active'));
   // Only fire child notifications when kid is on THEIR topics screen
   // NOT on parent dashboard, PIN, or profile screen
   const kidScreenActive=topicsActive&&S.profile&&!dashActive&&!pinActive;
@@ -2357,7 +2357,7 @@ function initRealtime(){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'mathdrill_data'},payload=>{
         const{key:k,value:v}=payload.new||{};
         if(!k||!v)return;
-        const inSession=document.getElementById('screen-session')?.classList.contains('active');
+        const inSession=(document.getElementById('screen-session')&&document.getElementById('screen-session').classList.contains('active'));
         if(inSession)return;
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
         _onCloudUpdate(k);
@@ -2365,7 +2365,7 @@ function initRealtime(){
       .on('postgres_changes',{event:'UPDATE',schema:'public',table:'mathdrill_data'},payload=>{
         const{key:k,value:v}=payload.new||{};
         if(!k||!v)return;
-        const inSession=document.getElementById('screen-session')?.classList.contains('active');
+        const inSession=(document.getElementById('screen-session')&&document.getElementById('screen-session').classList.contains('active'));
         if(inSession)return;
         try{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}catch(e){}
         _onCloudUpdate(k);
@@ -3946,13 +3946,13 @@ function renderReview(session,profile){
       html+=`<div style="padding:0 12px 8px;display:flex;gap:6px">`;
       if(hasWork){
         html+=`<div style="flex:1">
-          <div style="font-size:8px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Working</div>
+          <div style="font-size:8px;font-weight:800;color:#78716C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">📝 Uträkning</div>
           <img src="${q.workURL}" style="width:100%;border-radius:7px;border:1px solid #EDE9E0;display:block;background:#fff" loading="lazy">
         </div>`;
       }
       if(hasAns){
         html+=`<div style="flex:${hasWork?'0.8':'1'}">
-          <div style="font-size:8px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Answer</div>
+          <div style="font-size:8px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">✏️ Svar</div>
           <img src="${q.answerURL}" style="width:100%;border-radius:7px;border:2px solid #FCD34D;display:block;background:#FFFBEB" loading="lazy">
         </div>`;
       }
@@ -4130,22 +4130,12 @@ async function _doSend(){
   if(btn){btn.disabled=true;btn.textContent='⏳';}
   document.getElementById('send-status').textContent='Session pausad'.replace('paused','').trim()||'Saving...';
 
-  // Capture all canvas images
+  // Capture all canvas images (use saved data URLs directly)
   const questions=S.sess.problems.map((prob,i)=>{
     const cache=canvasCache[i];
-    let workURL='',answerURL='';
-    if(cache){
-      try{
-        const wc=document.createElement('canvas');
-        wc.width=canvas.width;wc.height=canvas.height;
-        wc.getContext('2d').putImageData(cache.img,0,0);
-        workURL=wc.toDataURL('image/jpeg',0.4);
-        const ac=document.createElement('canvas');
-        ac.width=aCanvas.width;ac.height=aCanvas.height;
-        ac.getContext('2d').putImageData(cache.aImg,0,0);
-        answerURL=ac.toDataURL('image/jpeg',0.4);
-      }catch(e){}
-    }
+    // Use the pre-saved data URLs — no reconstruction needed
+    const workURL=(cache&&cache.work)||'';
+    const answerURL=(cache&&cache.ans)||'';
     return{display:prob.display,answer:prob.answer,workURL,answerURL,parentMark:null};
   });
 
@@ -4261,13 +4251,13 @@ function mergeProgress(local,cloud){
   Object.keys(cloud).forEach(tk=>{
     if(tk==='finalTestDone'){merged[tk]=merged[tk]||cloud[tk];return;}
     if(!merged[tk]){merged[tk]=cloud[tk];return;}
-    const li=LEVELS.indexOf(local[tk]?.level||'A');
-    const ci=LEVELS.indexOf(cloud[tk]?.level||'A');
+    const li=LEVELS.indexOf((local[tk]&&local[tk].level||'A'));
+    const ci=LEVELS.indexOf((cloud[tk]&&cloud[tk].level||'A'));
     // Keep whichever has higher level, or done status
-    if(cloud[tk]?.done&&!merged[tk]?.done){merged[tk]={...cloud[tk]};return;}
+    if((cloud[tk]&&cloud[tk].done&&!(merged[tk]&&merged[tk].done))){merged[tk]={...cloud[tk]};return;}
     if(ci>li){merged[tk]={...merged[tk],level:cloud[tk].level};}
-    if(cloud[tk]?.topicTestNeeded)merged[tk].topicTestNeeded=true;
-    if(!cloud[tk]?.locked)merged[tk].locked=false;
+    if((cloud[tk]&&cloud[tk].topicTestNeeded))merged[tk].topicTestNeeded=true;
+    if(!(cloud[tk]&&cloud[tk].locked))merged[tk].locked=false;
   });
   return merged;
 }
@@ -4544,7 +4534,7 @@ function showSessionBuilder(profile,overrideTid,overrideLvl){
   const topics=getTopics(profile);
   const cur=Object.entries(prog).find(([k,t])=>!t.locked&&!t.done);
   SB.tid=overrideTid||(cur?parseInt(cur[0].replace('t','')):1);
-  SB.level=overrideLvl||(prog['t'+SB.tid]?.level||'A');
+  SB.level=overrideLvl||((prog['t'+SB.tid]&&prog['t'+SB.tid].level||'A'));
   const topic=topics.find(t=>t.id===SB.tid);
   SB.topicName=topic?topic.name:'Topic '+SB.tid;
   SB.questions=genSession(profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
@@ -4564,7 +4554,7 @@ function sbChangeTopic(){
   const topic=topics.find(t=>t.id===tid);
   SB.topicName=topic?topic.name:'Topic '+tid;
   // Default to A for locked topics — parent builds a preview session
-  SB.level=prog['t'+tid]?.level||'A';
+  SB.level=(prog['t'+tid]&&prog['t'+tid].level||'A');
   SB.editingIdx=null;
   SB.questions=genSession(SB.profile,SB.tid,SB.level).map((p,i)=>({...p,difficulty:i,edited:false,custom:false}));
   renderSB();
@@ -4604,7 +4594,7 @@ function renderSB(){
   html+=`<div style="background:#fff;border-radius:12px;border:1.5px solid #EDE9E0;padding:11px 13px;margin-bottom:10px">`;
   html+=`<div style="font-size:9px;font-weight:800;color:#A8A29E;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">2. Välj nivå att förhandsgranska</div>`;
   html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">`;
-  const curLvlIdx=LEVELS.indexOf(prog['t'+SB.tid]?.level||'A');
+  const curLvlIdx=LEVELS.indexOf((prog['t'+SB.tid]&&prog['t'+SB.tid].level||'A'));
   LEVELS.forEach((lvl,i)=>{
     const isActive=lvl===SB.level;
     const isCurrent=i===curLvlIdx;
@@ -4671,8 +4661,8 @@ function changeDiff(idx,dir){
 }
 function editQ(idx){SB.editingIdx=SB.editingIdx===idx?null:idx;renderSB();}
 function saveEdit(idx){
-  const disp=document.getElementById('sbe-q-'+idx)?.value?.trim();
-  const ans=document.getElementById('sbe-a-'+idx)?.value?.trim();
+  const disp=(document.getElementById('sbe-q-'+idx)&&document.getElementById('sbe-q-'+idx).value&&document.getElementById('sbe-q-'+idx).value.trim());
+  const ans=(document.getElementById('sbe-a-'+idx)&&document.getElementById('sbe-a-'+idx).value&&document.getElementById('sbe-a-'+idx).value.trim());
   if(!disp||!ans){showToast('Ange både fråga och svar');return;}
   SB.questions[idx]={display:disp,answer:ans,hint:ans,difficulty:idx,edited:false,custom:true};
   SB.editingIdx=null;renderSB();
@@ -5257,7 +5247,7 @@ window.addEventListener('load',async ()=>{
     setTimeout(()=>fixInputs(),500);
     if(isCloudEnabled()){
       setInterval(async()=>{
-        const inSession=document.getElementById('screen-session')?.classList.contains('active');
+        const inSession=(document.getElementById('screen-session')&&document.getElementById('screen-session').classList.contains('active'));
         if(inSession)return;
         await refreshAppStateFromCloud();
       },10000);
