@@ -1801,7 +1801,8 @@ async function aiCheckOne(profile,sessionId,qIdx){
   if(session.questions[qIdx].parentMark===null)session.questions[qIdx].parentMark=result.correct;
   localStorage.setItem(key,JSON.stringify(pending));
   cloudSet(key,pending);
-  showParentReview(profile,sessionId);
+  // Update card in-place — no page jump
+  patchReviewCard(profile,sessionId,qIdx);
 }
 
 async function aiCheckAll(profile,sessionId){
@@ -1832,7 +1833,8 @@ function markAllQuestions(profile,sessionId,correct){
   session.questions.forEach(q=>{q.parentMark=correct;});
   localStorage.setItem(key,JSON.stringify(pending));
   cloudSet(key,pending);
-  showParentReview(profile,sessionId);
+  // Patch each card in-place — no page jump
+  session.questions.forEach((_,i)=>patchReviewCard(profile,sessionId,i));
   showToast(correct?'✅ Alla markerade som rätt':'✗ Alla markerade som fel');
 }
 // ── END AI CHECK ─────────────────────────────────────────────────
@@ -2965,10 +2967,11 @@ function loadProblem(i){
 }
 
 function exitSession(){
-  const answered=Object.keys(S.sess&&S.sess.answered||{}).length;
-  if(answered>0){
-    showConfirm('Exit session? Your work will not be sent.',()=>{stopTimer();showScreen('screen-topics');});
-  }else{stopTimer();showScreen('screen-topics');}
+  // Save canvas state before leaving — no confirm needed
+  // (work is preserved in localStorage; child can resume)
+  if(S.sess) saveCanvasState(S.sess.cur);
+  stopTimer();
+  showScreen('screen-topics');
 }
 
 // ════════════════════════════════════════════
@@ -3897,12 +3900,12 @@ function renderReview(session,profile){
   const allMarked=session.questions.every(q=>q.parentMark!==null);
   const pass=correct/total>=0.9;
   const barColor=pass?'#10B981':'#EF4444';
-  const btnLabel=allMarked?(pass?`✓ Approve — ${correct}/${total} correct · Level clears`:`↩ ${correct}/${total} correct · Level repeats`):'Mark all questions first';
+  const btnLabel=allMarked?(pass?`✓ Godkänn — ${correct}/${total} rätt · Nivån klaras`:`↩ ${correct}/${total} rätt · Nivån övas igen`):'Markera alla frågor först';
 
   // Approve button at TOP
   let html=`<button class="pr-clear-btn ${allMarked?'ready':''}" onclick="clearSession('${profile}',${session.id})" ${!allMarked?'disabled':''}>${btnLabel}</button>`;
 
-  html+=`<div class="pr-summary">
+  html+=`<div class="pr-summary" id="pr-summary">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
       <div style="flex:1;font-size:12px;font-weight:900">${profile==='alexander'?'Alexander':'Estelle'} · ${session.topicName}</div>
       <div style="font-size:24px;font-weight:900;color:${barColor}">${correct}/${total}</div>
@@ -3975,6 +3978,80 @@ function renderReview(session,profile){
   while(frag.firstChild)body.appendChild(frag.firstChild);
 }
 
+
+// ── PATCH REVIEW CARD IN-PLACE (no page jump) ─────────────────────
+function patchReviewCard(profile,sessionId,qIdx){
+  const key='md_pending_'+profile;
+  const pending=sjp(localStorage.getItem(key),[]);
+  const session=pending.find(s=>s.id===sessionId);
+  if(!session)return;
+  const q=session.questions[qIdx];
+  if(!q)return;
+
+  // 1. Rebuild just this one card's HTML
+  const mark=q.parentMark;
+  const cc=mark===true?'ok':mark===false?'no':'';
+  const icon=mark===true?'✅':mark===false?'❌':'○';
+  const hasWork=q.workURL&&q.workURL.length>100;
+  const hasAns=q.answerURL&&q.answerURL.length>100;
+
+  let cardHtml=`<div class="pr-q-top">
+    <div class="pr-q-num">${qIdx+1}</div>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:700;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em">Fråga</div>
+      <div class="pr-q-eq">${q.display}</div>
+      <div style="font-size:10px;font-weight:700;color:#059669">✓ Rätt svar: ${q.answer}</div>
+    </div>
+    <div class="pr-q-mark">${icon}</div>
+  </div>`;
+
+  if(hasWork||hasAns){
+    cardHtml+=`<div style="padding:0 12px 8px;display:flex;gap:6px">`;
+    if(hasWork) cardHtml+=`<div style="flex:1"><div style="font-size:8px;font-weight:800;color:#78716C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">📝 Uträkning</div><img src="${q.workURL}" style="width:100%;border-radius:7px;border:1px solid #EDE9E0;display:block;background:#fff" loading="lazy"></div>`;
+    if(hasAns) cardHtml+=`<div style="flex:${hasWork?'0.8':'1'}"><div style="font-size:8px;font-weight:800;color:#78716C;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">✏️ Svar</div><img src="${q.answerURL}" style="width:100%;border-radius:7px;border:2px solid #FCD34D;display:block;background:#FFFBEB" loading="lazy"></div>`;
+    cardHtml+=`</div>`;
+  }else{
+    cardHtml+=`<div style="padding:2px 12px 8px;font-size:10px;color:#C4C0B8;font-weight:700;font-style:italic">Inget canvas sparat</div>`;
+  }
+
+  if(q.aiResult) cardHtml+=`<div class="pr-ai-result">${q.aiResult}</div>`;
+  cardHtml+=`<div class="pr-q-btns">
+    <button class="pr-q-btn ai-btn" id="ai-btn-${qIdx}" onclick="aiCheckOne('${profile}',${sessionId},${qIdx})">🤖 AI</button>
+    <button class="pr-q-btn ok-btn" onclick="markQ('${profile}',${sessionId},${qIdx},true)">✓ Rätt</button>
+    <button class="pr-q-btn no-btn" onclick="markQ('${profile}',${sessionId},${qIdx},false)">✗ Fel</button>
+  </div>`;
+
+  // 2. Update the card DOM in-place
+  const card=document.getElementById('prq-'+qIdx);
+  if(card){
+    card.className='pr-q-card'+( cc?' '+cc:'');
+    card.innerHTML=cardHtml;
+  }
+
+  // 3. Update the approve button + score without rebuilding page
+  const correct2=session.questions.filter(q=>q.parentMark===true).length;
+  const total2=session.questions.length;
+  const allMarked2=session.questions.every(q=>q.parentMark!==null);
+  const pass2=correct2/total2>=0.9;
+  const btnLabel2=allMarked2
+    ?(pass2?'✓ Godkänn — '+correct2+'/'+total2+' rätt · Nivån klaras':'↩ '+correct2+'/'+total2+' rätt · Nivån övas igen')
+    :'Markera alla frågor först';
+  const approveBtn=document.querySelector('.pr-clear-btn');
+  if(approveBtn){
+    approveBtn.textContent=btnLabel2;
+    approveBtn.disabled=!allMarked2;
+    approveBtn.className='pr-clear-btn'+(allMarked2?' ready':'');
+  }
+
+  // 4. Update score bar fill
+  const pct=Math.round(correct2/total2*100);
+  const barFill=document.getElementById('pr-bar-fill');
+  if(barFill){barFill.style.width=pct+'%';barFill.style.background=pass2?'#10B981':'#EF4444';}
+  const scoreEl=document.getElementById('pr-score-txt');
+  if(scoreEl) scoreEl.textContent=correct2+'/'+total2+' rätt ('+pct+'%)';
+}
+// ── END PATCH REVIEW CARD ──────────────────────────────────────────
+
 function markQ(profile,sessionId,qIdx,correct){
   const key='md_pending_'+profile;
   const pending=sjp(localStorage.getItem(key),[]);
@@ -3983,7 +4060,8 @@ function markQ(profile,sessionId,qIdx,correct){
   session.questions[qIdx].parentMark=correct;
   localStorage.setItem(key,JSON.stringify(pending));
   cloudSet(key,pending);
-  showParentReview(profile,sessionId);
+  // Update card in-place — no page jump
+  patchReviewCard(profile,sessionId,qIdx);
 }
 
 
@@ -4699,11 +4777,22 @@ function showConfirm(msg,onYes,danger=false,onNo=null){
 function showTypedConfirm(msg,word,onYes){
   const el=document.createElement('div');
   el.className='modal-overlay';
-  el.innerHTML=`<div class="modal-box"><div class="modal-msg">${msg}</div><div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:6px">Type <b>${word}</b> to confirm</div><input class="modal-typed-input" placeholder="${word}" id="typed-input"><div class="modal-btns" style="margin-top:4px"><button class="modal-cancel">Cancel</button><button class="modal-ok danger" id="typed-ok" disabled>Confirm</button></div></div>`;
+  el.innerHTML='<div class="modal-box">'
+    +'<div class="modal-msg">'+msg+'</div>'
+    +'<div style="font-size:11px;color:#78716C;font-weight:700;margin-bottom:6px">Skriv <b>'+word+'</b> för att bekräfta</div>'
+    +'<input class="modal-typed-input" placeholder="'+word+'" id="typed-input" autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false" inputmode="text">'
+    +'<div class="modal-btns" style="margin-top:4px">'
+    +'<button class="modal-cancel">Avbryt</button>'
+    +'<button class="modal-ok danger" id="typed-ok" disabled>Bekräfta</button>'
+    +'</div></div>';
   el.querySelector('.modal-cancel').onclick=()=>el.remove();
-  el.querySelector('#typed-input').oninput=e=>{el.querySelector('#typed-ok').disabled=e.target.value!==word;};
-  el.querySelector('#typed-ok').onclick=()=>{el.remove();onYes();};
+  const inp=el.querySelector('#typed-input');
+  const okBtn=el.querySelector('#typed-ok');
+  inp.oninput=e=>{okBtn.disabled=e.target.value.toUpperCase()!==word.toUpperCase();};
+  okBtn.onclick=()=>{el.remove();onYes();};
   document.body.appendChild(el);
+  // iOS: call focus after append to trigger keyboard
+  setTimeout(()=>{try{inp.focus();}catch(e){}},80);
 }
 
 // ════════════════════════════════════════════
@@ -4836,6 +4925,8 @@ function _setupSession(topic){
   buildOverview();
   loadProblem(0);
   showScreen('screen-session');
+  // Push history entry so iOS back gesture triggers popstate (not page exit)
+  history.pushState({app:'mathgenius'},'','');
   setTimeout(()=>{resizeCanvas();clearCanvas();startTimer();},80);
 }
 
@@ -5214,6 +5305,19 @@ function buildProfileGreeting(){
     }else{aEl.textContent='—';}
   }
 }
+
+// Intercept iOS back gesture — push a history entry when entering session
+// so back gesture goes to history entry (popstate) not out of app
+window.addEventListener('popstate',function(e){
+  const inSession=document.getElementById('screen-session')&&
+    document.getElementById('screen-session').classList.contains('active');
+  if(inSession){
+    // Absorb the back gesture — go back to topics without dialog
+    exitSession();
+    // Re-push so next back doesn't leave app
+    history.pushState({app:'mathgenius'},'','');
+  }
+});
 
 window.addEventListener('load',async ()=>{
   initCanvas();
