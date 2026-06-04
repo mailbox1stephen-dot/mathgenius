@@ -8,7 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>MathGenius</title>
+<title>MathGenius v2.6.20260604</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
@@ -3606,7 +3606,12 @@ function buildOverviewTab(){
   const pw=alexH.filter(h=>new Date(h.date)>prevAgo&&new Date(h.date)<=weekAgo).length+estH.filter(h=>new Date(h.date)>prevAgo&&new Date(h.date)<=weekAgo).length;
   const avgAcc=alexH.length||estH.length?Math.round(([...alexH,...estH].slice(0,20).reduce((s,h)=>s+h.score/h.total,0)/Math.min([...alexH,...estH].length,20))*100):0;
   const alexS=getStreak('alexander');const estS=getStreak('estelle');
-  const allPend=[...alexP.map(s=>({...s,profile:'alexander'})),...estP.map(s=>({...s,profile:'estelle'}))].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const _deviceProfile=getDeviceProfile();
+  // On a locked device, only show that child's pending sessions for review
+  const allPend=[
+    ...(_deviceProfile&&_deviceProfile!=='alexander'?[]:alexP.map(s=>({...s,profile:'alexander'}))),
+    ...(_deviceProfile&&_deviceProfile!=='estelle'  ?[]:estP.map(s=>({...s,profile:'estelle'})))
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
 
   const now=new Date();const yr=now.getFullYear();const mo=now.getMonth();
   const dim=new Date(yr,mo+1,0).getDate();const fd=(new Date(yr,mo,1).getDay()||7);
@@ -3961,7 +3966,7 @@ function renderReview(session,profile){
       }
       html+=`</div>`;
     }else{
-      html+=`<div style="padding:2px 12px 8px;font-size:10px;color:#C4C0B8;font-weight:700;font-style:italic">No canvas captured</div>`;
+      html+=`<div style="padding:2px 12px 8px;font-size:10px;color:#C4C0B8;font-weight:700;font-style:italic">Inget canvas sparat</div>`;
     }
 
     if(q.aiResult){html+=`<div class="pr-ai-result">${q.aiResult}</div>`;}
