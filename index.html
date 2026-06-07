@@ -809,7 +809,9 @@ body[data-profile="estelle"] .cpn-dot.filled{background:#764BA2;border-color:#76
 <div id="sync-indicator">Synced ☁</div>
 <div id="toast"></div>
 
-<script>// ── SWEDISH CURRICULUM ──────────────────────────────────────────
+<script>const APP_VERSION='v2.6.20260607';
+const APP_DATE='07 Jun 2026';
+// ── SWEDISH CURRICULUM ──────────────────────────────────────────
 const TOPICS_ALE=[
   {id:1,name:'De fyra räknesätten',method:true,curriculum:'Lgr22 Åk 2–4'},
   {id:2,name:'Decimalräkning',method:true,curriculum:'Lgr22 Åk 2–4'},
@@ -1075,13 +1077,15 @@ function showQuestionBrowser(profile){
   function buildChips(){
     const container=document.getElementById('qb-chips');
     if(!container)return;
-    container.innerHTML=['A','B','C','D','E','F'].map(l=>{
+    container.innerHTML=[...'ABCDEF'.split(''),'TEST'].map(l=>{
+      const isTest=l==='TEST';
       const isReason=l==='E'||l==='F';
       const active=l===curLvl;
-      const bg=active?accent:(isReason?'#F0FDF4':'#F9F9F7');
-      const col=active?'#fff':(isReason?'#065F46':'#374151');
-      const bdr=active?accent:(isReason?'#86EFAC':'#E5E7EB');
-      return `<button onclick="qbSelectLevel('${l}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${bdr};background:${bg};color:${col};font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">Nivå ${l}${isReason?' 💡':' ⚙'}</button>`;
+      const bg=active?accent:isTest?'#FEF3C7':isReason?'#F0FDF4':'#F9F9F7';
+      const col=active?'#fff':isTest?'#92400E':isReason?'#065F46':'#374151';
+      const bdr=active?accent:isTest?'#FCD34D':isReason?'#86EFAC':'#E5E7EB';
+      const label=isTest?'⭐ Ämnesprov':('Nivå '+l+(isReason?' 💡':' ⚙'));
+      return `<button onclick="qbSelectLevel('${l}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${bdr};background:${bg};color:${col};font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif">${label}</button>`;
     }).join('');
   }
 
@@ -1120,19 +1124,23 @@ function showQuestionBrowser(profile){
   window.qbShowQuestions=function(){
     const container=document.getElementById('qb-questions');
     if(!container)return;
-    const isReason=curLvl==='E'||curLvl==='F';
-    const instrBg=isReason?'#F0FDF4':'#FFFBEB';
-    const instrCol=isReason?'#166534':'#92400E';
-    const instrTxt=isReason?'LÖS UPPGIFTEN':'BERÄKNA';
+    const isTest=curLvl==='TEST';
+    const isReason=curLvl==='E'||curLvl==='F'||isTest;
+    const instrBg=isTest?'#FEF3C7':isReason?'#F0FDF4':'#FFFBEB';
+    const instrCol=isTest?'#92400E':isReason?'#166534':'#92400E';
+    const instrTxt=isTest?'⭐ ÄMNESPROV':isReason?'LÖS UPPGIFTEN':'BERÄKNA';
     let html='';
-    for(let qi=0;qi<2;qi++){  // 2 questions — cleaner on iPad
-      const d=[3,7][qi];
+    if(isTest){html+=`<div style="background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:10px;color:#92400E;font-weight:700">⭐ Ämnesprov — 12 blandade frågor från alla nivåer A–F · Kräver 90%</div>`;}
+    const qCount=isTest?6:2;
+    for(let qi=0;qi<qCount;qi++){
+      const lvlForQ=isTest?LEVELS[qi]:curLvl;
+      const d=isTest?[2,3,3,4,5,6][qi]:[3,7][qi];
       try{
-        const prob=genProblem(profile,curTopic,curLvl,d);
+        const prob=genProblem(profile,curTopic,lvlForQ,d);
         if(!prob)continue;
         html+=`<div style="background:white;border:1.5px solid #E5E7EB;border-radius:12px;overflow:hidden">`;
         html+=`<div style="background:${accent};padding:6px 12px;display:flex;justify-content:space-between;align-items:center">`;
-        html+=`<span style="color:#fff;font-size:10px;font-weight:800">Fråga ${qi+1}</span>`;
+        html+=`<span style="color:#fff;font-size:10px;font-weight:800">${isTest?"Nivå "+LEVELS[qi%6]+" · ":""}Fråga ${qi+1}</span>`;
         html+=`<span style="background:${isReason?'#D1FAE5':'rgba(255,255,255,.2)'};color:${isReason?'#065F46':'#fff'};font-size:9px;padding:2px 7px;border-radius:6px;font-weight:800">${isReason?'💡 Problemlösning':'⚙ Drill'}</span></div>`;
         html+=`<div style="padding:3px 12px;background:${instrBg};font-size:9px;font-weight:800;color:${instrCol}">${instrTxt}</div>`;
         html+=`<div style="padding:10px 12px">`;
@@ -1149,6 +1157,8 @@ function showQuestionBrowser(profile){
 
   buildBrowser();
 }
+function qbSelectLevel(l){curLvl=l;buildBrowser();}
+
 
 // ── VISUAL SVG HELPERS ──────────────────────────────────────────
 
@@ -2885,6 +2895,8 @@ function goToTopics(){
 // SESSION
 // ════════════════════════════════════════════
 function startSession(tid,level,method){
+  // Redirect TEST level to proper topic test handler
+  if(level==='TEST'){startTopicTest(tid);return;}
   const topics=getTopics(S.profile);
   const topic=topics.find(t=>t.id===tid);
   // Check for parent-locked session
@@ -4213,8 +4225,8 @@ async function _doSend(){
   stopTimer();
   saveCanvasState(S.sess.cur);
   const btn=document.getElementById('send-btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳';}
-  document.getElementById('send-status').textContent='Session pausad'.replace('paused','').trim()||'Saving...';
+  if(btn){btn.disabled=true;btn.textContent='Skickar…';}
+  const statusEl=document.getElementById('send-status');if(statusEl)statusEl.textContent='Skickar till pappa…';
 
   // Capture all canvas images (use saved data URLs directly)
   const questions=S.sess.problems.map((prob,i)=>{
@@ -4233,20 +4245,28 @@ async function _doSend(){
     duration:sessionDuration,questions,aiChecking:!!(S.apiKey||readCred('md_apikey'))
   };
   const key='md_pending_'+S.profile;
-  const pending=sjp(localStorage.getItem(key),[]);
-  const existIdx=pending.findIndex(p=>p.tid===session.tid&&p.level===session.level);
-  if(existIdx>=0){pending.splice(existIdx,1,session);}
-  else{pending.unshift(session);if(pending.length>20)pending.pop();}
-  localStorage.setItem(key,JSON.stringify(pending));
-  cloudSet(key,pending);
-  clearAutoSave();
+  try{
+    const pending=sjp(localStorage.getItem(key),[]);
+    const existIdx=pending.findIndex(p=>p.tid===session.tid&&p.level===session.level);
+    if(existIdx>=0){pending.splice(existIdx,1,session);}
+    else{pending.unshift(session);if(pending.length>20)pending.pop();}
+    // Catch storage quota errors (canvas images can be large)
+    try{localStorage.setItem(key,JSON.stringify(pending));}
+    catch(storageErr){
+      // Try saving without canvas images as fallback
+      const slim=pending.map(s=>({...s,questions:s.questions.map(q=>({...q,workURL:'',answerURL:''}))}));
+      localStorage.setItem(key,JSON.stringify(slim));
+      showToast('⚠️ Bilder kunde inte sparas — lagring full');
+    }
+    cloudSet(key,pending);
+  }catch(e){console.warn('Session save error:',e);}
+  try{clearAutoSave();}catch(e){}
   if(S.sess&&S.sess.usingLocked){
-    localStorage.removeItem('md_next_'+S.profile);
-    cloudDelete('md_next_'+S.profile);
+    try{localStorage.removeItem('md_next_'+S.profile);cloudDelete('md_next_'+S.profile);}catch(e){}
   }
 
-  // Show complete screen immediately
-  showComplete();
+  // Always show complete screen — even if save had errors
+  try{showComplete();}catch(e){console.error('showComplete error:',e);showScreen('screen-complete');}
 
   // AI check in background (if API key set)
   if(S.apiKey||readCred('md_apikey')){
@@ -5387,11 +5407,16 @@ window.addEventListener('load',async ()=>{
       setTimeout(()=>showToast('Tap "Restore from cloud" to recover all your data'),800);
     }
   }
-});
-;
+});// ── END SWEDISH CURRICULUM ───────────────────────────────────────
 
 
-
-</script>
+// ── SAFE JSON PARSE — never throws on emoji or corrupt data ──
+function sjp(str,fallback=null){
+  if(str===null||str===undefined)return fallback;
+  try{const r=JSON.parse(str);return r;}
+  catch(e){return fallback;}
+}
+// ════════════════════════════════════════════
+// CONSTANTS</script>
 </body>
 </html>
